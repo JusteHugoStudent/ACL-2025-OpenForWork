@@ -1,0 +1,11 @@
+{
+"name": "serveur-equipe8",
+"version": "0.0.1",
+"description": "Tests de nodejs et implémentation de serveurs simples.",
+"homepage": "index.html",
+"licence": "MIT",
+"author": "Julien Provillard",
+"type": "module",
+"scripts": { "start": "node serveur.js" },
+"dependencies": {}
+}
