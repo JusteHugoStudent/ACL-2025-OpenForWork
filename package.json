@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "mongodb": "^6.20.0"
   }
 }
