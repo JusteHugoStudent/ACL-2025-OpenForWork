@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork/issues"
   },
-  "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme"
+  "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme",
+  "dependencies": {
+    "mongodb": "^6.20.0"
+  }
 }

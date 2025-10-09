@@ -1,6 +1,15 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const connectToMongo = require('./mongo');
+
+connectToMongo().then(db => {
+  if (db) {
+    console.log('Connexion à MongoDB réussie au lancement du serveur.');
+  } else {
+    console.log('Échec de la connexion à MongoDB.');
+  }
+});
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/index.html') {
