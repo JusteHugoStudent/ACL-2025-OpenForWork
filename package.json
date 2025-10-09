@@ -1,0 +1,23 @@
+{
+  "name": "acl-2025-openforwork",
+  "version": "1.0.0",
+  "description": "Projet FST de l'équipe 8. Master Informatique Nancy",
+  "main": "serveur.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JusteHugoStudent/ACL-2025-OpenForWork.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork/issues"
+  },
+  "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme"
+}
