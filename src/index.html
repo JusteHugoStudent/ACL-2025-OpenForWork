@@ -1,16 +1,81 @@
-<html>
-    <head>
-        <title>Agenda Equipe 8</title>
-        <link rel="stylesheet" href="styles.css">
-        <script src="app.js" defer></script>
-    </head>
-    <body>
-        <h1>Agenda</h1>
-        <div id="app"></div>
-        <form id="event-form">
-            <input type="text" id="identifiant" placeholder="Adresse mail" required>
-            <input type="text" id="mdp" required>
-            <button type="submit">Ajouter</button>
-        </form>
-    </body>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda ACL équipe 8</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- PAGE LOGIN -->
+  <div id="page-login">
+    <div class="login-box">
+      <h2>Connexion</h2>
+      <input type="text" id="username" placeholder="Nom d'utilisateur">
+      <input type="password" id="password" placeholder="Mot de passe">
+      <button id="btn-login">Se connecter</button>
+    </div>
+  </div>
+
+  <!-- PAGE AGENDA -->
+  <div id="page-agenda" class="hidden">
+    <div class="header">
+      <div>
+        <h1>Mon Agenda</h1>
+        <p id="user-name">Mode développeur</p>
+      </div>
+      <button id="btn-logout">Déconnexion</button>
+    </div>
+
+    <div class="navigation">
+      <button id="btn-prev">◀ Précédent</button>
+      <span id="current-period">Semaine</span>
+      <button id="btn-next">Suivant ▶</button>
+      <button id="btn-today">Aujourd'hui</button>
+      <button id="btn-add">+ Ajouter</button>
+    </div>
+
+    <div class="view-buttons">
+      <button class="btn-view active" data-view="week">Semaine</button>
+      <button class="btn-view" data-view="month">Mois</button>
+      <button class="btn-view" data-view="year">Année</button>
+    </div>
+
+    <div id="calendar">
+      <div id="view-week"></div>
+      <div id="view-month" class="hidden"></div>
+      <div id="view-year" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title"></h3>
+      <label>Titre</label>
+      <input type="text" id="input-title">
+      
+      <label>Date</label>
+      <input type="date" id="input-date">
+      
+      <label>Heure début</label>
+      <input type="time" id="input-start">
+      
+      <label>Heure fin</label>
+      <input type="time" id="input-end">
+      
+      <label>Description</label>
+      <textarea id="input-description"></textarea>
+
+      <div class="modal-buttons">
+        <button id="btn-save">Enregistrer</button>
+        <button id="btn-cancel">Annuler</button>
+        <button id="btn-delete" class="hidden">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE PRINCIPAL -->
+  <script type="module" src="views/App.js"></script>
+</body>
 </html>
