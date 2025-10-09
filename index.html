@@ -7,9 +7,9 @@
     <body>
         <h1>Agenda</h1>
         <div id="app"></div>
-        <form id="event-form">
-            <input type="text" id="identifiant" placeholder="Adresse mail" required>
-            <input type="text" id="mdp" required>
+        <form id="event-form" name="form" action="/" method="post">
+            <input type="text" id="identifiant" name="identifiant" placeholder="Adresse mail" required>
+            <input type="password" id="mdp" name="mdp" required>
             <button type="submit">Ajouter</button>
         </form>
     </body>
