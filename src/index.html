@@ -1,81 +1,89 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda ACL équipe 8</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL - groupe 8</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    
+    <!-- Notre CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- PAGE LOGIN -->
-  <div id="page-login">
-    <div class="login-box">
-      <h2>Connexion</h2>
-      <input type="text" id="username" placeholder="Nom d'utilisateur">
-      <input type="password" id="password" placeholder="Mot de passe">
-      <button id="btn-login">Se connecter</button>
-    </div>
-  </div>
-
-  <!-- PAGE AGENDA -->
-  <div id="page-agenda" class="hidden">
-    <div class="header">
-      <div>
-        <h1>Mon Agenda</h1>
-        <p id="user-name">Mode développeur</p>
-      </div>
-      <button id="btn-logout">Déconnexion</button>
+    <!-- PAge de Connexion -->
+    <div id="page-login">
+        <div class="login-box">
+            <h2>Agenda ACL</h2>
+            <input type="text" id="username" placeholder="Nom d'utilisateur">
+            <input type="password" id="password" placeholder="Mot de passe">
+            <button id="btn-login">Se connecter</button>
+        </div>
     </div>
 
-    <div class="navigation">
-      <button id="btn-prev">◀ Précédent</button>
-      <span id="current-period">Semaine</span>
-      <button id="btn-next">Suivant ▶</button>
-      <button id="btn-today">Aujourd'hui</button>
-      <button id="btn-add">+ Ajouter</button>
+    <!-- Page Principale -->
+    <div id="page-agenda" class="hidden">
+        
+        <!-- En-tête -->
+        <div class="header">
+            <div>
+                <h1>Agenda ACL</h1>
+                <p id="user-name"></p>
+            </div>
+            <button id="btn-logout">Déconnexion</button>
+        </div>
+
+        <!-- Calendrier FullCalendar -->
+        <div id="calendar"></div>
     </div>
 
-    <div class="view-buttons">
-      <button class="btn-view active" data-view="week">Semaine</button>
-      <button class="btn-view" data-view="month">Mois</button>
-      <button class="btn-view" data-view="year">Année</button>
+    <!-- Modale -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-title">Ajouter un événement</h3>
+            
+            <label>Titre :</label>
+            <input type="text" id="input-title" placeholder="Titre de l'événement">
+            
+            <label>Date début :</label>
+            <input type="datetime-local" id="input-start">
+            
+            <label>Date fin :</label>
+            <input type="datetime-local" id="input-end">
+            
+            <label>Description :</label>
+            <textarea id="input-description" rows="3" placeholder="Description"></textarea>
+            
+            <label>Couleur :</label>
+            <select id="input-color">
+                <option value="#ffd700">Jaune</option>
+                <option value="#ff6b6b">Rouge</option>
+                <option value="#4ecdc4">Bleu</option>
+                <option value="#95e1d3">Vert</option>
+                <option value="#f38181">Rose</option>
+                <option value="#aa96da">Violet</option>
+            </select>
+            
+            <div class="modal-buttons">
+                <button id="btn-save">Enregistrer</button>
+                <button id="btn-delete" class="hidden">Supprimer</button>
+                <button id="btn-cancel">Annuler</button>
+            </div>
+        </div>
     </div>
 
-    <div id="calendar">
-      <div id="view-week"></div>
-      <div id="view-month" class="hidden"></div>
-      <div id="view-year" class="hidden"></div>
-    </div>
-  </div>
-
-  <!-- MODAL -->
-  <div id="modal" class="modal hidden">
-    <div class="modal-content">
-      <h3 id="modal-title"></h3>
-      <label>Titre</label>
-      <input type="text" id="input-title">
-      
-      <label>Date</label>
-      <input type="date" id="input-date">
-      
-      <label>Heure début</label>
-      <input type="time" id="input-start">
-      
-      <label>Heure fin</label>
-      <input type="time" id="input-end">
-      
-      <label>Description</label>
-      <textarea id="input-description"></textarea>
-
-      <div class="modal-buttons">
-        <button id="btn-save">Enregistrer</button>
-        <button id="btn-cancel">Annuler</button>
-        <button id="btn-delete" class="hidden">Supprimer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODULE PRINCIPAL -->
-  <script type="module" src="views/App.js"></script>
+    <!-- Scripts -->
+    <!-- 1. FullCalendar (bibliotheque externe) -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <!-- 2. Nos classes de vues -->
+    <script src="views/LoginView.js"></script>
+    <script src="views/HeaderView.js"></script>
+    <script src="views/ModalView.js"></script>
+    <script src="views/CalendarManager.js"></script>
+    
+    <!-- 3. App.js en dernier -->
+    <script src="views/App.js"></script>
 </body>
 </html>
