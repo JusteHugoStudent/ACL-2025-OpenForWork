@@ -1,289 +1,443 @@
-
-/* ===========================
-    ca ressemble au front qu on peut avoir sur l'ent
-   =========================== */   
+/* Variables de couleurs */
 :root {
-  --noir: #1a1a1a;
-  --gris: #2c2c2c;
-  --jaune: #f0c000;
-  --blanc: #ffffff;
+    --noir: #1a1a1a;
+    --noir-clair: #2d2d2d;
+    --jaune: #ffd700;
+    --jaune-clair: #ffed4e;
+    --jaune-fonce: #ccaa00;
+    --gris: #4a4a4a;
+    --gris-clair: #6a6a6a;
+    --blanc: #ffffff;
 }
 
-/* Réinitialisation */
+/* Général */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: var(--noir);
-  color: var(--blanc);
-  padding: 20px;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: var(--noir);
+    color: var(--blanc);
 }
 
 .hidden {
-  display: none !important;
+    display: none !important;
 }
 
-/* ===========================
-   Connexion
-   =========================== */
+/* ========================================
+   PAGE DE CONNEXION
+   ======================================== */
+
 #page-login {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
 }
 
 .login-box {
-  background: var(--gris);
-  padding: 25px;
-  border-radius: 6px;
-  border: 1px solid var(--jaune);
-  width: 100%;
-  max-width: 350px;
+    background: var(--noir-clair);
+    padding: 40px;
+    border-radius: 10px;
+    border: 2px solid var(--jaune);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
 }
 
 .login-box h2 {
-  text-align: center;
-  color: var(--jaune);
-  margin-bottom: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--jaune);
+    font-size: 28px;
 }
 
 .login-box input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #444;
-  background: #000;
-  color: var(--blanc);
-  border-radius: 4px;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    background-color: var(--noir);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    color: var(--blanc);
+    font-size: 16px;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: var(--jaune);
 }
 
 .login-box button {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--jaune);
-  border: none;
-  color: var(--noir);
-  font-weight: bold;
-  border-radius: 4px;
-  cursor: pointer;
+    width: 100%;
+    padding: 14px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
-/* ===========================
-   En-tête
-   =========================== */
+.login-box button:hover {
+    background-color: var(--jaune-clair);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* ========================================
+   EN-TÊTE
+   ======================================== */
+
 .header {
-  background: var(--gris);
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid var(--jaune);
+    background: var(--noir-clair);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--jaune);
 }
 
 .header h1 {
-  color: var(--jaune);
-  font-size: 22px;
+    font-size: 28px;
+    color: var(--jaune);
+    margin-bottom: 5px;
 }
 
 .header p {
-  font-size: 13px;
-  color: #ddd;
+    color: var(--jaune-clair);
+    font-size: 14px;
 }
 
 #btn-logout {
-  background: #b33;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
+    padding: 10px 25px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
 }
 
-/* ===========================
-   Navigation
-   =========================== */
+#btn-logout:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   NAVIGATION
+   ======================================== */
+
 .navigation {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 10px;
+    background: var(--noir-clair);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border: 2px solid var(--gris);
 }
 
 .navigation button {
-  background: var(--gris);
-  color: var(--blanc);
-  border: 1px solid #555;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
+    padding: 10px 20px;
+    background-color: var(--gris);
+    color: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.navigation button:hover {
+    background-color: var(--gris-clair);
+    transform: translateY(-2px);
 }
 
 #btn-add {
-  background: var(--jaune);
-  color: var(--noir);
-  border: none;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: none;
+    font-weight: bold;
+}
+
+#btn-add:hover {
+    background-color: var(--jaune-clair);
 }
 
 #current-period {
-  font-weight: bold;
-  color: var(--jaune);
+    font-weight: bold;
+    font-size: 18px;
+    color: var(--jaune);
 }
 
-/* ===========================
-   Boutons de vue
-   =========================== */
+/* ========================================
+   BOUTONS DE VUE
+   ======================================== */
+
 .view-buttons {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 15px;
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
 }
 
 .btn-view {
-  background: var(--gris);
-  border: 1px solid #555;
-  color: var(--blanc);
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
+    padding: 12px 25px;
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-view:hover {
+    background-color: var(--gris);
 }
 
 .btn-view.active {
-  background: var(--jaune);
-  color: var(--noir);
+    background-color: var(--jaune);
+    color: var(--noir);
+    border-color: var(--jaune);
+    font-weight: bold;
 }
 
-/* ===========================
-   Calendrier
-   =========================== */
+/* ========================================
+   CALENDRIER
+   ======================================== */
+
 #calendar {
-  background: var(--gris);
-  border-radius: 6px;
-  padding: 15px;
-  min-height: 400px;
-  border: 1px solid var(--jaune);
+    background: var(--noir-clair);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid var(--jaune);
+    min-height: 500px;
 }
 
-/* ===========================
-   Vue semaine/mois/année
-   =========================== */
-#view-week, #view-month {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+/* ========================================
+   VUE SEMAINE
+   ======================================== */
+
+#view-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
 }
+
+.day {
+    border: 2px solid var(--gris);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 250px;
+    background-color: var(--noir);
+}
+
+.day-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* ========================================
+   VUE MOIS
+   ======================================== */
+
+#view-month {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.month-day {
+    border: 2px solid var(--gris);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 120px;
+    background-color: var(--noir);
+}
+
+.month-day-number {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--jaune);
+    font-size: 16px;
+}
+
+/* ========================================
+   VUE ANNÉE
+   ======================================== */
 
 #view-year {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
-.day, .month-day, .year-month {
-  border: 1px solid #555;
-  background: #000;
-  border-radius: 4px;
-  padding: 8px;
-  min-height: 100px;
+.year-month {
+    border: 2px solid var(--jaune);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: var(--noir);
+    text-align: center;
+    transition: all 0.3s;
 }
 
-.day-header, .month-day-number, .year-month h4 {
-  color: var(--jaune);
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 5px;
+.year-month:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
 }
 
-/* ===========================
-   Événements
-   =========================== */
+.year-month h4 {
+    margin-bottom: 10px;
+    color: var(--jaune);
+    font-size: 20px;
+}
+
+.year-month p {
+    color: var(--blanc);
+    font-size: 16px;
+}
+
+/* ========================================
+   ÉVÉNEMENTS
+   ======================================== */
+
 .event {
-  background: var(--jaune);
-  color: var(--noir);
-  border-radius: 3px;
-  padding: 4px 6px;
-  font-size: 12px;
-  margin-bottom: 4px;
-  cursor: pointer;
+    background-color: var(--jaune-fonce);
+    color: var(--noir);
+    border-left: 4px solid var(--jaune);
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
-/* ===========================
-   Modal
-   =========================== */
+.event:hover {
+    background-color: var(--jaune);
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .modal-content {
-  background: var(--gris);
-  border: 1px solid var(--jaune);
-  padding: 20px;
-  border-radius: 6px;
-  width: 90%;
-  max-width: 400px;
+    background: var(--noir-clair);
+    padding: 30px;
+    border-radius: 10px;
+    border: 3px solid var(--jaune);
+    width: 90%;
+    max-width: 550px;
+    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
 }
 
 .modal-content h3 {
-  color: var(--jaune);
-  margin-bottom: 15px;
+    margin-bottom: 25px;
+    color: var(--jaune);
+    font-size: 24px;
 }
 
 .modal-content label {
-  display: block;
-  margin-top: 10px;
-  font-size: 14px;
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--jaune-clair);
 }
 
 .modal-content input,
 .modal-content textarea {
-  width: 100%;
-  padding: 8px;
-  background: #000;
-  border: 1px solid #444;
-  color: var(--blanc);
-  border-radius: 4px;
-  margin-bottom: 10px;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--noir);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    color: var(--blanc);
+    font-size: 14px;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: var(--jaune);
+}
+
+.modal-content textarea {
+    resize: vertical;
 }
 
 .modal-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
 }
 
 .modal-buttons button {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.3s;
 }
 
 #btn-save {
-  background: var(--jaune);
-  color: var(--noir);
+    background-color: var(--jaune);
+    color: var(--noir);
 }
 
-#btn-cancel {
-  background: #555;
-  color: white;
+#btn-save:hover {
+    background-color: var(--jaune-clair);
+    transform: translateY(-2px);
 }
 
 #btn-delete {
-  background: #b33;
-  color: white;
+    background-color: #dc3545;
+    color: white;
+}
+
+#btn-delete:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+#btn-cancel {
+    background-color: var(--gris);
+    color: white;
+}
+
+#btn-cancel:hover {
+    background-color: var(--gris-clair);
+    transform: translateY(-2px);
 }

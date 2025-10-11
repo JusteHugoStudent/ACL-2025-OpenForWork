@@ -1,38 +1,56 @@
-// partie connexion / deconnexion
-// a faire, modifier plus tard
+//Gere UNIQUEMENT la page de connexion
 
-import { afficherCalendrier } from './CalendarView.js';
-
-export function initLoginView() {
-  let pageLogin = document.getElementById('page-login');
-  let pageAgenda = document.getElementById('page-agenda');
-
-  // quand on clique sur le bouton login
-  document.getElementById('btn-login').addEventListener('click', () => {
-    let username = document.getElementById('username').value;
-    let password = document.getElementById('password').value;
-
-    // si on a mis quelque chose
-    if (username != '' && password != '') {
-      window.utilisateur = username;
-      document.getElementById('user-name').textContent = "Connecte : " + username;
-
-      // on cache la page login et on montre l'agenda
-      pageLogin.classList.add('hidden');
-      pageAgenda.classList.remove('hidden');
-      afficherCalendrier();
-    } else {
-      alert("faut remplir les deux champs sinon ca marche pas");
+class LoginView {
+    constructor() {
+        // Element HTML de la page de connexion
+        this.pageLogin = document.getElementById('page-login');
+        this.btnLogin = document.getElementById('btn-login');
+        this.inputUsername = document.getElementById('username');
+        this.inputPassword = document.getElementById('password');
     }
-  });
 
-  // bouton deconnexion
-  document.getElementById('btn-logout').addEventListener('click', () => {
-    window.utilisateur = null;
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
+    // Attache un callback au bouton de connexion
 
-    pageLogin.classList.remove('hidden');
-    pageAgenda.classList.add('hidden');
-  });
+    onLoginClick(callback) {
+        this.btnLogin.addEventListener('click', () => {
+            const username = this.inputUsername.value;
+            const password = this.inputPassword.value;
+            callback(username, password);
+        });
+
+        // Permet de se connecter avec entree
+        this.inputPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const username = this.inputUsername.value;
+                const password = this.inputPassword.value;
+                callback(username, password);
+            }
+        });
+    }
+
+    // Cache la page de connexion
+    hide() {
+        this.pageLogin.classList.add('hidden');
+    }
+
+    //Affiche la page de connexion
+    show() {
+        this.pageLogin.classList.remove('hidden');
+    }
+
+    // Vide les champs du formulaire
+    clear() {
+        this.inputUsername.value = '';
+        this.inputPassword.value = '';
+    }
+
+    // Recup le nom d'utilisateur
+    getUsername() {
+        return this.inputUsername.value;
+    }
+
+    // Recup le nom d'utilisateur
+    getPassword() {
+        return this.inputPassword.value;
+    }
 }

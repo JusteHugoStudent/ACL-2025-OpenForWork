@@ -1,78 +1,118 @@
-// le popup quand on ajoute ou modifie un evenement (ca sapl un modale pour info)
+// Gere la fenetre modale (ajouter/modifier événement/ le pop up)
 
-import { evenements } from './App.js';
-import { afficherCalendrier } from './CalendarView.js';
-
-export function initModalView() {
-  let modal = document.getElementById('modal');
-
-  // quand on clique sur le bouton ajouter
-  document.getElementById('btn-add').addEventListener('click', () => {
-    window.eventEnCours = null;
-    document.getElementById('modal-title').textContent = "Ajouter un evenement";
-    document.getElementById('btn-delete').classList.add('hidden');
-
-    // on vide les champs
-    ['title', 'date', 'start', 'end', 'description'].forEach(id => {
-      document.getElementById(`input-${id}`).value = '';
-    });
-
-    modal.classList.remove('hidden');
-  });
-
-  // bouton annuler
-  document.getElementById('btn-cancel').addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
-
-  // bouton sauvegarder
-  document.getElementById('btn-save').addEventListener('click', () => {
-    let titre = document.getElementById('input-title').value;
-    let date = document.getElementById('input-date').value;
-    let heureDebut = document.getElementById('input-start').value;
-    let heureFin = document.getElementById('input-end').value;
-    let description = document.getElementById('input-description').value;
-
-    if (titre == '' || date == '') {
-      alert("faut un titre et une date sinon");
-      return;
+class ModalView {
+    constructor() {
+        // HTML de la modale
+        this.modal = document.getElementById('modal');
+        this.modalTitle = document.getElementById('modal-title');
+        
+        // Champs du formulaire
+        this.inputTitle = document.getElementById('input-title');
+        this.inputStart = document.getElementById('input-start');
+        this.inputEnd = document.getElementById('input-end');
+        this.inputDescription = document.getElementById('input-description');
+        this.inputColor = document.getElementById('input-color');
+        
+        // Boutons
+        this.btnSave = document.getElementById('btn-save');
+        this.btnDelete = document.getElementById('btn-delete');
+        this.btnCancel = document.getElementById('btn-cancel');
+        
+        // Initialiser l'event de fermeture en cliquant à l'extérieur
+        this.initCloseOnClickOutside();
     }
 
-    // si on edite un event existant
-    if (window.eventEnCours != null) {
-      Object.assign(evenements[window.eventEnCours], { titre, date, heureDebut, heureFin, description });
-    } else {
-      evenements.push({ id: Date.now(), titre, date, heureDebut, heureFin, description });
+    // Permet de fermer la modal en cliquant à l'extérieur
+    initCloseOnClickOutside() {
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.close();
+            }
+        });
     }
 
-    modal.classList.add('hidden');
-    afficherCalendrier();
-  });
-
-  // bouton supprimer
-  document.getElementById('btn-delete').addEventListener('click', () => {
-    if (confirm('sur de vouloir supprimer ?')) {
-      evenements.splice(window.eventEnCours, 1);
-      modal.classList.add('hidden');
-      afficherCalendrier();
+    // Ouvre la modal en mode AJOUT
+    openForAdd(dateStr = '') {
+        this.modalTitle.textContent = 'Ajouter un événement';
+        this.btnDelete.classList.add('hidden');
+        
+        // Vider les champs
+        this.inputTitle.value = '';
+        this.inputDescription.value = '';
+        this.inputColor.value = '#ffd700';
+        
+        // Preremplir les dates si fourni
+        if (dateStr) {
+            this.inputStart.value = dateStr + 'T09:00';
+            this.inputEnd.value = dateStr + 'T10:00';
+        } 
+        else {
+            this.inputStart.value = '';
+            this.inputEnd.value = '';
+        }
+        
+        this.modal.classList.remove('hidden');
     }
-  });
-}
 
-// quand on veut modifier un event deja existant
-export function ouvrirModifierEvent(index) {
-  let modal = document.getElementById('modal');
-  window.eventEnCours = index;
-  let event = evenements[index];
+    // eventDAta : Data de l'evenement a modifier
+    openForEdit(eventData) {
+        this.modalTitle.textContent = 'Modifier l\'événement';
+        this.btnDelete.classList.remove('hidden');
+        
+        // Remplir les champs
+        this.inputTitle.value = eventData.title;
+        this.inputStart.value = eventData.start;
+        this.inputEnd.value = eventData.end;
+        this.inputDescription.value = eventData.description || '';
+        this.inputColor.value = eventData.color || '#ffd700';
+        
+        this.modal.classList.remove('hidden');
+    }
 
-  document.getElementById('modal-title').textContent = "Modifier l'evenement";
-  document.getElementById('btn-delete').classList.remove('hidden');
+    // Ferme la modale
+    close() {
+        this.modal.classList.add('hidden');
+    }
 
-  document.getElementById('input-title').value = event.titre;
-  document.getElementById('input-date').value = event.date;
-  document.getElementById('input-start').value = event.heureDebut;
-  document.getElementById('input-end').value = event.heureFin;
-  document.getElementById('input-description').value = event.description;
+    // Récupère les données du formulaire
+    getFormData() {
+        return {
+            title: this.inputTitle.value.trim(),
+            start: this.inputStart.value,
+            end: this.inputEnd.value,
+            description: this.inputDescription.value,
+            color: this.inputColor.value
+        };
+    }
 
-  modal.classList.remove('hidden');
+    // Vérifie si le formulaire est valide
+    isValid() {
+        const data = this.getFormData();
+        return data.title !== '' && data.start !== '';
+    }
+
+    // Affiche un message d'erreur
+    showError(message) {
+        alert(message);
+    }
+
+    // Demande une confirmation de suppression
+    confirmDelete() {
+        return confirm('Voulez-vous vraiment supprimer cet événement ?');
+    }
+
+    // Attache un callback au bouton Enregistrer
+    onSaveClick(callback) {
+        this.btnSave.addEventListener('click', callback);
+    }
+
+    // Attache un callback au bouton Supprimer
+    onDeleteClick(callback) {
+        this.btnDelete.addEventListener('click', callback);
+    }
+
+    // Attache un callback au bouton Annuler
+    onCancelClick(callback) {
+        this.btnCancel.addEventListener('click', callback);
+    }
 }
