@@ -11,6 +11,9 @@ class CalendarManager {
         // Callbacks (fonctions à appeler depuis l'extérieur)
         this.onEventClickCallback = null;
         this.onDateClickCallback = null;
+        this.onEventAddCallback = null;
+        this.onEventChangeCallback = null; // move/resize/update
+        this.onEventRemoveCallback = null;
     }
 
     // Initialise FullCalendar avec la configuration
@@ -102,13 +105,14 @@ class CalendarManager {
              
             eventDrop: (info) => {
                 console.log('evenement déplace:', info.event.title);
-                // faut save ici avec le modele
+                if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             },
             
             // Quand on redimensionne un event
         
             eventResize: (info) => {
                 console.log('evenement redimensionne:', info.event.title);
+                if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             }
         });
         
@@ -127,8 +131,11 @@ class CalendarManager {
     }
 
     // ajoute un event au calendrier, eventData : les donnees de l'evenement
-    addEvent(eventData) {
-        this.calendar.addEvent(eventData);
+    // eventData: FullCalendar event input, options: { silent: true } to avoid triggering onEventAdd
+    addEvent(eventData, options = {}) {
+        const ev = this.calendar.addEvent(eventData);
+        if (!options.silent && this.onEventAddCallback) this.onEventAddCallback(ev);
+        return ev;
     }
 
     // maj event existant, eventId : L'id de l'event, updates : les modifs a appliquer
@@ -151,8 +158,13 @@ class CalendarManager {
         const event = this.calendar.getEventById(eventId);
         if (event) {
             event.remove();
+            if (this.onEventRemoveCallback) this.onEventRemoveCallback(eventId);
         }
     }
+
+    onEventAdd(callback) { this.onEventAddCallback = callback; }
+    onEventChange(callback) { this.onEventChangeCallback = callback; }
+    onEventRemove(callback) { this.onEventRemoveCallback = callback; }
 
     // Recupe tous les event du calendrier retourne une liste de tous les events
     getAllEvents() {

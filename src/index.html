@@ -18,7 +18,11 @@
             <h2>Agenda ACL</h2>
             <input type="text" id="username" placeholder="Nom d'utilisateur">
             <input type="password" id="password" placeholder="Mot de passe">
-            <button id="btn-login">Se connecter</button>
+            <div class="login-actions">
+                <button id="btn-login">Se connecter</button>
+                <button id="btn-register" onclick="location.href='register.html'">S'inscrire</button>
+            </div>
+            <p id="login-message" class="login-message"></p>
         </div>
     </div>
 

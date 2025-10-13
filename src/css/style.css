@@ -39,6 +39,14 @@ body {
     min-height: 80vh;
 }
 
+/* Page d'inscription - utilise le même centrage que la page de connexion */
+#page-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
 .login-box {
     background: var(--noir-clair);
     padding: 40px;
