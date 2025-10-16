@@ -23,9 +23,10 @@ class App {
             this.handleLogin(username, password);
         });
 
-        // NOTE: l'inscription est gérée depuis la page dédiée `register.html`.
-        // Le bouton "S'inscrire" sur la page de connexion redirige vers cette page
-        // (il n'y a pas de binding JS ici pour éviter les envois accidentels).
+        // Inscription via la card-back (flip)
+        this.loginView.onSignupClick((username, password) => {
+            this.handleSignup(username, password);
+        });
 
         // Deconnexion
         this.headerView.onLogoutClick(() => {
@@ -106,7 +107,7 @@ class App {
         });
     }
 
-    // Handle registration
+    // Handle registration (from register.html page)
     handleRegister(username, password) {
         fetch('/api/register', {
             method: 'POST',
@@ -124,6 +125,32 @@ class App {
         }).catch(err => {
             console.error(err);
             this.loginView.showMessage('Erreur réseau', true);
+        });
+    }
+
+    // Handle signup (from card-back flip)
+    handleSignup(username, password) {
+        if (!username || !password) {
+            this.loginView.showSignupMessage('Nom d\'utilisateur et mot de passe requis', true);
+            return;
+        }
+        
+        fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        }).then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                this.loginView.showSignupMessage(data.error, true);
+                return;
+            }
+            // Si l'inscription réussit, on affiche un message et on vide le formulaire
+            this.loginView.showSignupMessage('Inscription réussie ! Vous pouvez maintenant vous connecter.', false);
+            this.loginView.clear();
+        }).catch(err => {
+            console.error(err);
+            this.loginView.showSignupMessage('Erreur réseau', true);
         });
     }
 

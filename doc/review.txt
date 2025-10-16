@@ -1,0 +1,11 @@
+Sprint 1 : 
+* Quand un évenement à une heure de fin antérieur à celle de début, cela fait un cas spécial à voir.
+* Un rendez-vous sur plusieurs jours est implémenté dans notre agenda pas de problèmes.
+* Le fonctionnement de la base de donnée doit être de prendre seulement les évenements de la personne qui l'utilise et limité le chargement à la période de temps choisi.
+* Oubli de se mettre d'accord sur l'implémenation de import/export (date, format, agendas mixés)
+* Idem pour la recherche (résultat en liste ou affichage sur l'agenda)
+* Il nous faut changer la façon d'écrire le backlog et les reviews
+* Ajouter des couleurs à chaque agenda pour lisibilité d'agenda mixes
+* Ajouter des tags/emojis pour différenciers les types d'événements et non des couleurs
+* Il nous manque le 5ème membre de l'equipe
+* NB : jours fériés = nouvel agenda
