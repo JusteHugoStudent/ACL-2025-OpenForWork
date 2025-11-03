@@ -162,6 +162,12 @@ class CalendarManager {
         }
     }
 
+    removeAllEvents() {
+        if (!this.calendar) return;
+        this.calendar.getEvents().forEach(ev => ev.remove());
+    }
+
+
     onEventAdd(callback) { this.onEventAddCallback = callback; }
     onEventChange(callback) { this.onEventChangeCallback = callback; }
     onEventRemove(callback) { this.onEventRemoveCallback = callback; }

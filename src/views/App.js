@@ -8,6 +8,11 @@ class App {
         this.modalView = new ModalView();
         this.calendarManager = new CalendarManager();
         
+        //Gestion plusieurs agenda
+        this.currentAgenda = null;
+        this.agendas = [];
+        this.loadAgendas();
+
         // var d'etat
         this.currentUser = null;
         this.editingEventId = null; // ID de l'event en cours de modification
@@ -32,6 +37,15 @@ class App {
         this.headerView.onLogoutClick(() => {
             this.handleLogout();
         });
+        
+        // Changement d'agenda
+        this.headerView.onAgendaChange = (agenda) => {
+            console.log("ici ça reload les events : "+agenda.id);
+            this.calendarManager.removeAllEvents();
+            this.currentAgenda = agenda;
+            this.loadEventsFromServer(agenda.id);
+        };
+
 
         // Modal - Boutons
         this.modalView.onSaveClick(() => {
@@ -155,12 +169,12 @@ class App {
     }
 
     // charge les events depuis le backend et les ajoute au calendrier
-    async loadEventsFromServer() {
+    async loadEventsFromServer(agendaId = null) {
         const token = localStorage.getItem('token');
         if (!token) return;
         try {
-            const res = await fetch('/api/events', { headers: { Authorization: `Bearer ${token}` } });
-            if (!res.ok) throw new Error('failed to fetch events');
+            const url = agendaId ? `/api/events?agendaId=${agendaId}` : '/api/events';
+            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             const events = await res.json();
             // d'abord vider le calendrier
             this.calendarManager.destroy();
@@ -344,6 +358,41 @@ class App {
         
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
+
+    // Récupère tous les agendas du user
+    async loadAgendas() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/agendas', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Erreur de chargement des agendas');
+            this.agendas = await res.json();
+
+            // Choisir le premier agenda comme actif par défaut
+            if (this.agendas.length > 0) {
+                this.currentAgenda = this.agendas[0];
+                this.loadEventsFromServer(this.currentAgenda.id);
+            } else {
+                this.currentAgenda = null;
+            }
+
+            // Mise à jour du header pour afficher le sélecteur
+            this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+
+            // Charger les events du premier agenda
+            if (this.currentAgenda) {
+                this.loadEventsFromServer(this.currentAgenda.id);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des agendas :', error);
+        }
+    }
+
+
+
 }
 
 // on demarre l'appli
@@ -354,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (token) {
         app.calendarManager.init();
         app.setupCalendarCallbacks();
-        app.loadEventsFromServer();
         // try to set the header username from token if possible
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
@@ -367,3 +415,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+

@@ -27,4 +27,33 @@ class HeaderView {
     hide() {
         this.pageAgenda.classList.add('hidden');
     }
+
+    updateAgendaSelector(agendas, activeAgenda) {
+        console.log("ici ça select");
+        const header = document.getElementById('header');
+        let select = document.getElementById('agendaSelect');
+
+        if (!select) {
+            const selectHTML = `
+            <select id="agendaSelect" style="margin-left: 10px;">
+                ${agendas.map(a => `<option value="${a.id}" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`).join('')}
+            </select>
+            `;
+            header.insertAdjacentHTML('beforeend', selectHTML);
+            select = document.getElementById('agendaSelect');
+        } else {
+            select.innerHTML = agendas.map(a => `<option value="${a.id}" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`).join('');
+        }
+
+        select.onchange = e => {
+                    console.log("Changement select, valeur :", e.target.value);
+
+            const selected = agendas.find(a => String(a.id) === e.target.value);
+                    console.log("Agenda sélectionné :", selected);
+
+            if (this.onAgendaChange) this.onAgendaChange(selected);
+        };
+
+    }
+
 }

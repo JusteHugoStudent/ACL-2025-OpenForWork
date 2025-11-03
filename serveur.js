@@ -110,18 +110,56 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// --- Agendas CRUD ---
+// Get agendas for current user
+app.get('/api/agendas', authMiddleware, async (req, res) => {
+  try {
+    // On récupère l'utilisateur connecté avec ses agendas et leurs events
+    const user = await User.findById(req.user.id).populate({
+      path: 'agendas',
+      populate: { path: 'events' } // si tu veux inclure les events dans chaque agenda
+    });
+
+    if (!user) return res.status(404).json({ error: 'user not found' });
+
+    // Retourne la liste des agendas
+    const agendas = user.agendas.map(ag => ({
+      id: ag._id,
+      name: ag.name,
+      events: ag.events.map(ev => ({
+        id: ev._id,
+        title: ev.title,
+        start: ev.start,
+        end: ev.end,
+        description: ev.description,
+        color: ev.color
+      }))
+    }));
+
+    return res.json(agendas);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal error' });
+  }
+});
+
+
 // --- Events CRUD ---
 // Get events for current user
 app.get('/api/events', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate({ path: 'agendas', populate: { path: 'events' } });
     if (!user) return res.status(404).json({ error: 'user not found' });
-    // collect all events from all agendas
-    const events = [];
-    user.agendas.forEach(ag => {
-      ag.events.forEach(ev => events.push(ev));
-    });
-  return res.json(events.map(e => ({ id: e._id, title: e.title, start: e.start, end: e.end, extendedProps: { description: e.description }, color: e.color, backgroundColor: e.color })));
+
+    let events = [];
+    if (req.query.agendaId) {
+      const agenda = user.agendas.find(a => String(a._id) === req.query.agendaId);
+      if (agenda) events = agenda.events;
+    } else {
+      // tous les events
+      user.agendas.forEach(a => events.push(...a.events));
+    }
+    return res.json(events.map(e => ({ id: e._id, title: e.title, start: e.start, end: e.end, extendedProps: { description: e.description }, color: e.color, backgroundColor: e.color })));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'internal error' });
