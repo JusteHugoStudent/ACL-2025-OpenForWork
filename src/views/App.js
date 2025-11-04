@@ -145,38 +145,38 @@ class App {
     }
 
     // Gere la connexion - Meca basique pour l'instant
-    handleLogin(username, password) {
-        // appel au backend
-        fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        }).then(r => r.json())
-        .then(data => {
+    async handleLogin(username, password) {
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
             if (data.error) {
                 this.loginView.showMessage(data.error, true);
                 return;
             }
-            // succes
-            // Stocke le token JWT côté client (localStorage) pour appeller les API protégées
-            // NOTE: localStorage est simple mais pas la méthode la plus sûre pour un produit
+
             localStorage.setItem('token', data.token);
             this.currentUser = data.username || username || 'Utilisateur';
             this.headerView.setUserName(this.currentUser);
             this.loginView.hide();
             this.headerView.show();
 
-            // Initialise le calendrier et charge les événements depuis le backend
-            // setupCalendarCallbacks() branche les handlers qui appelleront les
-            // endpoints PUT/POST/DELETE pour persister les changements.
             this.calendarManager.init();
             this.setupCalendarCallbacks();
-            this.loadEventsFromServer();
-        }).catch(err => {
+
+            //Attend la fin de l'initialisation
+            await this.init();
+
+        } catch (err) {
             console.error(err);
             this.loginView.showMessage('Erreur réseau', true);
-        });
+        }
     }
+
 
     // Handle registration (from register.html page)
     handleRegister(username, password) {
@@ -467,8 +467,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     // if token present, initialize calendar and load events so reload keeps events visible
     const token = localStorage.getItem('token');
     if (token) {
-        app.calendarManager.init();
-        app.setupCalendarCallbacks();
         // try to set the header username from token if possible
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
