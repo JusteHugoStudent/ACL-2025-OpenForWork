@@ -9,9 +9,8 @@ class App {
         this.calendarManager = new CalendarManager();
         
         //Gestion plusieurs agenda
-        this.currentAgenda = null;
         this.agendas = [];
-        this.loadAgendas();
+        this.currentAgenda = null;
 
         // var d'etat
         this.currentUser = null;
@@ -19,6 +18,15 @@ class App {
         
         // initialisation des gestionnaires d'événements (boutons, modale, header)
         this.initEvents();
+    }
+
+    async init() {
+        await this.loadAgendas();//charge les agendas dans this.agendas et mets à jour le select
+
+        if (this.agendas.length > 0) {//par default on affiche le premier agenda
+            this.currentAgenda = this.agendas[0];
+            await this.loadEventsFromServer(this.currentAgenda.id);
+        }
     }
 
     // Initialise tous les events (callbacks)
@@ -40,7 +48,6 @@ class App {
         
         // Changement d'agenda
         this.headerView.onAgendaChange = (agenda) => {
-            console.log("ici ça reload les events : "+agenda.id);
             this.calendarManager.removeAllEvents();
             this.currentAgenda = agenda;
             this.loadEventsFromServer(agenda.id);
@@ -59,6 +66,56 @@ class App {
         this.modalView.onCancelClick(() => {
             this.modalView.close();
         });
+
+        this.headerView.onAddAgendaClick(async () => {
+            let name = prompt('Nom du nouvel agenda (max 15 caractères) :');
+            if (!name) return;
+
+            name = name.trim(); // supprime espaces/tabulations au début et à la fin
+
+            if (name.length === 0) {
+                alert("Le nom de l'agenda ne peut pas être vide !");
+                return;
+            }
+
+            if (name.length > 15) {
+                alert("Le nom de l'agenda ne peut pas dépasser 15 caractères !");
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/agendas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (!res.ok) {
+                console.error('Erreur création agenda');
+                return;
+            }
+
+            const created = await res.json();
+
+            // Recharge les agendas depuis le serveur
+            await this.loadAgendas();
+
+            // Définit le nouvel agenda comme courant
+            this.currentAgenda = created;
+
+            // Vide le calendrier avant d'afficher le nouvel agenda
+            this.calendarManager.removeAllEvents();
+
+            // Affiche le bon agenda dans le select
+            this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+
+            // Recharge les events (normalement vide)
+            this.loadEventsFromServer(this.currentAgenda.id);
+        });
+
     }
 
     // Wire calendar persistence callbacks
@@ -284,27 +341,43 @@ class App {
     async createEventOnServer(eventData) {
         const token = localStorage.getItem('token');
         if (!token) return;
+        if (!this.currentAgenda) {
+            console.error("Aucun agenda actif pour l'ajout de l'événement !");
+            return;
+        }
+
         try {
             const body = {
                 title: eventData.title,
                 start: eventData.start ? eventData.start.toISOString() : undefined,
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
-                color: eventData.color
+                color: eventData.color,
+                agendaId: this.currentAgenda.id
             };
-            const res = await fetch('/api/events', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
             if (!res.ok) {
                 const txt = await res.text();
                 throw new Error('create failed: ' + txt);
             }
+
             const created = await res.json();
-            // update event with returned id and store agendaId in extendedProps
             return created;
         } catch (err) {
             console.error('Create event failed:', err);
             return null;
         }
     }
+
 
     // Persist event update
     async updateEventOnServer(eventData) {
@@ -371,18 +444,10 @@ class App {
             if (!res.ok) throw new Error('Erreur de chargement des agendas');
             this.agendas = await res.json();
 
-            // Choisir le premier agenda comme actif par défaut
-            if (this.agendas.length > 0) {
-                this.currentAgenda = this.agendas[0];
-                this.loadEventsFromServer(this.currentAgenda.id);
-            } else {
-                this.currentAgenda = null;
-            }
-
             // Mise à jour du header pour afficher le sélecteur
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
 
-            // Charger les events du premier agenda
+            // Charger les events de l'agenda courant
             if (this.currentAgenda) {
                 this.loadEventsFromServer(this.currentAgenda.id);
             }
@@ -390,13 +455,14 @@ class App {
             console.error('Erreur lors du chargement des agendas :', error);
         }
     }
+    
 
 
 
 }
 
 // on demarre l'appli
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async() => {
     const app = new App();
     // if token present, initialize calendar and load events so reload keeps events visible
     const token = localStorage.getItem('token');
@@ -410,6 +476,9 @@ document.addEventListener('DOMContentLoaded', () => {
             app.headerView.setUserName(app.currentUser);
             app.headerView.show();
             app.loginView.hide();
+            
+            //Initialise les agendas et charge le premier par défaut
+            await app.init();
         } catch (e) {
             // ignore
         }

@@ -765,3 +765,61 @@ body:hover .card-3d-wrap {
   display: block;
   margin: 0 auto;
 }
+
+/* ========================================
+   SELECT AGENDA
+   ======================================== */
+#agendaSelect {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 2px solid var(--jaune);
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#agendaSelect:hover {
+    border-color: var(--jaune-clair);
+    background-color: var(--noir);
+}
+
+#agendaSelect:focus {
+    outline: none;
+    border-color: var(--jaune-clair);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+/* ========================================
+   BOUTON AJOUTER AGENDA
+   ======================================== */
+#newAgendaBtn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: 2px solid var(--jaune);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#newAgendaBtn:hover {
+    background-color: var(--jaune-clair);
+    border-color: var(--jaune-clair);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+/* Optionnel : style des options du select */
+#agenda-select option {
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+}
+#agenda-select option:checked {
+    background-color: var(--jaune);
+    color: var(--noir);
+}
+

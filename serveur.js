@@ -143,6 +143,29 @@ app.get('/api/agendas', authMiddleware, async (req, res) => {
   }
 });
 
+// --- Create new agenda for current user ---
+app.post('/api/agendas', authMiddleware, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing name' });
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'user not found' });
+
+    const agenda = new Agenda({ name, events: [] });
+    await agenda.save();
+
+    user.agendas.push(agenda._id);
+    await user.save();
+
+    return res.status(201).json({ id: agenda._id, name: agenda.name, events: [] });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'internal error' });
+  }
+});
+
+
 
 // --- Events CRUD ---
 // Get events for current user
@@ -170,47 +193,78 @@ app.get('/api/events', authMiddleware, async (req, res) => {
 // Création d'un événement
 // Utilise une transaction Mongoose pour assurer que l'événement est créé
 // et référencé dans l'agenda de l'utilisateur de façon atomique.
+// --- Créer un événement dans un agenda spécifique --- //
 app.post('/api/events', authMiddleware, async (req, res) => {
-  const { title, start, end, description, color } = req.body;
-  if (!title || !start) return res.status(400).json({ error: 'title and start required' });
+  const { title, start, end, description, color, agendaId } = req.body;
+  if (!title || !start) {
+    return res.status(400).json({ error: 'title and start required' });
+  }
+
   try {
-    // Démarre une session / transaction Mongoose
+    // Démarre une transaction Mongoose
     const session = await mongoose.startSession();
     let createdEvent;
-    let agendaId = null;
     await session.withTransaction(async () => {
       // Crée l'événement
-      const ev = new Event({ title, start: new Date(start), end: end ? new Date(end) : new Date(start), description: description || '', color: color || '#ffd700' });
+      const ev = new Event({
+        title,
+        start: new Date(start),
+        end: end ? new Date(end) : new Date(start),
+        description: description || '',
+        color: color || '#ffd700'
+      });
       createdEvent = await ev.save({ session });
 
-      // Récupère l'utilisateur et attache l'événement à sa première agenda (ou crée une agenda par défaut)
-      const user = await User.findById(req.user.id).session(session);
-      if (!user) throw new Error('user not found');
+      // --- Vérifie que l’agenda appartient bien à l’utilisateur connecté --- //
       let agenda;
-      if (!user.agendas || !user.agendas.length) {
-        // pas d'agenda -> créer une agenda et l'associer
-        agenda = new Agenda({ name: 'Default', events: [createdEvent._id] });
-        await agenda.save({ session });
-        user.agendas = [agenda._id];
-        await user.save({ session });
+      if (agendaId) {
+        agenda = await Agenda.findById(agendaId).session(session);
+        if (!agenda) throw new Error('agenda not found');
+        const user = await User.findById(req.user.id).session(session);
+        if (!user || !user.agendas.includes(agenda._id)) {
+          throw new Error('unauthorized access to this agenda');
+        }
       } else {
-        // ajoute l'event à la première agenda
-        agenda = await Agenda.findById(user.agendas[0]).session(session);
+        // Pas d'agendaId -> crée un agenda par défaut
+        const user = await User.findById(req.user.id).session(session);
+        if (!user) throw new Error('user not found');
+
+        if (!user.agendas || !user.agendas.length) {
+          agenda = new Agenda({ name: 'Default', events: [createdEvent._id] });
+          await agenda.save({ session });
+          user.agendas = [agenda._id];
+          await user.save({ session });
+        } else {
+          agenda = await Agenda.findById(user.agendas[0]).session(session);
+          agenda.events.push(createdEvent._id);
+          await agenda.save({ session });
+        }
+      }
+
+      // Si agenda existant, ajoute l’événement
+      if (agenda) {
         agenda.events.push(createdEvent._id);
         await agenda.save({ session });
       }
-      agendaId = agenda._id;
     });
-    // Termine la session
+
     session.endSession();
 
-    // Retourne l'événement créé (id + données) au client
-    return res.status(201).json({ id: createdEvent._id, title: createdEvent.title, start: createdEvent.start, end: createdEvent.end, description: createdEvent.description, color: createdEvent.color, agendaId });
+    return res.status(201).json({
+      id: createdEvent._id,
+      title: createdEvent.title,
+      start: createdEvent.start,
+      end: createdEvent.end,
+      description: createdEvent.description,
+      color: createdEvent.color,
+      agendaId
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'internal error' });
+    return res.status(500).json({ error: err.message || 'internal error' });
   }
 });
+
 
 // Update event
 app.put('/api/events/:id', authMiddleware, async (req, res) => {
