@@ -277,15 +277,24 @@ app.post('/api/events', authMiddleware, async (req, res) => {
   if (!title || !start)
     return res.status(400).json({ error: 'title and start required' });
 
+  // Vérification erreur horaire : la fin ne peut pas être avant le début
+  const startDate = new Date(start);
+  const endDate = end ? new Date(end) : new Date(start);
+  
+  if (endDate < startDate) {
+    return res.status(400).json({ error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' });
+  }
+
+  let session;
   try {
-    const session = await mongoose.startSession();
+    session = await mongoose.startSession();
     let createdEvent;
 
     await session.withTransaction(async () => {
       const ev = new Event({
         title,
-        start: new Date(start),
-        end: end ? new Date(end) : new Date(start),
+        start: startDate,
+        end: endDate,
         description: description || '',
         color: color || '#ffd700'
       });
@@ -331,6 +340,9 @@ app.post('/api/events', authMiddleware, async (req, res) => {
       agendaId
     });
   } catch (err) {
+    if (session) {
+      session.endSession();
+    }
     console.error(err);
     return res.status(500).json({ error: err.message || 'internal error' });
   }
@@ -343,9 +355,18 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
   try {
     const ev = await Event.findById(id);
     if (!ev) return res.status(404).json({ error: 'event not found' });
+    
+    // Vérification erreur horaire pour la mise à jour
+    const newStart = start ? new Date(start) : ev.start;
+    const newEnd = end ? new Date(end) : ev.end;
+    
+    if (newEnd < newStart) {
+      return res.status(400).json({ error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' });
+    }
+    
     if (title) ev.title = title;
-    if (start) ev.start = new Date(start);
-    if (end) ev.end = new Date(end);
+    if (start) ev.start = newStart;
+    if (end) ev.end = newEnd;
     if (description !== undefined) ev.description = description;
     if (color) ev.color = color;
     await ev.save();

@@ -295,6 +295,16 @@ class App {
 
         if (this.editingEventId) {
             // modification
+            const oldEvent = this.calendarManager.getEventById(this.editingEventId);
+            const oldData = {
+                title: oldEvent.title,
+                start: oldEvent.start,
+                end: oldEvent.end,
+                backgroundColor: oldEvent.backgroundColor,
+                borderColor: oldEvent.borderColor,
+                extendedProps: oldEvent.extendedProps
+            };
+            
             this.calendarManager.updateEvent(this.editingEventId, {
                 title: formData.title,
                 start: formData.start,
@@ -305,8 +315,15 @@ class App {
                     description: formData.description
                 }
             });
+            
             // persist update -> appelle l'API PUT /api/events/:id
-            await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            
+            // Si échec, restaurer les anciennes valeurs
+            if (!success) {
+                this.calendarManager.updateEvent(this.editingEventId, oldData);
+                return; // Ne pas fermer la modal
+            }
         } 
         else {
             // ajoute
@@ -331,6 +348,10 @@ class App {
             if (created && created.id) {
                 const ev = this.calendarManager.getEventById(localId);
                 if (ev) ev.setProp('id', created.id);
+            } else {
+                // Si la création a échoué, supprimer l'événement local
+                const ev = this.calendarManager.getEventById(localId);
+                if (ev) ev.remove();
             }
         }
 
@@ -366,14 +387,15 @@ class App {
             });
 
             if (!res.ok) {
-                const txt = await res.text();
-                throw new Error('create failed: ' + txt);
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'create failed');
             }
 
             const created = await res.json();
             return created;
         } catch (err) {
             console.error('Create event failed:', err);
+            alert('Erreur : ' + err.message);
             return null;
         }
     }
@@ -382,7 +404,7 @@ class App {
     // Persist event update
     async updateEventOnServer(eventData) {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) return false;
         try {
             const id = eventData.id;
             const body = {
@@ -392,9 +414,17 @@ class App {
                 description: eventData.description,
                 color: eventData.color
             };
-            await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+            const res = await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+            
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'update failed');
+            }
+            return true;
         } catch (err) {
             console.error('Update event failed:', err);
+            alert('Erreur : ' + err.message);
+            return false;
         }
     }
 
