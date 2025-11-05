@@ -19,6 +19,9 @@ class CalendarManager {
     // Initialise FullCalendar avec la configuration
 
     init() {
+        console.log('📅 CalendarManager: Initialisation du calendrier FullCalendar...');
+        console.log('🎯 CalendarManager: Chargement des jours fériés et configuration française');
+        
         this.calendar = new FullCalendar.Calendar(this.calendarEl, {
             // param de base
             locale: 'fr',
@@ -118,6 +121,132 @@ class CalendarManager {
         
         // Afficher le calendrier
         this.calendar.render();
+        
+        console.log('✅ CalendarManager: Calendrier FullCalendar initialisé et rendu avec succès');
+        console.log('🌟 CalendarManager: Prêt à charger les événements et jours fériés');
+        
+        // Ajouter automatiquement un événement pour demain
+        this.addAutoEvent();
+        
+        // Charger et ajouter les jours fériés français
+        this.loadHolidaysFr();
+    }
+    
+    // Ajoute automatiquement un événement pour demain (méthode simple sans BDD)
+    addAutoEvent() {
+        console.log('🚀 CalendarManager: Ajout automatique d\'un événement pour demain...');
+        
+        // Calculer la date de demain
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Formater pour FullCalendar (YYYY-MM-DD)
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        // Créer l'événement directement avec addEvent
+        const autoEvent = {
+            id: 'auto-event-' + Date.now(),
+            title: '🚀 Réunion Sprint 2 - Événement Auto',
+            start: tomorrowStr + 'T10:00:00',
+            end: tomorrowStr + 'T11:30:00',
+            backgroundColor: '#3498db',
+            borderColor: '#2980b9',
+            textColor: 'white',
+            extendedProps: {
+                description: 'Événement créé automatiquement via CalendarManager.addEvent() - Sprint 2: événements récurrents, recherche, agendas multiples, jours fériés',
+                source: 'auto'
+            },
+            editable: true
+        };
+        
+        // Ajouter l'événement directement au calendrier (silent pour éviter les callbacks)
+        this.addEvent(autoEvent, { silent: true });
+        
+    }
+    
+    // Charge les jours fériés français depuis le fichier JSON
+    async loadHolidaysFr() {
+        
+        try {
+            // Charger le fichier JSON des jours fériés 2025
+            const response = await fetch('./holidaysFr.json');
+            if (!response.ok) {
+                throw new Error(`Impossible de charger le fichier: ${response.status}`);
+            }
+            
+            const holidays = await response.json();
+            console.log(` CalendarManager: ${holidays.length} jours fériés chargés depuis holidaysFr_2025.json`);
+            
+            // Ajouter chaque jour férié au calendrier
+            holidays.forEach(holiday => {
+                this.addEvent(holiday, { silent: true });
+            });
+            
+            console.log(' CalendarManager: Tous les jours fériés français ont été ajoutés au calendrier');
+            
+        } catch (error) {
+            console.error(' CalendarManager: Erreur lors du chargement des jours fériés:', error);
+            
+            // Fallback: ajouter quelques jours fériés manuellement
+            console.log(' CalendarManager: Utilisation du fallback - ajout manuel des principaux jours fériés 2025');
+            this.addManualHolidays();
+        }
+    }
+    
+    // Méthode de fallback pour ajouter manuellement quelques jours fériés importants
+    addManualHolidays() {
+        const manualHolidays = [
+            {
+                id: 'manual-jour-an-2025',
+                title: '🎉 Jour de l\'An',
+                start: '2025-01-01',
+                allDay: true,
+                backgroundColor: '#e74c3c',
+                borderColor: '#c0392b',
+                textColor: 'white',
+                editable: false,
+                classNames: ['holiday-event']
+            },
+            {
+                id: 'manual-fete-travail-2025',
+                title: '🎉 Fête du Travail',
+                start: '2025-05-01',
+                allDay: true,
+                backgroundColor: '#e74c3c',
+                borderColor: '#c0392b',
+                textColor: 'white',
+                editable: false,
+                classNames: ['holiday-event']
+            },
+            {
+                id: 'manual-fete-nationale-2025',
+                title: '🎉 Fête Nationale',
+                start: '2025-07-14',
+                allDay: true,
+                backgroundColor: '#e74c3c',
+                borderColor: '#c0392b',
+                textColor: 'white',
+                editable: false,
+                classNames: ['holiday-event']
+            },
+            {
+                id: 'manual-noel-2025',
+                title: '🎉 Noël',
+                start: '2025-12-25',
+                allDay: true,
+                backgroundColor: '#e74c3c',
+                borderColor: '#c0392b',
+                textColor: 'white',
+                editable: false,
+                classNames: ['holiday-event']
+            }
+        ];
+        
+        manualHolidays.forEach(holiday => {
+            this.addEvent(holiday, { silent: true });
+        });
+        
+        console.log(`✅ CalendarManager: ${manualHolidays.length} jours fériés manuels ajoutés`);
     }
 
     // la fonction a apl quand on clique sur un event

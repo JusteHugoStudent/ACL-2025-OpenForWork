@@ -22,39 +22,37 @@ app.use(express.static(path.join(__dirname, 'src')));
 
 // Connect to MongoDB via mongoose
 const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/acl2025';
-mongoose.connect(mongoUrl)
+mongoose
+  .connect(mongoUrl)
   .then(() => console.log('Mongoose connecté à MongoDB'))
   .catch(err => console.error('Erreur mongoose :', err));
 
-// Route de santé pour vérifier que le serveur répond
+// Route de santé
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-// Route d'inscription
-// Reçoit un JSON { username, password }
-// - vérifie que le nom d'utilisateur n'existe pas
-// - hache le mot de passe (bcrypt)
-// - crée l'utilisateur et une agenda par défaut
+// --- Route d'inscription ---
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'username and password required' });
-  try {
-    // Vérifie l'existence d'un utilisateur avec le même nom
-    const existing = await User.findOne({ username });
-    if (existing) return res.status(409).json({ error: 'username already exists' });
+  if (!username || !password)
+    return res.status(400).json({ error: 'username and password required' });
 
-    // Hachage du mot de passe avant stockage
+  try {
+    const existing = await User.findOne({ username });
+    if (existing)
+      return res.status(409).json({ error: 'username already exists' });
+
     const saltRounds = 10;
     const hash = await bcrypt.hash(password, saltRounds);
 
-    // Création de l'utilisateur
     const user = new User({ username, password: hash, agendas: [] });
     await user.save();
 
-    // Création d'une agenda par défaut et association à l'utilisateur
     const agenda = new Agenda({ name: 'Default', events: [] });
     await agenda.save();
     user.agendas.push(agenda._id);
     await user.save();
+
+    await createWelcomeEvent(user._id, user.username);
 
     return res.status(201).json({ message: 'user created' });
   } catch (err) {
@@ -63,22 +61,28 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Route de connexion
-// Reçoit { username, password }
-// - vérifie que l'utilisateur existe
-// - compare le mot de passe (bcrypt.compare)
-// - retourne un token JWT si succès
+// --- Route de connexion ---
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'username and password required' });
+  if (!username || !password)
+    return res.status(400).json({ error: 'username and password required' });
+
   try {
     const user = await User.findOne({ username });
-    if (!user) return res.status(401).json({ error: 'invalid credentials' });
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'invalid credentials' });
+    if (!user) return res.status(404).json({ error: 'user not found' });
 
-    // Création d'un token JWT contenant l'id et le username
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'invalid password' });
+
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      process.env.JWT_SECRET || 'dev-secret',
+      { expiresIn: '7d' }
+    );
+
+    // Créer un événement automatique lors de la connexion
+    await createLoginEvent(user._id);
+
     return res.json({ token, username: user.username });
   } catch (err) {
     console.error(err);
@@ -86,23 +90,94 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// catch-all to serve index
+// --- Fonction : créer un événement de bienvenue ---
+async function createWelcomeEvent(userId, username) {
+  try {
+    const user = await User.findById(userId).populate('agendas');
+    if (!user || !user.agendas.length) {
+      console.log("Utilisateur ou agenda introuvable pour créer l'événement de bienvenue");
+      return;
+    }
+
+    const firstAgenda = user.agendas[0];
+    const welcomeEvent = new Event({
+      title: `🎉 Bienvenue ${username} !`,
+      start: new Date('2025-11-05T14:00:00'),
+      end: new Date('2025-11-05T15:00:00'),
+      description: `Bienvenue sur l'agenda de l'équipe 8 ! Vous pouvez maintenant gérer vos événements, consulter les jours fériés et collaborer avec l'équipe sur le Sprint 2.`,
+      color: '#27ae60'
+    });
+
+    await welcomeEvent.save();
+    firstAgenda.events.push(welcomeEvent._id);
+    await firstAgenda.save();
+
+    console.log(`🎉 Événement de bienvenue créé pour ${username}`);
+    return welcomeEvent;
+  } catch (err) {
+    console.error('Erreur création événement de bienvenue:', err);
+  }
+}
+
+// --- Fonction : créer un événement automatique à la connexion ---
+async function createLoginEvent(userId) {
+  try {
+    const tomorrow = new Date('2025-11-06');
+    const startOfDay = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+    const endOfDay = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate() + 1);
+
+    const user = await User.findById(userId).populate('agendas');
+    if (!user || !user.agendas.length) {
+      console.log("Utilisateur ou agenda introuvable pour créer l'événement de connexion");
+      return;
+    }
+
+    const firstAgenda = user.agendas[0];
+    const existingEvents = await Event.find({
+      _id: { $in: firstAgenda.events },
+      start: { $gte: startOfDay, $lt: endOfDay },
+      title: { $regex: /réunion équipe|événement préparé|connexion/i }
+    });
+
+    if (existingEvents.length > 0) {
+      console.log('Événement par défaut déjà existant pour demain');
+      return;
+    }
+
+    const loginEvent = new Event({
+      title: '🚀 Réunion équipe - Sprint 2',
+      start: new Date('2025-11-06T10:00:00'),
+      end: new Date('2025-11-06T11:30:00'),
+      description: `Réunion d'équipe Sprint 2 - Créé automatiquement lors de la connexion de ${user.username}.`,
+      color: '#3498db'
+    });
+
+    await loginEvent.save();
+    firstAgenda.events.push(loginEvent._id);
+    await firstAgenda.save();
+
+    console.log(`✅ Événement de connexion créé pour ${user.username}: ${loginEvent.title}`);
+    return loginEvent;
+  } catch (err) {
+    console.error('Erreur création événement de connexion:', err);
+  }
+}
+
+// Route de base
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'index.html'));
 });
 
-// --- Auth middleware (JWT) ---
-// Middleware d'authentification basé sur le header Authorization: Bearer <token>
-// Vérifie la présence et la validité du JWT, puis attache les claims dans req.user
+// --- Middleware d'authentification ---
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ error: 'no token' });
   const parts = auth.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') return res.status(401).json({ error: 'bad token' });
+  if (parts.length !== 2 || parts[0] !== 'Bearer')
+    return res.status(401).json({ error: 'bad token' });
   const token = parts[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
-    // decoded contient { id, username, iat, exp }
     req.user = decoded;
     next();
   } catch (err) {
@@ -111,18 +186,15 @@ function authMiddleware(req, res, next) {
 }
 
 // --- Agendas CRUD ---
-// Get agendas for current user
 app.get('/api/agendas', authMiddleware, async (req, res) => {
   try {
-    // On récupère l'utilisateur connecté avec ses agendas et leurs events
     const user = await User.findById(req.user.id).populate({
       path: 'agendas',
-      populate: { path: 'events' } // si tu veux inclure les events dans chaque agenda
+      populate: { path: 'events' }
     });
 
     if (!user) return res.status(404).json({ error: 'user not found' });
 
-    // Retourne la liste des agendas
     const agendas = user.agendas.map(ag => ({
       id: ag._id,
       name: ag.name,
@@ -143,7 +215,7 @@ app.get('/api/agendas', authMiddleware, async (req, res) => {
   }
 });
 
-// --- Create new agenda for current user ---
+// --- Créer un nouvel agenda ---
 app.post('/api/agendas', authMiddleware, async (req, res) => {
   try {
     const { name } = req.body;
@@ -165,13 +237,14 @@ app.post('/api/agendas', authMiddleware, async (req, res) => {
   }
 });
 
-
-
 // --- Events CRUD ---
-// Get events for current user
+// Get events
 app.get('/api/events', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate({ path: 'agendas', populate: { path: 'events' } });
+    const user = await User.findById(req.user.id).populate({
+      path: 'agendas',
+      populate: { path: 'events' }
+    });
     if (!user) return res.status(404).json({ error: 'user not found' });
 
     let events = [];
@@ -179,10 +252,19 @@ app.get('/api/events', authMiddleware, async (req, res) => {
       const agenda = user.agendas.find(a => String(a._id) === req.query.agendaId);
       if (agenda) events = agenda.events;
     } else {
-      // tous les events
       user.agendas.forEach(a => events.push(...a.events));
     }
-    return res.json(events.map(e => ({ id: e._id, title: e.title, start: e.start, end: e.end, extendedProps: { description: e.description }, color: e.color, backgroundColor: e.color })));
+    return res.json(
+      events.map(e => ({
+        id: e._id,
+        title: e.title,
+        start: e.start,
+        end: e.end,
+        extendedProps: { description: e.description },
+        color: e.color,
+        backgroundColor: e.color
+      }))
+    );
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'internal error' });
@@ -190,22 +272,16 @@ app.get('/api/events', authMiddleware, async (req, res) => {
 });
 
 // Create event
-// Création d'un événement
-// Utilise une transaction Mongoose pour assurer que l'événement est créé
-// et référencé dans l'agenda de l'utilisateur de façon atomique.
-// --- Créer un événement dans un agenda spécifique --- //
 app.post('/api/events', authMiddleware, async (req, res) => {
   const { title, start, end, description, color, agendaId } = req.body;
-  if (!title || !start) {
+  if (!title || !start)
     return res.status(400).json({ error: 'title and start required' });
-  }
 
   try {
-    // Démarre une transaction Mongoose
     const session = await mongoose.startSession();
     let createdEvent;
+
     await session.withTransaction(async () => {
-      // Crée l'événement
       const ev = new Event({
         title,
         start: new Date(start),
@@ -215,7 +291,6 @@ app.post('/api/events', authMiddleware, async (req, res) => {
       });
       createdEvent = await ev.save({ session });
 
-      // --- Vérifie que l’agenda appartient bien à l’utilisateur connecté --- //
       let agenda;
       if (agendaId) {
         agenda = await Agenda.findById(agendaId).session(session);
@@ -225,7 +300,6 @@ app.post('/api/events', authMiddleware, async (req, res) => {
           throw new Error('unauthorized access to this agenda');
         }
       } else {
-        // Pas d'agendaId -> crée un agenda par défaut
         const user = await User.findById(req.user.id).session(session);
         if (!user) throw new Error('user not found');
 
@@ -236,12 +310,9 @@ app.post('/api/events', authMiddleware, async (req, res) => {
           await user.save({ session });
         } else {
           agenda = await Agenda.findById(user.agendas[0]).session(session);
-          agenda.events.push(createdEvent._id);
-          await agenda.save({ session });
         }
       }
 
-      // Si agenda existant, ajoute l’événement
       if (agenda) {
         agenda.events.push(createdEvent._id);
         await agenda.save({ session });
@@ -265,7 +336,6 @@ app.post('/api/events', authMiddleware, async (req, res) => {
   }
 });
 
-
 // Update event
 app.put('/api/events/:id', authMiddleware, async (req, res) => {
   const id = req.params.id;
@@ -278,8 +348,15 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
     if (end) ev.end = new Date(end);
     if (description !== undefined) ev.description = description;
     if (color) ev.color = color;
-  await ev.save();
-    return res.json({ id: ev._id, title: ev.title, start: ev.start, end: ev.end, description: ev.description, color: ev.color });
+    await ev.save();
+    return res.json({
+      id: ev._id,
+      title: ev.title,
+      start: ev.start,
+      end: ev.end,
+      description: ev.description,
+      color: ev.color
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'internal error' });
@@ -292,9 +369,8 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
   try {
     const ev = await Event.findById(id);
     if (!ev) return res.status(404).json({ error: 'event not found' });
-    // remove references from all agendas
     await Agenda.updateMany({ events: id }, { $pull: { events: id } });
-  await ev.remove();
+    await ev.deleteOne();
     return res.json({ message: 'deleted' });
   } catch (err) {
     console.error(err);
@@ -302,6 +378,7 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// 404 fallback
 app.use((req, res) => {
   res.status(404).send('404 Not Found');
 });

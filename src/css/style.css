@@ -766,6 +766,14 @@ body:hover .card-3d-wrap {
   margin: 0 auto;
 }
 
+/* Style pour les jours fériés */
+.holiday-event {
+  background-color: #e74c3c !important;
+  border-color: #c0392b !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
 /* ========================================
    SELECT AGENDA
    ======================================== */
@@ -822,4 +830,3 @@ body:hover .card-3d-wrap {
     background-color: var(--jaune);
     color: var(--noir);
 }
-

@@ -3,122 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACL - groupe 8</title>
+    <title>ACL - Groupe 8</title>
 
     <!-- Icones et Bootstrap -->
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
     
     <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
-    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+
     <!-- Notre CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Page de Connexion -->
+    <!-- Page de Connexion / Inscription -->
     <div id="page-login" class="section">
-		<div class="container">
-			<div class="row full-height justify-content-center">
-				<div class="col-12 text-center align-self-center py-5">
-					<div class="section pb-5 pt-5 pt-sm-2 text-center">
-						<h1 class="dynamic-title mb-4">
-							<span class="title-word">Agenda</span>
-							<span class="title-word">Équipe</span>
-							<span class="title-word"> 8 </span>
-						</h1>
-						<h6 class="mb-0 pb-3"><span>Log In </span><span>Sign Up</span></h6>
-			        <input class="checkbox" type="checkbox" id="reg-log" name="reg-log"/>
-			        <label for="reg-log"></label>
-						<div class="card-3d-wrap mx-auto">
-							<div class="card-3d-wrapper">
-								<div class="card-front">
-									<div class="center-wrap">
-										<div class="section text-center">
-											<h4 class="mb-4 pb-3">Connexion</h4>
-											<div class="form-group">
-												<input type="text" id="username" class="form-style" placeholder="Nom d'utilisateur">
-												<i class="input-icon uil uil-user"></i>
-											</div>	
-											<div class="form-group mt-2">
-												<input type="password" id="password" class="form-style" placeholder="Mot de passe">
-												<i class="input-icon uil uil-lock-alt"></i>
-											</div>
-											<div class="login-actions">
-												<button id="btn-login" class="btn mt-4">Se connecter</button>
-											</div>
-											<p id="login-message" class="login-message mt-3"></p>
-				    </div>
-			    </div>
-			    </div>
-								<div class="card-back">
-									<div class="center-wrap">
-										<div class="section text-center">
-											<h4 class="mb-3 pb-3">Inscription</h4>
-											<div class="form-group">
-												<input type="text" id="signup-username" class="form-style" placeholder="Nom d'utilisateur">
-												<i class="input-icon uil uil-user"></i>
-											</div>	
-											<div class="form-group mt-2">
-												<input type="password" id="signup-password" class="form-style" placeholder="Mot de passe">
-												<i class="input-icon uil uil-lock-alt"></i>
-											</div>
-											<button id="btn-signup" class="btn mt-4">S'inscrire</button>
-											<p id="signup-message" class="login-message mt-3"></p>
-				                        </div>
-			                        </div>
-			                    </div>
-			      			</div>
-			      		</div>
-			      	</div>
-		      	</div>
-	      	</div>
-	    </div>
-	</div>
+        <div class="container">
+            <div class="row full-height justify-content-center">
+                <div class="col-12 text-center align-self-center py-5">
+                    <div class="section pb-5 pt-5 pt-sm-2 text-center">
+                        <h1 class="dynamic-title mb-4">
+                            <span class="title-word">Agenda</span>
+                            <span class="title-word">Équipe</span>
+                            <span class="title-word">8</span>
+                        </h1>
+
+                        <h6 class="mb-0 pb-3">
+                            <span>Connexion</span>
+                            <span>Inscription</span>
+                        </h6>
+                        <input class="checkbox" type="checkbox" id="reg-log" name="reg-log">
+                        <label for="reg-log"></label>
+
+                        <div class="card-3d-wrap mx-auto">
+                            <div class="card-3d-wrapper">
+
+                                <!-- Page de connexion -->
+                                <div class="card-front">
+                                    <div class="center-wrap">
+                                        <div class="section text-center">
+                                            <h4 class="mb-4 pb-3">Connexion</h4>
+                                            <div class="form-group">
+                                                <input type="text" id="username" class="form-style" placeholder="Nom d'utilisateur">
+                                                <i class="input-icon uil uil-user"></i>
+                                            </div>
+                                            <div class="form-group mt-2">
+                                                <input type="password" id="password" class="form-style" placeholder="Mot de passe">
+                                                <i class="input-icon uil uil-lock-alt"></i>
+                                            </div>
+                                            <div class="login-actions">
+                                                <button id="btn-login" class="btn mt-4">Se connecter</button>
+                                            </div>
+                                            <p id="login-message" class="login-message mt-3"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Page d'inscription -->
+                                <div class="card-back">
+                                    <div class="center-wrap">
+                                        <div class="section text-center">
+                                            <h4 class="mb-3 pb-3">Inscription</h4>
+                                            <div class="form-group">
+                                                <input type="text" id="signup-username" class="form-style" placeholder="Nom d'utilisateur">
+                                                <i class="input-icon uil uil-user"></i>
+                                            </div>
+                                            <div class="form-group mt-2">
+                                                <input type="password" id="signup-password" class="form-style" placeholder="Mot de passe">
+                                                <i class="input-icon uil uil-lock-alt"></i>
+                                            </div>
+                                            <button id="btn-signup" class="btn mt-4">S'inscrire</button>
+                                            <p id="signup-message" class="login-message mt-3"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Page Principale -->
     <div id="page-agenda" class="hidden">
-        
         <!-- En-tête -->
-        <div class="header">
+        <div class="header d-flex justify-content-between align-items-center px-4 py-3">
             <div>
                 <h1>Agenda ACL</h1>
                 <p id="user-name"></p>
-            </div>           
-            
-            <div>
-                <select id="agendaSelect"></select>
-                <button id="newAgendaBtn">+ Ajouter un agenda</button>
             </div>
-            
-            <button id="btn-logout">Déconnexion</button>
-
+            <div class="header-actions d-flex align-items-center gap-3">
+                <button id="newAgendaBtn" class="btn btn-primary">+ Nouvel agenda</button>
+                <select id="agendaSelect" class="form-control w-auto"></select>
+                <button id="btn-logout" class="btn btn-danger">Déconnexion</button>
+            </div>
         </div>
 
-        <!-- Calendrier FullCalendar -->
-        <div id="calendar"></div>
+        <!-- Calendrier -->
+        <div id="calendar" class="p-3"></div>
     </div>
-
- 
 
     <!-- Modale -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <h3 id="modal-title">Ajouter un événement</h3>
-            
-            <label>Titre :</label>
+
+            <label for="input-title">Titre :</label>
             <input type="text" id="input-title" placeholder="Titre de l'événement">
-            
-            <label>Date début :</label>
+
+            <label for="input-start">Date début :</label>
             <input type="datetime-local" id="input-start">
-            
-            <label>Date fin :</label>
+
+            <label for="input-end">Date fin :</label>
             <input type="datetime-local" id="input-end">
-            
-            <label>Description :</label>
+
+            <label for="input-description">Description :</label>
             <textarea id="input-description" rows="3" placeholder="Description"></textarea>
-            
-            <label>Couleur :</label>
+
+            <label for="input-color">Couleur :</label>
             <select id="input-color">
                 <option value="#ffd700">Jaune</option>
                 <option value="#ff6b6b">Rouge</option>
@@ -127,7 +132,7 @@
                 <option value="#f38181">Rose</option>
                 <option value="#aa96da">Violet</option>
             </select>
-            
+
             <div class="modal-buttons">
                 <button id="btn-save">Enregistrer</button>
                 <button id="btn-delete" class="hidden">Supprimer</button>
@@ -137,16 +142,16 @@
     </div>
 
     <!-- Scripts -->
-    <!-- 1. FullCalendar (bibliotheque externe) -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    
+    <!-- 1. FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
     <!-- 2. Nos classes de vues -->
     <script src="views/LoginView.js"></script>
     <script src="views/RegisterView.js"></script>
     <script src="views/HeaderView.js"></script>
     <script src="views/ModalView.js"></script>
     <script src="views/CalendarManager.js"></script>
-    
+
     <!-- 3. App.js en dernier -->
     <script src="views/App.js"></script>
 </body>

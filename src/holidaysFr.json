@@ -1,0 +1,420 @@
+[
+  {
+    "id": "holiday-2025-jour-de-l-an",
+    "title": "🎉 Jour de l'An",
+    "start": "2024-12-31",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Jour de l'An",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-lundi-de-p-ques",
+    "title": "🎉 Lundi de Pâques",
+    "start": "2025-04-20",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Lundi de Pâques (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2025-f-te-du-travail",
+    "title": "🎉 Fête du Travail",
+    "start": "2025-04-30",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête du Travail",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-f-te-de-la-victoire-1945",
+    "title": "🎉 Fête de la Victoire 1945",
+    "start": "2025-05-07",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête de la Victoire 1945",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-ascension",
+    "title": "🎉 Ascension",
+    "start": "2025-05-28",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Ascension (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2025-lundi-de-pentec-te",
+    "title": "🎉 Lundi de Pentecôte",
+    "start": "2025-06-08",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Lundi de Pentecôte (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2025-f-te-nationale",
+    "title": "🎉 Fête Nationale",
+    "start": "2025-07-13",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête Nationale",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-assomption",
+    "title": "🎉 Assomption",
+    "start": "2025-08-14",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Assomption",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-toussaint",
+    "title": "🎉 Toussaint",
+    "start": "2025-10-31",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Toussaint",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-armistice-1918",
+    "title": "🎉 Armistice 1918",
+    "start": "2025-11-10",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Armistice 1918",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2025-no-l",
+    "title": "🎉 Noël",
+    "start": "2025-12-24",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Noël",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-jour-de-l-an",
+    "title": "🎉 Jour de l'An",
+    "start": "2025-12-31",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Jour de l'An",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-lundi-de-p-ques",
+    "title": "🎉 Lundi de Pâques",
+    "start": "2026-04-05",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Lundi de Pâques (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2026-f-te-du-travail",
+    "title": "🎉 Fête du Travail",
+    "start": "2026-04-30",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête du Travail",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-f-te-de-la-victoire-1945",
+    "title": "🎉 Fête de la Victoire 1945",
+    "start": "2026-05-07",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête de la Victoire 1945",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-ascension",
+    "title": "🎉 Ascension",
+    "start": "2026-05-13",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Ascension (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2026-lundi-de-pentec-te",
+    "title": "🎉 Lundi de Pentecôte",
+    "start": "2026-05-24",
+    "allDay": true,
+    "backgroundColor": "#e67e22",
+    "borderColor": "#d68910",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Lundi de Pentecôte (basé sur Pâques)",
+      "source": "holiday-fr",
+      "type": "mobile"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-mobile"
+    ]
+  },
+  {
+    "id": "holiday-2026-f-te-nationale",
+    "title": "🎉 Fête Nationale",
+    "start": "2026-07-13",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Fête Nationale",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-assomption",
+    "title": "🎉 Assomption",
+    "start": "2026-08-14",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Assomption",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-toussaint",
+    "title": "🎉 Toussaint",
+    "start": "2026-10-31",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Toussaint",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-armistice-1918",
+    "title": "🎉 Armistice 1918",
+    "start": "2026-11-10",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Armistice 1918",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  },
+  {
+    "id": "holiday-2026-no-l",
+    "title": "🎉 Noël",
+    "start": "2026-12-24",
+    "allDay": true,
+    "backgroundColor": "#e74c3c",
+    "borderColor": "#c0392b",
+    "textColor": "white",
+    "extendedProps": {
+      "description": "Jour férié français - Noël",
+      "source": "holiday-fr",
+      "type": "fixed"
+    },
+    "editable": false,
+    "classNames": [
+      "holiday-event",
+      "holiday-fixed"
+    ]
+  }
+]

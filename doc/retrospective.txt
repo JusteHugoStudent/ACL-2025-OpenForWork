@@ -1,3 +1,28 @@
+15/10/2025 :
 L'equipe a fait le travail demandé, les points manquant sont :
-* La préparation du prochain sprint 
-* Oublie de definition de certaines fonctionnalités
+La préparation du prochain sprint
+Oublie de definition de certaines fonctionnalités
+
+05/11/2025
+L'équipe n'a pas terminé l'entiereté du travail défini en automatiquement.
+Les points manquants sont : 
+Ajout de la récurrence
+Recherche dans l'agenda
+Nous n'avons pas fait le dernier rendez-vous de suivi de projet, faute de planification.
+review : 
+Sprint 1 : 
+Quand un évenement à une heure de fin antérieur à celle de début, cela fait un cas spécial à voir.
+Un rendez-vous sur plusieurs jours est implémenté dans notre agenda pas de problèmes.
+Le fonctionnement de la base de donnée doit être de prendre seulement les évenements de la personne qui l'utilise et limité le chargement à la période de temps choisi.
+Oubli de se mettre d'accord sur l'implémenation de import/export (date, format, agendas mixés)
+Idem pour la recherche (résultat en liste ou affichage sur l'agenda)
+Il nous faut changer la façon d'écrire le backlog et les reviews
+Ajouter des couleurs à chaque agenda pour lisibilité d'agenda mixes
+Ajouter des tags/emojis pour différenciers les types d'événements et non des couleurs
+Il nous manque le 5ème membre de l'equipe
+NB : jours fériés = nouvel agenda
+
+Sprint 2 :
+La page de register/login à était corriger, améliorer et enjolivée.
+La façon d'écrire les Backlogs, review, retrospéctive a était changée.
+La prise en charge de plusieurs agendas et les jours fériés ont étaient implementés.
