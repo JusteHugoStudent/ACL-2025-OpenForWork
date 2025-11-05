@@ -1,149 +1,88 @@
 // Gere l'intégration avec FullCalendar
- 
+
 class CalendarManager {
     constructor() {
-        // Ref a l'instance FullCalendar
+        // Référence à l'instance FullCalendar
         this.calendar = null;
-        
+
         // Conteneur HTML du calendrier
         this.calendarEl = document.getElementById('calendar');
-        
-        // Callbacks (fonctions à appeler depuis l'extérieur)
+
+        // Callbacks externes
         this.onEventClickCallback = null;
         this.onDateClickCallback = null;
         this.onEventAddCallback = null;
-        this.onEventChangeCallback = null; // move/resize/update
+        this.onEventChangeCallback = null;
         this.onEventRemoveCallback = null;
     }
 
     // Initialise FullCalendar avec la configuration
-
-    init() {
+    async init() {
         console.log('📅 CalendarManager: Initialisation du calendrier FullCalendar...');
-        console.log('🎯 CalendarManager: Chargement des jours fériés et configuration française');
-        
+
+        if (!this.calendarEl) {
+            console.error('❌ CalendarManager: Élément #calendar introuvable dans le DOM');
+            return;
+        }
+
         this.calendar = new FullCalendar.Calendar(this.calendarEl, {
-            // param de base
             locale: 'fr',
-            
-            // hauteur automatique
             height: 'auto',
-            
-            // en-tete du calendrier
             headerToolbar: {
-                left: 'prev,next today',                        // Boutons navigation
-                center: 'title',                                // Titre au centre
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'  // Boutons de vue
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            
-            // texte des boutons en francais
             buttonText: {
                 today: 'Aujourd\'hui',
                 month: 'Mois',
                 week: 'Semaine',
                 day: 'Jour'
             },
-            
-            // vues
-            
-            // Vue par defaut au demarrage
             initialView: 'dayGridMonth',
-            
-            // Format de la date (ex: "vendredi 10 octobre 2025")
-            titleFormat: { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            },
-            
-            // gestion des event
-            
-            // Les event peuvent etre glisses/déposes
+            titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
             editable: true,
-            
-            // peut creer des event en cliquant
             selectable: true,
-            
-            // afficher le numero de semaine
             weekNumbers: true,
-            
-            // la semaine commence le lundi
             firstDay: 1,
-            
-            // format des heures (24h)
-            slotLabelFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            },
-            
-            // format de l'heure des event
-            eventTimeFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            },
-            
-            // duree d'un slot (30 minutes)
+            slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+            eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             slotDuration: '00:30:00',
-            
-            // callback
-            
-            // quand on clique sur un event
+
+            // Callbacks FullCalendar
             eventClick: (info) => {
-                if (this.onEventClickCallback) {
-                    this.onEventClickCallback(info.event);
-                }
+                if (this.onEventClickCallback) this.onEventClickCallback(info.event);
             },
-            
-            // quand on clique sur une date
-    
             dateClick: (info) => {
-                if (this.onDateClickCallback) {
-                    this.onDateClickCallback(info.dateStr);
-                }
+                if (this.onDateClickCallback) this.onDateClickCallback(info.dateStr);
             },
-            
-            // Quand on glisse/depose un event
-             
             eventDrop: (info) => {
-                console.log('evenement déplace:', info.event.title);
+                console.log('Événement déplacé:', info.event.title);
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             },
-            
-            // Quand on redimensionne un event
-        
             eventResize: (info) => {
-                console.log('evenement redimensionne:', info.event.title);
+                console.log('Événement redimensionné:', info.event.title);
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             }
         });
-        
-        // Afficher le calendrier
+
         this.calendar.render();
-        
         console.log('✅ CalendarManager: Calendrier FullCalendar initialisé et rendu avec succès');
-        console.log('🌟 CalendarManager: Prêt à charger les événements et jours fériés');
-        
-        // Ajouter automatiquement un événement pour demain
+
+        // Ajout auto d'un event test (optionnel)
         this.addAutoEvent();
-        
-        // Charger et ajouter les jours fériés français
+
         this.loadHolidaysFr();
+
     }
-    
-    // Ajoute automatiquement un événement pour demain (méthode simple sans BDD)
+
+    // Ajoute un événement automatique pour demain (pour debug)
     addAutoEvent() {
         console.log('🚀 CalendarManager: Ajout automatique d\'un événement pour demain...');
-        
-        // Calculer la date de demain
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        // Formater pour FullCalendar (YYYY-MM-DD)
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
-        
-        // Créer l'événement directement avec addEvent
+
         const autoEvent = {
             id: 'auto-event-' + Date.now(),
             title: '🚀 Réunion Sprint 2 - Événement Auto',
@@ -153,47 +92,37 @@ class CalendarManager {
             borderColor: '#2980b9',
             textColor: 'white',
             extendedProps: {
-                description: 'Événement créé automatiquement via CalendarManager.addEvent() - Sprint 2: événements récurrents, recherche, agendas multiples, jours fériés',
+                description: 'Événement automatique pour test de rendu',
                 source: 'auto'
             },
             editable: true
         };
-        
-        // Ajouter l'événement directement au calendrier (silent pour éviter les callbacks)
+
         this.addEvent(autoEvent, { silent: true });
-        
     }
-    
-    // Charge les jours fériés français depuis le fichier JSON
+
+    // Charge les jours fériés français depuis le JSON
     async loadHolidaysFr() {
-        
         try {
-            // Charger le fichier JSON des jours fériés 2025
             const response = await fetch('./holidaysFr.json');
-            if (!response.ok) {
-                throw new Error(`Impossible de charger le fichier: ${response.status}`);
-            }
-            
+            if (!response.ok) throw new Error(`Impossible de charger le fichier: ${response.status}`);
+
             const holidays = await response.json();
-            console.log(` CalendarManager: ${holidays.length} jours fériés chargés depuis holidaysFr_2025.json`);
-            
-            // Ajouter chaque jour férié au calendrier
+            console.log(`📅 CalendarManager: ${holidays.length} jours fériés chargés.`);
+
             holidays.forEach(holiday => {
                 this.addEvent(holiday, { silent: true });
             });
-            
-            console.log(' CalendarManager: Tous les jours fériés français ont été ajoutés au calendrier');
-            
+
+            console.log('✅ CalendarManager: Tous les jours fériés français ont été ajoutés au calendrier');
         } catch (error) {
-            console.error(' CalendarManager: Erreur lors du chargement des jours fériés:', error);
-            
-            // Fallback: ajouter quelques jours fériés manuellement
-            console.log(' CalendarManager: Utilisation du fallback - ajout manuel des principaux jours fériés 2025');
+            console.error('❌ CalendarManager: Erreur lors du chargement des jours fériés:', error);
+            console.log('➡️ Utilisation du fallback - ajout manuel de quelques jours fériés 2025');
             this.addManualHolidays();
         }
     }
-    
-    // Méthode de fallback pour ajouter manuellement quelques jours fériés importants
+
+    // Fallback manuel si holidaysFr.json manquant
     addManualHolidays() {
         const manualHolidays = [
             {
@@ -204,8 +133,7 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false,
-                classNames: ['holiday-event']
+                editable: false
             },
             {
                 id: 'manual-fete-travail-2025',
@@ -215,8 +143,7 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false,
-                classNames: ['holiday-event']
+                editable: false
             },
             {
                 id: 'manual-fete-nationale-2025',
@@ -226,8 +153,7 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false,
-                classNames: ['holiday-event']
+                editable: false
             },
             {
                 id: 'manual-noel-2025',
@@ -237,54 +163,43 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false,
-                classNames: ['holiday-event']
+                editable: false
             }
         ];
-        
-        manualHolidays.forEach(holiday => {
-            this.addEvent(holiday, { silent: true });
-        });
-        
+
+        manualHolidays.forEach(holiday => this.addEvent(holiday, { silent: true }));
         console.log(`✅ CalendarManager: ${manualHolidays.length} jours fériés manuels ajoutés`);
     }
 
-    // la fonction a apl quand on clique sur un event
-    setOnEventClick(callback) {
-        this.onEventClickCallback = callback;
-    }
+    // Définition des callbacks
+    setOnEventClick(callback) { this.onEventClickCallback = callback; }
+    setOnDateClick(callback) { this.onDateClickCallback = callback; }
 
-    // Definit la fonction a apl quand on clique sur une date
-    setOnDateClick(callback) {
-        this.onDateClickCallback = callback;
-    }
-
-    // ajoute un event au calendrier, eventData : les donnees de l'evenement
-    // eventData: FullCalendar event input, options: { silent: true } to avoid triggering onEventAdd
+    // Ajout d'événement sécurisé
     addEvent(eventData, options = {}) {
+        if (!this.calendar) {
+            console.warn('⚠️ CalendarManager: tentative d’ajouter un événement alors que le calendrier est null.');
+            return null;
+        }
         const ev = this.calendar.addEvent(eventData);
         if (!options.silent && this.onEventAddCallback) this.onEventAddCallback(ev);
         return ev;
     }
 
-    // maj event existant, eventId : L'id de l'event, updates : les modifs a appliquer
     updateEvent(eventId, updates) {
-        const event = this.calendar.getEventById(eventId);
+        const event = this.calendar?.getEventById(eventId);
         if (event) {
-            // Mettre à jour les propriétés
             if (updates.title) event.setProp('title', updates.title);
             if (updates.start) event.setStart(updates.start);
             if (updates.end) event.setEnd(updates.end);
             if (updates.backgroundColor) event.setProp('backgroundColor', updates.backgroundColor);
-            if (updates.extendedProps) {
+            if (updates.extendedProps)
                 event.setExtendedProp('description', updates.extendedProps.description);
-            }
         }
     }
 
-    // Supprime un event du calendrier
     removeEvent(eventId) {
-        const event = this.calendar.getEventById(eventId);
+        const event = this.calendar?.getEventById(eventId);
         if (event) {
             event.remove();
             if (this.onEventRemoveCallback) this.onEventRemoveCallback(eventId);
@@ -296,55 +211,27 @@ class CalendarManager {
         this.calendar.getEvents().forEach(ev => ev.remove());
     }
 
-
     onEventAdd(callback) { this.onEventAddCallback = callback; }
     onEventChange(callback) { this.onEventChangeCallback = callback; }
     onEventRemove(callback) { this.onEventRemoveCallback = callback; }
 
-    // Recupe tous les event du calendrier retourne une liste de tous les events
-    getAllEvents() {
-        return this.calendar.getEvents();
-    }
+    getAllEvents() { return this.calendar ? this.calendar.getEvents() : []; }
+    getEventById(eventId) { return this.calendar?.getEventById(eventId); }
 
-    // Recup un événement par son ID
-    getEventById(eventId) {
-        return this.calendar.getEventById(eventId);
-    }
+    changeView(viewName) { this.calendar?.changeView(viewName); }
+    gotoDate(date) { this.calendar?.gotoDate(date); }
+    today() { this.calendar?.today(); }
+    prev() { this.calendar?.prev(); }
+    next() { this.calendar?.next(); }
+    refetchEvents() { this.calendar?.refetchEvents(); }
 
-    // Change la vue du calendrier viewName / nom de vue dayGridMonth, timeGridWeek, timeGridDay
-    changeView(viewName) {
-        this.calendar.changeView(viewName);
-    }
-
-    // Va a une date specifique et retourne la date a afficher
-    gotoDate(date) {
-        this.calendar.gotoDate(date);
-    }
-
-    // Va a aujourd'hui
-    today() {
-        this.calendar.today();
-    }
-
-    // Va au mois/semaine precedent
-    prev() {
-        this.calendar.prev();
-    }
-
-    // Va au mois/semaine suivant
-    next() {
-        this.calendar.next();
-    }
-
-    // Recharge tous les evenements depuis une source
-    refetchEvents() {
-        this.calendar.refetchEvents();
-    }
-
-    // Detruit l'instance du calendrier
+    // Detruit le calendrier
     destroy() {
         if (this.calendar) {
             this.calendar.destroy();
+            this.calendar = null;
+            console.log('🧹 CalendarManager: Calendrier détruit proprement');
         }
     }
+
 }

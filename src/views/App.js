@@ -48,7 +48,6 @@ class App {
         
         // Changement d'agenda
         this.headerView.onAgendaChange = (agenda) => {
-            this.calendarManager.removeAllEvents();
             this.currentAgenda = agenda;
             this.loadEventsFromServer(agenda.id);
         };
@@ -106,9 +105,6 @@ class App {
             // Définit le nouvel agenda comme courant
             this.currentAgenda = created;
 
-            // Vide le calendrier avant d'afficher le nouvel agenda
-            this.calendarManager.removeAllEvents();
-
             // Affiche le bon agenda dans le select
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
 
@@ -165,7 +161,6 @@ class App {
             this.loginView.hide();
             this.headerView.show();
 
-            this.calendarManager.init();
             this.setupCalendarCallbacks();
 
             //Attend la fin de l'initialisation
@@ -227,6 +222,7 @@ class App {
 
     // charge les events depuis le backend et les ajoute au calendrier
     async loadEventsFromServer(agendaId = null) {
+        // Vide le calendrier avant d'afficher le nouvel agenda        
         const token = localStorage.getItem('token');
         if (!token) return;
         try {
@@ -235,7 +231,7 @@ class App {
             const events = await res.json();
             // d'abord vider le calendrier
             this.calendarManager.destroy();
-            this.calendarManager.init();
+            await this.calendarManager.init();
             events.forEach(ev => {
                 // add silently to avoid re-posting to server
                 const color = ev.color || ev.backgroundColor || '#ffd700';
@@ -447,10 +443,6 @@ class App {
             // Mise à jour du header pour afficher le sélecteur
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
 
-            // Charger les events de l'agenda courant
-            if (this.currentAgenda) {
-                this.loadEventsFromServer(this.currentAgenda.id);
-            }
         } catch (error) {
             console.error('Erreur lors du chargement des agendas :', error);
         }
