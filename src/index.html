@@ -102,6 +102,48 @@
             </div>
         </div>
 
+        <!-- Section Filtre -->
+        <div class="filter-section">
+            <h3>🔍 Filtrer les événements</h3>
+            <div class="filter-controls">
+                <div class="filter-input-group">
+                    <label for="filter-start">Date début :</label>
+                    <input type="date" id="filter-start">
+                </div>
+                <div class="filter-input-group">
+                    <label for="filter-end">Date fin :</label>
+                    <input type="date" id="filter-end">
+                </div>
+                <div class="filter-input-group">
+                    <label for="filter-emoji">Emoji :</label>
+                    <select id="filter-emoji">
+                        <option value="">Tous</option>
+                        <option value="📅">📅 Calendrier</option>
+                        <option value="💼">💼 Travail</option>
+                        <option value="🎓">🎓 Études</option>
+                        <option value="🏃">🏃 Sport</option>
+                        <option value="🎉">🎉 Fête</option>
+                        <option value="🍽️">🍽️ Repas</option>
+                        <option value="✈️">✈️ Voyage</option>
+                        <option value="🏥">🏥 Santé</option>
+                        <option value="🎵">🎵 Musique</option>
+                        <option value="📞">📞 Appel</option>
+                        <option value="🎮">🎮 Jeux</option>
+                        <option value="📚">📚 Lecture</option>
+                    </select>
+                </div>
+                <div class="filter-buttons">
+                    <button id="btn-filter" class="btn-filter">Filtrer</button>
+                    <button id="btn-clear-filter" class="btn-filter-clear">Réinitialiser</button>
+                </div>
+            </div>
+            <!-- Résultats du filtre -->
+            <div id="filter-results" class="filter-results">
+                <h4>📋 Résultats</h4>
+                <ul id="filter-results-list"></ul>
+            </div>
+        </div>
+
         <!-- Calendrier -->
         <div id="calendar" class="p-3"></div>
     </div>

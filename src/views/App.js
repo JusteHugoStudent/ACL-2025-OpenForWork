@@ -112,6 +112,22 @@ class App {
             this.loadEventsFromServer(this.currentAgenda.id);
         });
 
+        // Filtre d'événements
+        const btnFilter = document.getElementById('btn-filter');
+        const btnClearFilter = document.getElementById('btn-clear-filter');
+        
+        if (btnFilter) {
+            btnFilter.addEventListener('click', () => {
+                this.handleFilterEvents();
+            });
+        }
+        
+        if (btnClearFilter) {
+            btnClearFilter.addEventListener('click', () => {
+                this.handleClearFilter();
+            });
+        }
+
     }
 
     // Wire calendar persistence callbacks
@@ -477,6 +493,109 @@ class App {
         } catch (error) {
             console.error('Erreur lors du chargement des agendas :', error);
         }
+    }
+
+    // Filtre les événements selon les critères
+    async handleFilterEvents() {
+        const filterStart = document.getElementById('filter-start').value;
+        const filterEnd = document.getElementById('filter-end').value;
+        const filterEmoji = document.getElementById('filter-emoji').value;
+
+        if (!filterStart || !filterEnd) {
+            alert('Veuillez sélectionner une date de début et une date de fin');
+            return;
+        }
+
+        const startDate = new Date(filterStart);
+        const endDate = new Date(filterEnd);
+
+        if (startDate > endDate) {
+            alert('La date de début doit être antérieure à la date de fin');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            // Récupérer tous les événements
+            const url = this.currentAgenda 
+                ? `/api/events?agendaId=${this.currentAgenda.id}`
+                : '/api/events';
+            
+            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+            const events = await res.json();
+
+            // Filtrer les événements
+            const filteredEvents = events.filter(ev => {
+                const eventStart = new Date(ev.start);
+                const eventEmoji = ev.emoji || '📅';
+                
+                // Vérifier si l'événement est dans la période
+                const inPeriod = eventStart >= startDate && eventStart <= endDate;
+                
+                // Vérifier l'emoji si spécifié
+                const matchEmoji = !filterEmoji || eventEmoji === filterEmoji;
+                
+                return inPeriod && matchEmoji;
+            });
+
+            // Afficher les résultats
+            this.displayFilterResults(filteredEvents);
+
+        } catch (err) {
+            console.error('Erreur lors du filtrage:', err);
+            alert('Erreur lors du filtrage des événements');
+        }
+    }
+
+    // Affiche les résultats du filtre
+    displayFilterResults(events) {
+        const resultsDiv = document.getElementById('filter-results');
+        const resultsList = document.getElementById('filter-results-list');
+
+        if (events.length === 0) {
+            resultsList.innerHTML = '<li>❌ Aucun événement trouvé pour ces critères</li>';
+        } else {
+            resultsList.innerHTML = events.map(ev => {
+                const emoji = ev.emoji || '📅';
+                const startDate = new Date(ev.start).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const endDate = new Date(ev.end).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const description = ev.extendedProps?.description || '';
+                return `
+                    <li>
+                        <strong>${emoji} ${ev.title}</strong>
+                        <small>📅 ${startDate}</small>
+                        <small>🕒 ${endDate}</small>
+                        ${description ? `<small>📝 ${description}</small>` : ''}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        resultsDiv.style.display = 'block';
+    }
+
+    // Réinitialise le filtre
+    handleClearFilter() {
+        document.getElementById('filter-start').value = '';
+        document.getElementById('filter-end').value = '';
+        document.getElementById('filter-emoji').value = '';
+        const resultsDiv = document.getElementById('filter-results');
+        resultsDiv.style.display = 'none';
+        document.getElementById('filter-results-list').innerHTML = '';
     }
     
 
