@@ -1,0 +1,833 @@
+/* Variables de couleurs */
+:root {
+    --noir: #1a1a1a;
+    --noir-clair: #2d2d2d;
+    --jaune: #ffd700;
+    --jaune-clair: #ffed4e;
+    --jaune-fonce: #ccaa00;
+    --gris: #4a4a4a;
+    --gris-clair: #6a6a6a;
+    --blanc: #ffffff;
+}
+
+/* Général */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: var(--noir);
+    color: var(--blanc);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ========================================
+   PAGE DE CONNEXION
+   ======================================== */
+
+#page-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+/* Page d'inscription - utilise le même centrage que la page de connexion */
+#page-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.login-box {
+    background: var(--noir-clair);
+    padding: 40px;
+    border-radius: 10px;
+    border: 2px solid var(--jaune);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box h2 {
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--jaune);
+    font-size: 28px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    background-color: var(--noir);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    color: var(--blanc);
+    font-size: 16px;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: var(--jaune);
+}
+
+.login-box button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.login-box button:hover {
+    background-color: var(--jaune-clair);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+.login-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.login-actions button {
+    flex: none;
+    width: 150px !important;
+}
+
+/* ========================================
+   EN-TÊTE
+   ======================================== */
+
+.header {
+    background: var(--noir-clair);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--jaune);
+}
+
+.header h1 {
+    font-size: 28px;
+    color: var(--jaune);
+    margin-bottom: 5px;
+}
+
+.header p {
+    color: var(--jaune-clair);
+    font-size: 14px;
+}
+
+#btn-logout {
+    padding: 10px 25px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+#btn-logout:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   NAVIGATION
+   ======================================== */
+
+.navigation {
+    background: var(--noir-clair);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border: 2px solid var(--gris);
+}
+
+.navigation button {
+    padding: 10px 20px;
+    background-color: var(--gris);
+    color: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.navigation button:hover {
+    background-color: var(--gris-clair);
+    transform: translateY(-2px);
+}
+
+#btn-add {
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: none;
+    font-weight: bold;
+}
+
+#btn-add:hover {
+    background-color: var(--jaune-clair);
+}
+
+#current-period {
+    font-weight: bold;
+    font-size: 18px;
+    color: var(--jaune);
+}
+
+/* ========================================
+   BOUTONS DE VUE
+   ======================================== */
+
+.view-buttons {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.btn-view {
+    padding: 12px 25px;
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-view:hover {
+    background-color: var(--gris);
+}
+
+.btn-view.active {
+    background-color: var(--jaune);
+    color: var(--noir);
+    border-color: var(--jaune);
+    font-weight: bold;
+}
+
+/* ========================================
+   CALENDRIER
+   ======================================== */
+
+#calendar {
+    background: var(--noir-clair);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid var(--jaune);
+    min-height: 500px;
+}
+
+/* ========================================
+   VUE SEMAINE
+   ======================================== */
+
+#view-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.day {
+    border: 2px solid var(--gris);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 250px;
+    background-color: var(--noir);
+}
+
+.day-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* ========================================
+   VUE MOIS
+   ======================================== */
+
+#view-month {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.month-day {
+    border: 2px solid var(--gris);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 120px;
+    background-color: var(--noir);
+}
+
+.month-day-number {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--jaune);
+    font-size: 16px;
+}
+
+/* ========================================
+   VUE ANNÉE
+   ======================================== */
+
+#view-year {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.year-month {
+    border: 2px solid var(--jaune);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: var(--noir);
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.year-month:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+}
+
+.year-month h4 {
+    margin-bottom: 10px;
+    color: var(--jaune);
+    font-size: 20px;
+}
+
+.year-month p {
+    color: var(--blanc);
+    font-size: 16px;
+}
+
+/* ========================================
+   ÉVÉNEMENTS
+   ======================================== */
+
+.event {
+    background-color: var(--jaune-fonce);
+    color: var(--noir);
+    border-left: 4px solid var(--jaune);
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.event:hover {
+    background-color: var(--jaune);
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--noir-clair);
+    padding: 30px;
+    border-radius: 10px;
+    border: 3px solid var(--jaune);
+    width: 90%;
+    max-width: 550px;
+    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+}
+
+.modal-content h3 {
+    margin-bottom: 25px;
+    color: var(--jaune);
+    font-size: 24px;
+}
+
+.modal-content label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--jaune-clair);
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--noir);
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    color: var(--blanc);
+    font-size: 14px;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: var(--jaune);
+}
+
+.modal-content textarea {
+    resize: vertical;
+}
+
+.modal-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+#btn-save {
+    background-color: var(--jaune);
+    color: var(--noir);
+}
+
+#btn-save:hover {
+    background-color: var(--jaune-clair);
+    transform: translateY(-2px);
+}
+
+#btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+#btn-delete:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+#btn-cancel {
+    background-color: var(--gris);
+    color: white;
+}
+
+#btn-cancel:hover {
+    background-color: var(--gris-clair);
+    transform: translateY(-2px);
+}
+
+/* Ajout CSS formulaire register/login */
+
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900');
+body{
+	font-family: 'Poppins', sans-serif;
+	font-weight: 300;
+	line-height: 1.7;
+	color: #ffeba7;
+	background: linear-gradient(135deg, #1f2029 0%, #2a2d3a 50%, #1f2029 100%);
+	background-size: 400% 400%;
+	animation: subtleGlow 6s ease infinite;
+	position: relative;
+	transition: transform 0.3s ease;
+}
+
+/* Effet de mouvement au hover de la page */
+body:hover {
+	transform: scale(1.01);
+}
+
+body:hover::before {
+	background: radial-gradient(circle at 50% 50%, rgba(255, 235, 167, 0.08) 0%, transparent 70%);
+	animation: hoverParticles 2s ease infinite;
+}
+
+@keyframes hoverParticles {
+	0%, 100% { opacity: 0.8; transform: scale(1); }
+	50% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Animation douce pour l'arrière-plan */
+@keyframes subtleGlow {
+	0%, 100% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+}
+
+/* Effet de lumière ambiante */
+body::before {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: radial-gradient(circle at 50% 50%, rgba(255, 235, 167, 0.05) 0%, transparent 70%);
+	pointer-events: none;
+	z-index: 1;
+}
+a:hover {
+	text-decoration: none;
+}
+.link {
+  color: #ffeba7;
+}
+.link:hover {
+  color: #c4c3ca;
+}
+p {
+  font-weight: 500;
+  font-size: 14px;
+}
+h4 {
+  font-weight: 600;
+}
+h6 span{
+  padding: 0 20px;
+  font-weight: 700;
+}
+
+/* Titre dynamique avec animations */
+.dynamic-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 3;
+  transition: transform 0.3s ease;
+}
+
+/* Effet sur le titre au hover de la page */
+body:hover .dynamic-title {
+  transform: scale(1.05);
+}
+
+body:hover .title-word {
+  text-shadow: 
+    0 0 20px rgba(255, 235, 167, 0.9),
+    0 0 30px rgba(255, 235, 167, 0.7),
+    0 0 40px rgba(255, 235, 167, 0.5);
+}
+
+.title-word {
+  display: inline-block;
+  margin: 0 0.3rem;
+  color: #ffeba7;
+  text-shadow: 
+    0 0 10px rgba(255, 235, 167, 0.6),
+    0 0 20px rgba(255, 235, 167, 0.4),
+    0 0 30px rgba(255, 235, 167, 0.2);
+  animation: professionalGlow 5s ease-in-out infinite;
+}
+
+.title-word:nth-child(1) { animation-delay: 0s; }
+.title-word:nth-child(2) { animation-delay: 0.8s; }
+.title-word:nth-child(3) { animation-delay: 1.6s; }
+
+@keyframes professionalGlow {
+  0%, 90%, 100% { 
+    transform: translateY(0px) scale(1);
+    text-shadow: 
+      0 0 10px rgba(255, 235, 167, 0.6),
+      0 0 20px rgba(255, 235, 167, 0.4),
+      0 0 30px rgba(255, 235, 167, 0.2);
+  }
+  5% {
+    transform: translateY(-3px) scale(1.02);
+    text-shadow: 
+      0 0 15px rgba(255, 235, 167, 0.8),
+      0 0 25px rgba(255, 235, 167, 0.6),
+      0 0 35px rgba(255, 235, 167, 0.4);
+  }
+  10% {
+    transform: translateY(0px) scale(1);
+    text-shadow: 
+      0 0 20px rgba(255, 235, 167, 0.9),
+      0 0 30px rgba(255, 235, 167, 0.7),
+      0 0 40px rgba(255, 235, 167, 0.5);
+  }
+}
+.section{
+  position: relative;
+  width: 100%;
+  display: block;
+  z-index: 2;
+}
+.full-height{
+  min-height: 100vh;
+}
+[type="checkbox"]:checked,
+[type="checkbox"]:not(:checked){
+display: none;
+}
+.checkbox:checked + label,
+.checkbox:not(:checked) + label{
+  position: relative;
+  display: block;
+  text-align: center;
+  width: 60px;
+  height: 16px;
+  border-radius: 8px;
+  padding: 0;
+  margin: 10px auto;
+  cursor: pointer;
+  background-color: #ffeba7;
+}
+.checkbox:checked + label:before,
+.checkbox:not(:checked) + label:before{
+  position: absolute;
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #ffeba7;
+  background-color: #020305;
+  font-family: 'unicons';
+  content: '\eb4f';
+  z-index: 20;
+  top: -10px;
+  left: -10px;
+  line-height: 36px;
+  text-align: center;
+  font-size: 24px;
+  transition: all 0.5s ease;
+}
+.checkbox:checked + label:before {
+  transform: translateX(44px) rotate(-270deg);
+}
+.card-3d-wrap {
+  position: relative;
+  width: 440px;
+  max-width: 100%;
+  height: 400px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  margin-top: 60px;
+  transition: transform 0.4s ease;
+}
+
+/* Effet de flottement au hover de la page */
+body:hover .card-3d-wrap {
+  transform: translateY(-10px) rotateX(2deg);
+}
+.card-3d-wrapper {
+  width: 100%;
+  height: 100%;
+  position:absolute;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  transition: all 600ms ease-out; 
+}
+.card-front, .card-back {
+  width: 100%;
+  height: 100%;
+  background-color: #2b2e38;
+  background-image: url('/img/pattern_japanese-pattern-2_1_2_0-0_0_1__ffffff00_000000.png');
+  position: absolute;
+  border-radius: 6px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 235, 167, 0.1);
+  border: 1px solid rgba(255, 235, 167, 0.1);
+}
+.card-back {
+  transform: rotateY(180deg);
+}
+.checkbox:checked ~ .card-3d-wrap .card-3d-wrapper {
+  transform: rotateY(180deg);
+}
+.center-wrap{
+  position: absolute;
+  width: 100%;
+  padding: 0 35px;
+  top: 50%;
+  left: 0;
+  transform: translate3d(0, -50%, 35px) perspective(100px);
+  z-index: 20;
+  display: block;
+}
+.form-group{ 
+  position: relative;
+  display: block;
+    margin: 0;
+    padding: 0;
+}
+.form-style {
+  padding: 13px 20px;
+  padding-left: 55px;
+  height: 48px;
+  width: 100%;
+  font-weight: 500;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.5px;
+  outline: none;
+  color: #c4c3ca;
+  background-color: #1f2029;
+  border: none;
+  -webkit-transition: all 200ms linear;
+  transition: all 200ms linear;
+  box-shadow: 0 4px 8px 0 rgba(21,21,21,.2);
+}
+.form-style:focus,
+.form-style:active {
+  border: none;
+  outline: none;
+  box-shadow: 0 4px 8px 0 rgba(21,21,21,.2);
+}
+.input-icon {
+  position: absolute;
+  top: 0;
+  left: 18px;
+  height: 48px;
+  font-size: 24px;
+  line-height: 48px;
+  text-align: left;
+  -webkit-transition: all 200ms linear;
+   transition: all 200ms linear;
+}
+.btn{  
+  border-radius: 4px;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  -webkit-transition : all 200ms linear;
+  transition: all 200ms linear;
+  padding: 0 30px;
+  letter-spacing: 1px;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffeba7;
+  color: #000000;
+  width: 150px;
+  max-width: 150px;
+}
+.btn:hover{  
+  background-color: #000000;
+  color: #ffeba7;
+  box-shadow: 0 8px 24px 0 rgba(16,39,112,.2);
+}
+
+/* Centrage des boutons */
+.center-wrap .btn {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Style pour les jours fériés */
+.holiday-event {
+  background-color: #e74c3c !important;
+  border-color: #c0392b !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* ========================================
+   SELECT AGENDA
+   ======================================== */
+#agendaSelect {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 2px solid var(--jaune);
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#agendaSelect:hover {
+    border-color: var(--jaune-clair);
+    background-color: var(--noir);
+}
+
+#agendaSelect:focus {
+    outline: none;
+    border-color: var(--jaune-clair);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+/* ========================================
+   BOUTON AJOUTER AGENDA
+   ======================================== */
+#newAgendaBtn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: var(--jaune);
+    color: var(--noir);
+    border: 2px solid var(--jaune);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#newAgendaBtn:hover {
+    background-color: var(--jaune-clair);
+    border-color: var(--jaune-clair);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+/* Optionnel : style des options du select */
+#agenda-select option {
+    background-color: var(--noir-clair);
+    color: var(--blanc);
+}
+#agenda-select option:checked {
+    background-color: var(--jaune);
+    color: var(--noir);
+}
+
