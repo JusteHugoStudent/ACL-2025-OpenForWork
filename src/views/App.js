@@ -236,10 +236,9 @@ class App {
                 // add silently to avoid re-posting to server
                 const emoji = ev.emoji || '📅';
                 const displayTitle = `${emoji} ${ev.title}`;
-                const color = ev.color || '#ffd700';
                 // Lors du chargement initial, on ajoute les événements en mode "silent"
                 // pour éviter que la logique d'ajout local -> serveur ne renvoie un double POST.
-                this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, backgroundColor: color, borderColor: color, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
+                this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
             });
         } catch (err) {
             console.error('Erreur chargement events:', err);
@@ -298,8 +297,6 @@ class App {
                 title: oldEvent.title,
                 start: oldEvent.start,
                 end: oldEvent.end,
-                backgroundColor: oldEvent.backgroundColor,
-                borderColor: oldEvent.borderColor,
                 extendedProps: oldEvent.extendedProps
             };
             
