@@ -234,10 +234,12 @@ class App {
             await this.calendarManager.init();
             events.forEach(ev => {
                 // add silently to avoid re-posting to server
-                const color = ev.color || ev.backgroundColor || '#ffd700';
+                const emoji = ev.emoji || '📅';
+                const displayTitle = `${emoji} ${ev.title}`;
+                const color = ev.color || '#ffd700';
                 // Lors du chargement initial, on ajoute les événements en mode "silent"
                 // pour éviter que la logique d'ajout local -> serveur ne renvoie un double POST.
-                this.calendarManager.addEvent({ id: ev.id, title: ev.title, start: ev.start, end: ev.end, backgroundColor: color, borderColor: color, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description } }, { silent: true });
+                this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, backgroundColor: color, borderColor: color, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
             });
         } catch (err) {
             console.error('Erreur chargement events:', err);
@@ -268,11 +270,11 @@ class App {
         
         // prepare les data pour la modale
         const eventData = {
-            title: event.title,
+            title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
             start: this.formatDateTimeLocal(new Date(event.start)),
             end: event.end ? this.formatDateTimeLocal(new Date(event.end)) : '',
             description: event.extendedProps.description || '',
-            color: event.backgroundColor || '#ffd700'
+            emoji: event.extendedProps.emoji || '📅'
         };
         
         this.modalView.openForEdit(eventData);
@@ -301,19 +303,20 @@ class App {
                 extendedProps: oldEvent.extendedProps
             };
             
+            const displayTitle = `${formData.emoji} ${formData.title}`;
             this.calendarManager.updateEvent(this.editingEventId, {
-                title: formData.title,
+                title: displayTitle,
                 start: formData.start,
                 end: formData.end || formData.start,
-                backgroundColor: formData.color,
-                borderColor: formData.color,
                 extendedProps: {
-                    description: formData.description
+                    description: formData.description,
+                    emoji: formData.emoji,
+                    originalTitle: formData.title
                 }
             });
             
             // persist update -> appelle l'API PUT /api/events/:id
-            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
             
             // Si échec, restaurer les anciennes valeurs
             if (!success) {
@@ -324,15 +327,16 @@ class App {
         else {
             // ajoute
             const localId = Date.now().toString();
+            const displayTitle = `${formData.emoji} ${formData.title}`;
             this.calendarManager.addEvent({
                 id: localId,
-                title: formData.title,
+                title: displayTitle,
                 start: formData.start,
                 end: formData.end || formData.start,
-                backgroundColor: formData.color,
-                borderColor: formData.color,
                 extendedProps: {
-                    description: formData.description
+                    description: formData.description,
+                    emoji: formData.emoji,
+                    originalTitle: formData.title
                 }
             });
 
@@ -340,7 +344,7 @@ class App {
             // On crée d'abord localement (pour une UX instantanée), puis on appelle
             // le backend. Le backend renvoie l'_id MongoDB ; on remplace alors
             // l'id local (timestamp) par l'id retourné pour garder la cohérence.
-            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
             if (created && created.id) {
                 const ev = this.calendarManager.getEventById(localId);
                 if (ev) ev.setProp('id', created.id);
@@ -369,7 +373,7 @@ class App {
                 start: eventData.start ? eventData.start.toISOString() : undefined,
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
-                color: eventData.color,
+                emoji: eventData.emoji,
                 agendaId: this.currentAgenda.id
             };
 
@@ -408,7 +412,7 @@ class App {
                 start: eventData.start ? eventData.start.toISOString() : undefined,
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
-                color: eventData.color
+                emoji: eventData.emoji
             };
             const res = await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
             

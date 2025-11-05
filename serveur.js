@@ -261,6 +261,7 @@ app.get('/api/events', authMiddleware, async (req, res) => {
         start: e.start,
         end: e.end,
         extendedProps: { description: e.description },
+        emoji: e.emoji,
         color: e.color,
         backgroundColor: e.color
       }))
@@ -273,7 +274,7 @@ app.get('/api/events', authMiddleware, async (req, res) => {
 
 // Create event
 app.post('/api/events', authMiddleware, async (req, res) => {
-  const { title, start, end, description, color, agendaId } = req.body;
+  const { title, start, end, description, color, emoji, agendaId } = req.body;
   if (!title || !start)
     return res.status(400).json({ error: 'title and start required' });
 
@@ -296,6 +297,7 @@ app.post('/api/events', authMiddleware, async (req, res) => {
         start: startDate,
         end: endDate,
         description: description || '',
+        emoji: emoji || '📅',
         color: color || '#ffd700'
       });
       createdEvent = await ev.save({ session });
@@ -336,6 +338,7 @@ app.post('/api/events', authMiddleware, async (req, res) => {
       start: createdEvent.start,
       end: createdEvent.end,
       description: createdEvent.description,
+      emoji: createdEvent.emoji,
       color: createdEvent.color,
       agendaId
     });
@@ -351,7 +354,7 @@ app.post('/api/events', authMiddleware, async (req, res) => {
 // Update event
 app.put('/api/events/:id', authMiddleware, async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, color } = req.body;
+  const { title, start, end, description, color, emoji } = req.body;
   try {
     const ev = await Event.findById(id);
     if (!ev) return res.status(404).json({ error: 'event not found' });
@@ -368,6 +371,7 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
     if (start) ev.start = newStart;
     if (end) ev.end = newEnd;
     if (description !== undefined) ev.description = description;
+    if (emoji) ev.emoji = emoji;
     if (color) ev.color = color;
     await ev.save();
     return res.json({
@@ -376,6 +380,7 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
       start: ev.start,
       end: ev.end,
       description: ev.description,
+      emoji: ev.emoji,
       color: ev.color
     });
   } catch (err) {
