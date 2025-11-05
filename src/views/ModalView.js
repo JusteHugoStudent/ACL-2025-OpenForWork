@@ -39,7 +39,7 @@ class ModalView {
         // Vider les champs
         this.inputTitle.value = '';
         this.inputDescription.value = '';
-        this.inputColor.value = '#ffd700';
+        this.inputColor.value = '📅';
         
         // Preremplir les dates si fourni
         if (dateStr) {
@@ -64,7 +64,7 @@ class ModalView {
         this.inputStart.value = eventData.start;
         this.inputEnd.value = eventData.end;
         this.inputDescription.value = eventData.description || '';
-        this.inputColor.value = eventData.color || '#ffd700';
+        this.inputColor.value = eventData.emoji || '📅';
         
         this.modal.classList.remove('hidden');
     }
@@ -81,7 +81,7 @@ class ModalView {
             start: this.inputStart.value,
             end: this.inputEnd.value,
             description: this.inputDescription.value,
-            color: this.inputColor.value
+            emoji: this.inputColor.value
         };
     }
 

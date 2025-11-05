@@ -5,7 +5,8 @@ const eventSchema = new mongoose.Schema({
   start: Date,
   end: Date,
   description: String,
-  color: String
+  color: String,
+  emoji: String
 });
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 module.exports = Event;

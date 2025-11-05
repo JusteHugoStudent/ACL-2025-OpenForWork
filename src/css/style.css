@@ -775,6 +775,183 @@ body:hover .card-3d-wrap {
 }
 
 /* ========================================
+   SECTION FILTRE
+   ======================================== */
+.filter-section {
+  background: var(--noir-clair);
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 2px solid var(--jaune);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+}
+
+.filter-section h3 {
+  color: var(--jaune);
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-input-group label {
+  color: var(--jaune-clair);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.filter-input-group input,
+.filter-input-group select {
+  padding: 10px 15px;
+  background-color: var(--noir);
+  border: 2px solid var(--gris);
+  border-radius: 5px;
+  color: var(--blanc);
+  font-size: 14px;
+  min-width: 180px;
+  transition: all 0.3s;
+}
+
+.filter-input-group input:focus,
+.filter-input-group select:focus {
+  outline: none;
+  border-color: var(--jaune);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.filter-input-group select option {
+  background-color: var(--noir);
+  color: var(--blanc);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.btn-filter {
+  padding: 10px 25px;
+  background-color: var(--jaune);
+  color: var(--noir);
+  border: 2px solid var(--jaune);
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-filter:hover {
+  background-color: var(--jaune-clair);
+  border-color: var(--jaune-clair);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+.btn-filter-clear {
+  padding: 10px 25px;
+  background-color: var(--gris);
+  color: var(--blanc);
+  border: 2px solid var(--gris);
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-filter-clear:hover {
+  background-color: var(--gris-clair);
+  border-color: var(--gris-clair);
+  transform: translateY(-2px);
+}
+
+.filter-results {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid var(--gris);
+  display: none;
+}
+
+.filter-results h4 {
+  color: var(--jaune);
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.filter-results ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.filter-results ul::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-results ul::-webkit-scrollbar-track {
+  background: var(--noir);
+  border-radius: 4px;
+}
+
+.filter-results ul::-webkit-scrollbar-thumb {
+  background: var(--jaune);
+  border-radius: 4px;
+}
+
+.filter-results ul::-webkit-scrollbar-thumb:hover {
+  background: var(--jaune-clair);
+}
+
+.filter-results li {
+  background-color: var(--noir);
+  border: 2px solid var(--gris);
+  border-left: 4px solid var(--jaune);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+
+.filter-results li:hover {
+  background-color: var(--noir-clair);
+  border-color: var(--jaune);
+  transform: translateX(5px);
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
+}
+
+.filter-results li strong {
+  color: var(--jaune);
+  font-size: 16px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.filter-results li small {
+  color: var(--blanc);
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ========================================
    SELECT AGENDA
    ======================================== */
 #agendaSelect {

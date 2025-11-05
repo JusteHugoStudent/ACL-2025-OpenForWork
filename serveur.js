@@ -275,6 +275,7 @@ app.get('/api/events', authMiddleware, async (req, res) => {
         start: e.start,
         end: e.end,
         extendedProps: { description: e.description },
+        emoji: e.emoji,
         color: e.color,
         backgroundColor: e.color
       }))
@@ -289,20 +290,30 @@ app.get('/api/events', authMiddleware, async (req, res) => {
 
 // Create event
 app.post('/api/events', authMiddleware, async (req, res) => {
-  const { title, start, end, description, color, agendaId } = req.body;
+  const { title, start, end, description, color, emoji, agendaId } = req.body;
   if (!title || !start)
     return res.status(400).json({ error: 'title and start required' });
 
+  // Vérification erreur horaire : la fin ne peut pas être avant le début
+  const startDate = new Date(start);
+  const endDate = end ? new Date(end) : new Date(start);
+  
+  if (endDate < startDate) {
+    return res.status(400).json({ error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' });
+  }
+
+  let session;
   try {
-    const session = await mongoose.startSession();
+    session = await mongoose.startSession();
     let createdEvent;
 
     await session.withTransaction(async () => {
       const ev = new Event({
         title,
-        start: new Date(start),
-        end: end ? new Date(end) : new Date(start),
+        start: startDate,
+        end: endDate,
         description: description || '',
+        emoji: emoji || '📅',
         color: color || '#ffd700'
       });
       createdEvent = await ev.save({ session });
@@ -343,10 +354,14 @@ app.post('/api/events', authMiddleware, async (req, res) => {
       start: createdEvent.start,
       end: createdEvent.end,
       description: createdEvent.description,
+      emoji: createdEvent.emoji,
       color: createdEvent.color,
       agendaId
     });
   } catch (err) {
+    if (session) {
+      session.endSession();
+    }
     console.error(err);
     return res.status(500).json({ error: err.message || 'internal error' });
   }
@@ -355,14 +370,24 @@ app.post('/api/events', authMiddleware, async (req, res) => {
 // Update event
 app.put('/api/events/:id', authMiddleware, async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, color } = req.body;
+  const { title, start, end, description, color, emoji } = req.body;
   try {
     const ev = await Event.findById(id);
     if (!ev) return res.status(404).json({ error: 'event not found' });
+    
+    // Vérification erreur horaire pour la mise à jour
+    const newStart = start ? new Date(start) : ev.start;
+    const newEnd = end ? new Date(end) : ev.end;
+    
+    if (newEnd < newStart) {
+      return res.status(400).json({ error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' });
+    }
+    
     if (title) ev.title = title;
-    if (start) ev.start = new Date(start);
-    if (end) ev.end = new Date(end);
+    if (start) ev.start = newStart;
+    if (end) ev.end = newEnd;
     if (description !== undefined) ev.description = description;
+    if (emoji) ev.emoji = emoji;
     if (color) ev.color = color;
     await ev.save();
     return res.json({
@@ -371,6 +396,7 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
       start: ev.start,
       end: ev.end,
       description: ev.description,
+      emoji: ev.emoji,
       color: ev.color
     });
   } catch (err) {

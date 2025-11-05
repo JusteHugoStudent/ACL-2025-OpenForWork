@@ -126,6 +126,22 @@ class App {
             this.loadEventsFromServer(this.currentAgenda.id, view.activeStart, view.activeEnd);
         });
 
+        // Filtre d'événements
+        const btnFilter = document.getElementById('btn-filter');
+        const btnClearFilter = document.getElementById('btn-clear-filter');
+        
+        if (btnFilter) {
+            btnFilter.addEventListener('click', () => {
+                this.handleFilterEvents();
+            });
+        }
+        
+        if (btnClearFilter) {
+            btnClearFilter.addEventListener('click', () => {
+                this.handleClearFilter();
+            });
+        }
+
     }
 
     // Wire calendar persistence callbacks
@@ -259,16 +275,12 @@ class App {
 
             // Ajouter les events
             events.forEach(ev => {
-                const color = ev.color || ev.backgroundColor || '#ffd700';
-                this.calendarManager.addEvent({
-                    id: ev.id,
-                    title: ev.title,
-                    start: ev.start,
-                    end: ev.end,
-                    backgroundColor: color,
-                    borderColor: color,
-                    extendedProps: { description: ev.extendedProps?.description || ev.description }
-                }, { silent: true });
+                // add silently to avoid re-posting to server
+                const emoji = ev.emoji || '📅';
+                const displayTitle = `${emoji} ${ev.title}`;
+                // Lors du chargement initial, on ajoute les événements en mode "silent"
+                // pour éviter que la logique d'ajout local -> serveur ne renvoie un double POST.
+                this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
             });
         } catch (err) {
             console.error('Erreur chargement events période visible:', err);
@@ -301,11 +313,11 @@ class App {
         
         // prepare les data pour la modale
         const eventData = {
-            title: event.title,
+            title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
             start: this.formatDateTimeLocal(new Date(event.start)),
             end: event.end ? this.formatDateTimeLocal(new Date(event.end)) : '',
             description: event.extendedProps.description || '',
-            color: event.backgroundColor || '#ffd700'
+            emoji: event.extendedProps.emoji || '📅'
         };
         
         this.modalView.openForEdit(eventData);
@@ -324,31 +336,48 @@ class App {
 
         if (this.editingEventId) {
             // modification
+            const oldEvent = this.calendarManager.getEventById(this.editingEventId);
+            const oldData = {
+                title: oldEvent.title,
+                start: oldEvent.start,
+                end: oldEvent.end,
+                extendedProps: oldEvent.extendedProps
+            };
+            
+            const displayTitle = `${formData.emoji} ${formData.title}`;
             this.calendarManager.updateEvent(this.editingEventId, {
-                title: formData.title,
+                title: displayTitle,
                 start: formData.start,
                 end: formData.end || formData.start,
-                backgroundColor: formData.color,
-                borderColor: formData.color,
                 extendedProps: {
-                    description: formData.description
+                    description: formData.description,
+                    emoji: formData.emoji,
+                    originalTitle: formData.title
                 }
             });
+            
             // persist update -> appelle l'API PUT /api/events/:id
-            await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
+            
+            // Si échec, restaurer les anciennes valeurs
+            if (!success) {
+                this.calendarManager.updateEvent(this.editingEventId, oldData);
+                return; // Ne pas fermer la modal
+            }
         } 
         else {
             // ajoute
             const localId = Date.now().toString();
+            const displayTitle = `${formData.emoji} ${formData.title}`;
             this.calendarManager.addEvent({
                 id: localId,
-                title: formData.title,
+                title: displayTitle,
                 start: formData.start,
                 end: formData.end || formData.start,
-                backgroundColor: formData.color,
-                borderColor: formData.color,
                 extendedProps: {
-                    description: formData.description
+                    description: formData.description,
+                    emoji: formData.emoji,
+                    originalTitle: formData.title
                 }
             });
 
@@ -356,10 +385,14 @@ class App {
             // On crée d'abord localement (pour une UX instantanée), puis on appelle
             // le backend. Le backend renvoie l'_id MongoDB ; on remplace alors
             // l'id local (timestamp) par l'id retourné pour garder la cohérence.
-            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, color: formData.color });
+            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
             if (created && created.id) {
                 const ev = this.calendarManager.getEventById(localId);
                 if (ev) ev.setProp('id', created.id);
+            } else {
+                // Si la création a échoué, supprimer l'événement local
+                const ev = this.calendarManager.getEventById(localId);
+                if (ev) ev.remove();
             }
         }
 
@@ -381,7 +414,7 @@ class App {
                 start: eventData.start ? eventData.start.toISOString() : undefined,
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
-                color: eventData.color,
+                emoji: eventData.emoji,
                 agendaId: this.currentAgenda.id
             };
 
@@ -395,14 +428,15 @@ class App {
             });
 
             if (!res.ok) {
-                const txt = await res.text();
-                throw new Error('create failed: ' + txt);
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'create failed');
             }
 
             const created = await res.json();
             return created;
         } catch (err) {
             console.error('Create event failed:', err);
+            alert('Erreur : ' + err.message);
             return null;
         }
     }
@@ -411,7 +445,7 @@ class App {
     // Persist event update
     async updateEventOnServer(eventData) {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) return false;
         try {
             const id = eventData.id;
             const body = {
@@ -419,11 +453,19 @@ class App {
                 start: eventData.start ? eventData.start.toISOString() : undefined,
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
-                color: eventData.color
+                emoji: eventData.emoji
             };
-            await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+            const res = await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+            
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'update failed');
+            }
+            return true;
         } catch (err) {
             console.error('Update event failed:', err);
+            alert('Erreur : ' + err.message);
+            return false;
         }
     }
 
@@ -479,6 +521,109 @@ class App {
         } catch (error) {
             console.error('Erreur lors du chargement des agendas :', error);
         }
+    }
+
+    // Filtre les événements selon les critères
+    async handleFilterEvents() {
+        const filterStart = document.getElementById('filter-start').value;
+        const filterEnd = document.getElementById('filter-end').value;
+        const filterEmoji = document.getElementById('filter-emoji').value;
+
+        if (!filterStart || !filterEnd) {
+            alert('Veuillez sélectionner une date de début et une date de fin');
+            return;
+        }
+
+        const startDate = new Date(filterStart);
+        const endDate = new Date(filterEnd);
+
+        if (startDate > endDate) {
+            alert('La date de début doit être antérieure à la date de fin');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            // Récupérer tous les événements
+            const url = this.currentAgenda 
+                ? `/api/events?agendaId=${this.currentAgenda.id}`
+                : '/api/events';
+            
+            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+            const events = await res.json();
+
+            // Filtrer les événements
+            const filteredEvents = events.filter(ev => {
+                const eventStart = new Date(ev.start);
+                const eventEmoji = ev.emoji || '📅';
+                
+                // Vérifier si l'événement est dans la période
+                const inPeriod = eventStart >= startDate && eventStart <= endDate;
+                
+                // Vérifier l'emoji si spécifié
+                const matchEmoji = !filterEmoji || eventEmoji === filterEmoji;
+                
+                return inPeriod && matchEmoji;
+            });
+
+            // Afficher les résultats
+            this.displayFilterResults(filteredEvents);
+
+        } catch (err) {
+            console.error('Erreur lors du filtrage:', err);
+            alert('Erreur lors du filtrage des événements');
+        }
+    }
+
+    // Affiche les résultats du filtre
+    displayFilterResults(events) {
+        const resultsDiv = document.getElementById('filter-results');
+        const resultsList = document.getElementById('filter-results-list');
+
+        if (events.length === 0) {
+            resultsList.innerHTML = '<li>❌ Aucun événement trouvé pour ces critères</li>';
+        } else {
+            resultsList.innerHTML = events.map(ev => {
+                const emoji = ev.emoji || '📅';
+                const startDate = new Date(ev.start).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const endDate = new Date(ev.end).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const description = ev.extendedProps?.description || '';
+                return `
+                    <li>
+                        <strong>${emoji} ${ev.title}</strong>
+                        <small>📅 ${startDate}</small>
+                        <small>🕒 ${endDate}</small>
+                        ${description ? `<small>📝 ${description}</small>` : ''}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        resultsDiv.style.display = 'block';
+    }
+
+    // Réinitialise le filtre
+    handleClearFilter() {
+        document.getElementById('filter-start').value = '';
+        document.getElementById('filter-end').value = '';
+        document.getElementById('filter-emoji').value = '';
+        const resultsDiv = document.getElementById('filter-results');
+        resultsDiv.style.display = 'none';
+        document.getElementById('filter-results-list').innerHTML = '';
     }
     
 

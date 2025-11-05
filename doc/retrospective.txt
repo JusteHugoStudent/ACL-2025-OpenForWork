@@ -26,3 +26,5 @@ Sprint 2 :
 La page de register/login à était corriger, améliorer et enjolivée.
 La façon d'écrire les Backlogs, review, retrospéctive a était changée.
 La prise en charge de plusieurs agendas et les jours fériés ont étaient implementés.
+La conversion des couleurs des rendez-vous par des émojis a été implémentée.
+Les recherches d'un rendez-vous par critères (ici les émojis) ont été implémentées.
