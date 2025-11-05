@@ -25,6 +25,8 @@ class App {
 
         if (this.agendas.length > 0) {//par default on affiche le premier agenda
             this.currentAgenda = this.agendas[0];
+            // Mettre à jour le sélecteur pour afficher le bon agenda
+            this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
             await this.loadEventsFromServer(this.currentAgenda.id);
         }
     }
