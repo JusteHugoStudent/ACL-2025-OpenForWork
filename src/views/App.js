@@ -21,15 +21,25 @@ class App {
     }
 
     async init() {
-        await this.loadAgendas();//charge les agendas dans this.agendas et mets à jour le select
+        await this.loadAgendas();
 
-        if (this.agendas.length > 0) {//par default on affiche le premier agenda
-            this.currentAgenda = this.agendas[0];
-            // Mettre à jour le sélecteur pour afficher le bon agenda
-            this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
-            await this.loadEventsFromServer(this.currentAgenda.id);
+        // Initialiser le calendrier **une seule fois**
+        if (!this.calendarManager.calendar) {
+            await this.calendarManager.init();
+            this.setupCalendarCallbacks();
         }
+
+        //if (this.agendas.length > 0) {
+            this.currentAgenda = this.agendas[0];
+
+            // Charger les events pour la période visible
+            const view = this.calendarManager.calendar?.view;
+            if (view) {
+                await this.loadEventsFromServer(this.currentAgenda.id, view.activeStart, view.activeEnd);
+            }
+        //}
     }
+
 
     // Initialise tous les events (callbacks)
     initEvents() {
@@ -51,7 +61,8 @@ class App {
         // Changement d'agenda
         this.headerView.onAgendaChange = (agenda) => {
             this.currentAgenda = agenda;
-            this.loadEventsFromServer(agenda.id);
+            const view = this.calendarManager.calendar.view;
+            this.loadEventsFromServer(agenda.id, view.activeStart, view.activeEnd);
         };
 
 
@@ -111,7 +122,8 @@ class App {
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
 
             // Recharge les events (normalement vide)
-            this.loadEventsFromServer(this.currentAgenda.id);
+            const view = this.calendarManager.calendar.view;
+            this.loadEventsFromServer(this.currentAgenda.id, view.activeStart, view.activeEnd);
         });
 
         // Filtre d'événements
@@ -156,6 +168,15 @@ class App {
         this.calendarManager.onEventRemove((id) => {
             this.deleteEventOnServer(id);
         });
+
+        //changement de periode visible dans l'agenda
+        this.calendarManager.onVisiblePeriodChange = (start, end) => {
+            if (this.currentAgenda) {
+                this.loadEventsFromServer(this.currentAgenda.id, start, end);
+            }
+        };
+
+
     }
 
     // Gere la connexion - Meca basique pour l'instant
@@ -178,8 +199,6 @@ class App {
             this.headerView.setUserName(this.currentUser);
             this.loginView.hide();
             this.headerView.show();
-
-            this.setupCalendarCallbacks();
 
             //Attend la fin de l'initialisation
             await this.init();
@@ -238,18 +257,23 @@ class App {
         });
     }
 
-    // charge les events depuis le backend et les ajoute au calendrier
-    async loadEventsFromServer(agendaId = null) {
-        // Vide le calendrier avant d'afficher le nouvel agenda        
+    // recupere les events d'un agenda sur une plage de temps donnée
+    async loadEventsFromServer(agendaId = null, start = null, end = null) {
         const token = localStorage.getItem('token');
         if (!token) return;
+
         try {
-            const url = agendaId ? `/api/events?agendaId=${agendaId}` : '/api/events';
+            let url = agendaId ? `/api/events?agendaId=${agendaId}` : '/api/events';
+            if (start && end) url += `&start=${start.toISOString()}&end=${end.toISOString()}`;
+
             const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             const events = await res.json();
-            // d'abord vider le calendrier
-            this.calendarManager.destroy();
-            await this.calendarManager.init();
+
+            // Vide juste les events existants, **pas le calendrier complet**
+            this.calendarManager.removeAllEvents();
+
+
+            // Ajouter les events
             events.forEach(ev => {
                 // add silently to avoid re-posting to server
                 const emoji = ev.emoji || '📅';
@@ -259,9 +283,11 @@ class App {
                 this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
             });
         } catch (err) {
-            console.error('Erreur chargement events:', err);
+            console.error('Erreur chargement events période visible:', err);
         }
     }
+
+
 
     // (setupCalendarCallbacks is implemented above with persistence wiring)
 

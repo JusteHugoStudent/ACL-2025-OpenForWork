@@ -241,19 +241,33 @@ app.post('/api/agendas', authMiddleware, async (req, res) => {
 // Get events
 app.get('/api/events', authMiddleware, async (req, res) => {
   try {
+    const { agendaId, start, end } = req.query;
+
     const user = await User.findById(req.user.id).populate({
       path: 'agendas',
-      populate: { path: 'events' }
+      populate: {
+        path: 'events',
+        match: start && end ? {
+          // filtre les événements entre start et end
+          $or: [
+            { start: { $gte: new Date(start), $lte: new Date(end) } },
+            { end: { $gte: new Date(start), $lte: new Date(end) } },
+            { start: { $lte: new Date(start) }, end: { $gte: new Date(end) } } // events englobant la période
+          ]
+        } : {}
+      }
     });
+
     if (!user) return res.status(404).json({ error: 'user not found' });
 
     let events = [];
-    if (req.query.agendaId) {
-      const agenda = user.agendas.find(a => String(a._id) === req.query.agendaId);
+    if (agendaId) {
+      const agenda = user.agendas.find(a => String(a._id) === agendaId);
       if (agenda) events = agenda.events;
     } else {
       user.agendas.forEach(a => events.push(...a.events));
     }
+
     return res.json(
       events.map(e => ({
         id: e._id,
@@ -266,11 +280,13 @@ app.get('/api/events', authMiddleware, async (req, res) => {
         backgroundColor: e.color
       }))
     );
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'internal error' });
   }
 });
+
 
 // Create event
 app.post('/api/events', authMiddleware, async (req, res) => {

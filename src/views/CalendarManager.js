@@ -63,16 +63,22 @@ class CalendarManager {
             eventResize: (info) => {
                 console.log('Événement redimensionné:', info.event.title);
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
+            },
+            datesSet: (info) => {// CALLBACK quand les dates visibles changent
+                //console.log('Nouvelle période visible:', info.start, '→', info.end, 'Vue:', info.view.type);
+                if (this.onVisiblePeriodChange) {
+                    this.onVisiblePeriodChange(info.start, info.end, info.view.type);
+                }
             }
         });
 
+        await this.loadHolidaysFr(); // ajout des jours fériés
+
         this.calendar.render();
         console.log('✅ CalendarManager: Calendrier FullCalendar initialisé et rendu avec succès');
-
+        
         // Ajout auto d'un event test (optionnel)
         this.addAutoEvent();
-
-        this.loadHolidaysFr();
 
     }
 
@@ -133,7 +139,8 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false
+                editable: false,
+                extendedProps: { source: 'holiday' }
             },
             {
                 id: 'manual-fete-travail-2025',
@@ -143,7 +150,8 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false
+                editable: false,
+                extendedProps: { source: 'holiday' }
             },
             {
                 id: 'manual-fete-nationale-2025',
@@ -153,7 +161,8 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false
+                editable: false,
+                extendedProps: { source: 'holiday' }
             },
             {
                 id: 'manual-noel-2025',
@@ -163,13 +172,15 @@ class CalendarManager {
                 backgroundColor: '#e74c3c',
                 borderColor: '#c0392b',
                 textColor: 'white',
-                editable: false
+                editable: false,
+                extendedProps: { source: 'holiday' }
             }
         ];
 
         manualHolidays.forEach(holiday => this.addEvent(holiday, { silent: true }));
         console.log(`✅ CalendarManager: ${manualHolidays.length} jours fériés manuels ajoutés`);
     }
+
 
     // Définition des callbacks
     setOnEventClick(callback) { this.onEventClickCallback = callback; }
@@ -208,8 +219,17 @@ class CalendarManager {
 
     removeAllEvents() {
         if (!this.calendar) return;
-        this.calendar.getEvents().forEach(ev => ev.remove());
+
+        this.calendar.getEvents().forEach(ev => {
+            const isHoliday =
+                ev.extendedProps?.source?.startsWith('holiday') || 
+                (ev.title && ev.title.toLowerCase().includes('férié'));
+
+            if (!isHoliday) ev.remove();
+        });
     }
+
+
 
     onEventAdd(callback) { this.onEventAddCallback = callback; }
     onEventChange(callback) { this.onEventChangeCallback = callback; }
