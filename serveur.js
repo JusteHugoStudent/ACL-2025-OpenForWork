@@ -27,6 +27,8 @@ mongoose
   .then(() => console.log('Mongoose connecté à MongoDB'))
   .catch(err => console.error('Erreur mongoose :', err));
 
+
+
 // Route de santé
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
@@ -47,12 +49,18 @@ app.post('/api/register', async (req, res) => {
     const user = new User({ username, password: hash, agendas: [] });
     await user.save();
 
-    const agenda = new Agenda({ name: 'Default', events: [] });
-    await agenda.save();
-    user.agendas.push(agenda._id);
-    await user.save();
+    // Créer l'agenda par défaut
+    const defaultAgenda = new Agenda({ name: 'Default', events: [] });
+    await defaultAgenda.save();
+    user.agendas.push(defaultAgenda._id);
 
-    await createWelcomeEvent(user._id, user.username);
+    // NOUVEAU : Ajouter automatiquement l'agenda "Jours fériés" pour vue mixée par défaut
+    const holidaysAgenda = await Agenda.findOne({ name: 'Jours fériés' });
+    if (holidaysAgenda) {
+      user.agendas.push(holidaysAgenda._id);
+    }
+
+    await user.save();
 
     return res.status(201).json({ message: 'user created' });
   } catch (err) {
@@ -63,6 +71,7 @@ app.post('/api/register', async (req, res) => {
 
 // --- Route de connexion ---
 app.post('/api/login', async (req, res) => {
+  console.log(`🔍 DEBUG: Connexion demandée pour utilisateur "${req.body.username}"`);
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ error: 'username and password required' });
@@ -80,9 +89,10 @@ app.post('/api/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Créer un événement automatique lors de la connexion
-    await createLoginEvent(user._id);
+    // SUPPRIMÉ : Création d'événement automatique lors de la connexion
+    // await createLoginEvent(user._id);
 
+    console.log(`✅ DEBUG: Connexion réussie pour utilisateur "${user.username}"`);
     return res.json({ token, username: user.username });
   } catch (err) {
     console.error(err);
@@ -90,78 +100,8 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// --- Fonction : créer un événement de bienvenue ---
-async function createWelcomeEvent(userId, username) {
-  try {
-    const user = await User.findById(userId).populate('agendas');
-    if (!user || !user.agendas.length) {
-      console.log("Utilisateur ou agenda introuvable pour créer l'événement de bienvenue");
-      return;
-    }
-
-    const firstAgenda = user.agendas[0];
-    const welcomeEvent = new Event({
-      title: `🎉 Bienvenue ${username} !`,
-      start: new Date('2025-11-05T14:00:00'),
-      end: new Date('2025-11-05T15:00:00'),
-      description: `Bienvenue sur l'agenda de l'équipe 8 ! Vous pouvez maintenant gérer vos événements, consulter les jours fériés et collaborer avec l'équipe sur le Sprint 2.`,
-      color: '#27ae60'
-    });
-
-    await welcomeEvent.save();
-    firstAgenda.events.push(welcomeEvent._id);
-    await firstAgenda.save();
-
-    console.log(`🎉 Événement de bienvenue créé pour ${username}`);
-    return welcomeEvent;
-  } catch (err) {
-    console.error('Erreur création événement de bienvenue:', err);
-  }
-}
 
 // --- Fonction : créer un événement automatique à la connexion ---
-async function createLoginEvent(userId) {
-  try {
-    const tomorrow = new Date('2025-11-06');
-    const startOfDay = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
-    const endOfDay = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate() + 1);
-
-    const user = await User.findById(userId).populate('agendas');
-    if (!user || !user.agendas.length) {
-      console.log("Utilisateur ou agenda introuvable pour créer l'événement de connexion");
-      return;
-    }
-
-    const firstAgenda = user.agendas[0];
-    const existingEvents = await Event.find({
-      _id: { $in: firstAgenda.events },
-      start: { $gte: startOfDay, $lt: endOfDay },
-      title: { $regex: /réunion équipe|événement préparé|connexion/i }
-    });
-
-    if (existingEvents.length > 0) {
-      console.log('Événement par défaut déjà existant pour demain');
-      return;
-    }
-
-    const loginEvent = new Event({
-      title: '🚀 Réunion équipe - Sprint 2',
-      start: new Date('2025-11-06T10:00:00'),
-      end: new Date('2025-11-06T11:30:00'),
-      description: `Réunion d'équipe Sprint 2 - Créé automatiquement lors de la connexion de ${user.username}.`,
-      color: '#3498db'
-    });
-
-    await loginEvent.save();
-    firstAgenda.events.push(loginEvent._id);
-    await firstAgenda.save();
-
-    console.log(`✅ Événement de connexion créé pour ${user.username}: ${loginEvent.title}`);
-    return loginEvent;
-  } catch (err) {
-    console.error('Erreur création événement de connexion:', err);
-  }
-}
 
 // Route de base
 app.get('/', (req, res) => {
@@ -241,25 +181,75 @@ app.post('/api/agendas', authMiddleware, async (req, res) => {
 // Get events
 app.get('/api/events', authMiddleware, async (req, res) => {
   try {
-    const { agendaId, start, end } = req.query;
+    const { agendaId, agendaIds, start, end } = req.query;
+
+    // OPTIMISATION INTELLIGENTE : Filtrage dynamique selon la période demandée
+    let dateFilter = {};
+    if (start && end) {
+      // Utiliser les dates spécifiées par le client (période visible + marge)
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      dateFilter = {
+        $or: [
+          { start: { $gte: startDate, $lte: endDate } },
+          { end: { $gte: startDate, $lte: endDate } },
+          { start: { $lte: startDate }, end: { $gte: endDate } }
+        ]
+      };
+    } else {
+      // Fallback : limiter à ±2 mois autour de maintenant (première connexion)
+      const now = new Date();
+      const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      const twoMonthsLater = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+      
+      dateFilter = {
+        $or: [
+          { start: { $gte: twoMonthsAgo, $lte: twoMonthsLater } },
+          { end: { $gte: twoMonthsAgo, $lte: twoMonthsLater } },
+          { start: { $lte: twoMonthsAgo }, end: { $gte: twoMonthsLater } }
+        ]
+      };
+      console.log(`📅 Filtrage par défaut: ${twoMonthsAgo.toLocaleDateString()} à ${twoMonthsLater.toLocaleDateString()}`);
+    }
 
     const user = await User.findById(req.user.id).populate({
       path: 'agendas',
       populate: {
         path: 'events',
-        match: start && end ? {
-          // filtre les événements entre start et end
-          $or: [
-            { start: { $gte: new Date(start), $lte: new Date(end) } },
-            { end: { $gte: new Date(start), $lte: new Date(end) } },
-            { start: { $lte: new Date(start) }, end: { $gte: new Date(end) } } // events englobant la période
-          ]
-        } : {}
+        match: dateFilter
       }
     });
 
     if (!user) return res.status(404).json({ error: 'user not found' });
 
+    // Optimisation de la gestion mix agendas
+    const normalizedAgendaIds = agendaIds ? (Array.isArray(agendaIds) ? agendaIds : [agendaIds]) : null;
+    
+    if (normalizedAgendaIds && normalizedAgendaIds.length > 0) {
+      const eventsByAgenda = {};
+      
+      normalizedAgendaIds.forEach(id => {
+        const agenda = user.agendas.find(a => String(a._id) === id);
+        if (agenda && agenda.events && Array.isArray(agenda.events)) {
+          eventsByAgenda[id] = agenda.events.map(e => ({
+            id: e._id,
+            title: e.title,
+            start: e.start,
+            end: e.end,
+            extendedProps: { description: e.description },
+            emoji: e.emoji,
+            color: e.color,
+            backgroundColor: e.color
+          }));
+        } else {
+          eventsByAgenda[id] = [];
+        }
+      });
+
+      return res.json(eventsByAgenda);
+    }
+
+    // Ancien comportement pour agenda unique ça peut encore servir
     let events = [];
     if (agendaId) {
       const agenda = user.agendas.find(a => String(a._id) === agendaId);
@@ -267,6 +257,8 @@ app.get('/api/events', authMiddleware, async (req, res) => {
     } else {
       user.agendas.forEach(a => events.push(...a.events));
     }
+
+    const totalEvents = events.length;
 
     return res.json(
       events.map(e => ({

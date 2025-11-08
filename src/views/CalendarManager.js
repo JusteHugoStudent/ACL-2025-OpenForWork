@@ -18,7 +18,6 @@ class CalendarManager {
 
     // Initialise FullCalendar avec la configuration
     async init() {
-        console.log('📅 CalendarManager: Initialisation du calendrier FullCalendar...');
 
         if (!this.calendarEl) {
             console.error('❌ CalendarManager: Élément #calendar introuvable dans le DOM');
@@ -57,128 +56,22 @@ class CalendarManager {
                 if (this.onDateClickCallback) this.onDateClickCallback(info.dateStr);
             },
             eventDrop: (info) => {
-                console.log('Événement déplacé:', info.event.title);
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             },
             eventResize: (info) => {
-                console.log('Événement redimensionné:', info.event.title);
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);
             },
             datesSet: (info) => {// CALLBACK quand les dates visibles changent
-                //console.log('Nouvelle période visible:', info.start, '→', info.end, 'Vue:', info.view.type);
                 if (this.onVisiblePeriodChange) {
                     this.onVisiblePeriodChange(info.start, info.end, info.view.type);
                 }
             }
         });
 
-        await this.loadHolidaysFr(); // ajout des jours fériés
 
         this.calendar.render();
         console.log('✅ CalendarManager: Calendrier FullCalendar initialisé et rendu avec succès');
-        
-        // Ajout auto d'un event test (optionnel)
-        this.addAutoEvent();
 
-    }
-
-    // Ajoute un événement automatique pour demain (pour debug)
-    addAutoEvent() {
-        console.log('🚀 CalendarManager: Ajout automatique d\'un événement pour demain...');
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-        const autoEvent = {
-            id: 'auto-event-' + Date.now(),
-            title: '🚀 Réunion Sprint 2 - Événement Auto',
-            start: tomorrowStr + 'T10:00:00',
-            end: tomorrowStr + 'T11:30:00',
-            backgroundColor: '#3498db',
-            borderColor: '#2980b9',
-            textColor: 'white',
-            extendedProps: {
-                description: 'Événement automatique pour test de rendu',
-                source: 'auto'
-            },
-            editable: true
-        };
-
-        this.addEvent(autoEvent, { silent: true });
-    }
-
-    // Charge les jours fériés français depuis le JSON
-    async loadHolidaysFr() {
-        try {
-            const response = await fetch('./holidaysFr.json');
-            if (!response.ok) throw new Error(`Impossible de charger le fichier: ${response.status}`);
-
-            const holidays = await response.json();
-            console.log(`📅 CalendarManager: ${holidays.length} jours fériés chargés.`);
-
-            holidays.forEach(holiday => {
-                this.addEvent(holiday, { silent: true });
-            });
-
-            console.log('✅ CalendarManager: Tous les jours fériés français ont été ajoutés au calendrier');
-        } catch (error) {
-            console.error('❌ CalendarManager: Erreur lors du chargement des jours fériés:', error);
-            console.log('➡️ Utilisation du fallback - ajout manuel de quelques jours fériés 2025');
-            this.addManualHolidays();
-        }
-    }
-
-    // Fallback manuel si holidaysFr.json manquant
-    addManualHolidays() {
-        const manualHolidays = [
-            {
-                id: 'manual-jour-an-2025',
-                title: '🎉 Jour de l\'An',
-                start: '2025-01-01',
-                allDay: true,
-                backgroundColor: '#e74c3c',
-                borderColor: '#c0392b',
-                textColor: 'white',
-                editable: false,
-                extendedProps: { source: 'holiday' }
-            },
-            {
-                id: 'manual-fete-travail-2025',
-                title: '🎉 Fête du Travail',
-                start: '2025-05-01',
-                allDay: true,
-                backgroundColor: '#e74c3c',
-                borderColor: '#c0392b',
-                textColor: 'white',
-                editable: false,
-                extendedProps: { source: 'holiday' }
-            },
-            {
-                id: 'manual-fete-nationale-2025',
-                title: '🎉 Fête Nationale',
-                start: '2025-07-14',
-                allDay: true,
-                backgroundColor: '#e74c3c',
-                borderColor: '#c0392b',
-                textColor: 'white',
-                editable: false,
-                extendedProps: { source: 'holiday' }
-            },
-            {
-                id: 'manual-noel-2025',
-                title: '🎉 Noël',
-                start: '2025-12-25',
-                allDay: true,
-                backgroundColor: '#e74c3c',
-                borderColor: '#c0392b',
-                textColor: 'white',
-                editable: false,
-                extendedProps: { source: 'holiday' }
-            }
-        ];
-
-        manualHolidays.forEach(holiday => this.addEvent(holiday, { silent: true }));
-        console.log(`✅ CalendarManager: ${manualHolidays.length} jours fériés manuels ajoutés`);
     }
 
 
@@ -186,12 +79,29 @@ class CalendarManager {
     setOnEventClick(callback) { this.onEventClickCallback = callback; }
     setOnDateClick(callback) { this.onDateClickCallback = callback; }
 
-    // Ajout d'événement sécurisé
+    // Ajout d'événement sécurisé avec détection de doublons
     addEvent(eventData, options = {}) {
         if (!this.calendar) {
-            console.warn('⚠️ CalendarManager: tentative d’ajouter un événement alors que le calendrier est null.');
+            console.warn('⚠️ CalendarManager: tentative d\'ajouter un événement alors que le calendrier est null.');
             return null;
         }
+
+        // Vérifier les doublons pour les jours fériés
+        const isHoliday = eventData.extendedProps?.source?.startsWith('holiday') || (eventData.title && eventData.title.toLowerCase().includes('férié'));
+        
+        if (isHoliday) {
+            const existingHoliday = this.calendar.getEvents().find(ev => 
+                ev.title === eventData.title && 
+                ev.startStr === eventData.start &&
+                (ev.extendedProps?.source?.startsWith('holiday') || 
+                ev.title.toLowerCase().includes('férié'))
+            );
+            
+            if (existingHoliday) {
+                return existingHoliday;
+            }
+        }
+
         const ev = this.calendar.addEvent(eventData);
         if (!options.silent && this.onEventAddCallback) this.onEventAddCallback(ev);
         return ev;
@@ -217,15 +127,20 @@ class CalendarManager {
         }
     }
 
-    removeAllEvents() {
+    removeAllEvents(preserveHolidays = true) {
         if (!this.calendar) return;
 
         this.calendar.getEvents().forEach(ev => {
-            const isHoliday =
-                ev.extendedProps?.source?.startsWith('holiday') || 
-                (ev.title && ev.title.toLowerCase().includes('férié'));
+            if (preserveHolidays) {
+                const isHoliday =
+                    ev.extendedProps?.source?.startsWith('holiday') || 
+                    (ev.title && ev.title.toLowerCase().includes('férié'));
 
-            if (!isHoliday) ev.remove();
+                if (!isHoliday) ev.remove();
+            } else {
+                // Supprimer TOUS les événements (y compris les jours fériés)
+                ev.remove();
+            }
         });
     }
 
@@ -250,7 +165,6 @@ class CalendarManager {
         if (this.calendar) {
             this.calendar.destroy();
             this.calendar = null;
-            console.log('🧹 CalendarManager: Calendrier détruit proprement');
         }
     }
 

@@ -23,6 +23,7 @@
   "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "date-holidays": "^3.26.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.0",

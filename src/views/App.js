@@ -11,6 +11,7 @@ class App {
         //Gestion plusieurs agenda
         this.agendas = [];
         this.currentAgenda = null;
+        this.selectedAgendas = []; // Liste simple des agendas à afficher
 
         // var d'etat
         this.currentUser = null;
@@ -23,7 +24,7 @@ class App {
     async init() {
         await this.loadAgendas();
 
-        // Initialiser le calendrier **une seule fois**
+        // Initialiser le calendrier **une seule fois** de grace
         if (!this.calendarManager.calendar) {
             await this.calendarManager.init();
             this.setupCalendarCallbacks();
@@ -31,6 +32,14 @@ class App {
 
         //if (this.agendas.length > 0) {
             this.currentAgenda = this.agendas[0];
+            //Affichage mixé avec jours fériés par défaut
+            const holidaysAgenda = this.agendas.find(a => a.name === 'Jours fériés');
+            if (holidaysAgenda && !this.selectedAgendas.includes(holidaysAgenda.id)) {
+                this.selectedAgendas.push(holidaysAgenda.id);
+            }
+
+            // Mettre à jour le menu overlay pour refléter la sélection
+            this.updateOverlayMenu();
 
             // Charger les events pour la période visible
             const view = this.calendarManager.calendar?.view;
@@ -40,6 +49,9 @@ class App {
         //}
     }
 
+/* ========================================
+    Gestionnaire événements
+   ======================================== */
 
     // Initialise tous les events (callbacks)
     initEvents() {
@@ -61,10 +73,15 @@ class App {
         // Changement d'agenda
         this.headerView.onAgendaChange = (agenda) => {
             this.currentAgenda = agenda;
-            const view = this.calendarManager.calendar.view;
-            this.loadEventsFromServer(agenda.id, view.activeStart, view.activeEnd);
+            
+            // Supprimer l'ancien agenda principal des agendas sélectionnés s'il y était
+            this.selectedAgendas = this.selectedAgendas.filter(id => id !== agenda.id);
+            
+            // Mettre à jour le menu de superposition pour empecher le nouvel agenda principal
+            this.updateOverlayMenu();
+            
+            this.reloadAllEvents(); // Simple : recharger tous les événements
         };
-
 
         // Modal - Boutons
         this.modalView.onSaveClick(() => {
@@ -142,42 +159,77 @@ class App {
             });
         }
 
+        // Menu de superposition des agendas
+        const overlayBtn = document.getElementById('agenda-overlay-btn');
+        const overlayMenu = document.getElementById('agenda-overlay-menu');
+        const clearAllBtn = document.getElementById('clear-all-overlay');
+
+        if (overlayBtn && overlayMenu) {
+            overlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = overlayMenu.classList.contains('hidden');
+                overlayMenu.classList.toggle('hidden');                
+                if (isHidden) {
+                    overlayBtn.classList.add('active');
+                } else {
+                    overlayBtn.classList.remove('active');
+                }
+            });
+
+            // Fermeture menu si clique à l'extérieur (pour mobile)
+            document.addEventListener('click', (e) => {
+                if (!overlayBtn.contains(e.target) && !overlayMenu.contains(e.target)) {
+                    overlayMenu.classList.add('hidden');
+                    overlayBtn.classList.remove('active');
+                }
+            });
+
+            // Empêcher la fermeture quand on clique dans le menu
+            overlayMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => {
+                this.clearAllOverlayAgendas();
+            });
+        }
     }
 
-    // Wire calendar persistence callbacks
+/* ========================================
+    Gestionnaire des call-backs
+   ======================================== */
+
+    // Configuration des callbacks du calendrier
     setupCalendarCallbacks() {
         // clic sur un event // Modifier
         this.calendarManager.setOnEventClick((event) => {
             this.handleEditEvent(event);
         });
-
         // clic sur une date // Ajouter
         this.calendarManager.setOnDateClick((dateStr) => {
             this.handleAddEvent(dateStr);
         });
-
-        // event added locally -> persist
-
-
-        // event moved/resized/changed -> persist update
+        // Modification permanente d'un élément
         this.calendarManager.onEventChange((ev) => {
             this.updateEventOnServer({ id: ev.id, title: ev.title, start: ev.start, end: ev.end, description: ev.extendedProps.description, color: ev.backgroundColor });
         });
-
-        // event removed -> persist delete
+        // Suppression permanente d'un élément
         this.calendarManager.onEventRemove((id) => {
             this.deleteEventOnServer(id);
         });
-
         //changement de periode visible dans l'agenda
         this.calendarManager.onVisiblePeriodChange = (start, end) => {
             if (this.currentAgenda) {
-                this.loadEventsFromServer(this.currentAgenda.id, start, end);
+                this.reloadAllEvents(); // Simple : recharger tous les événements
             }
         };
-
-
     }
+
+/* ========================================
+    Gestionnaire des call-backs
+   ======================================== */
 
     // Gere la connexion - Meca basique pour l'instant
     async handleLogin(username, password) {
@@ -209,29 +261,7 @@ class App {
         }
     }
 
-
-    // Handle registration (from register.html page)
-    handleRegister(username, password) {
-        fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        }).then(r => r.json())
-        .then(data => {
-            if (data.error) {
-                this.loginView.showMessage(data.error, true);
-                return;
-            }
-            // Si l'inscription réussit, on affiche un message et on vide le formulaire
-            this.loginView.showMessage('Inscription réussie, connectez-vous');
-            this.loginView.clear();
-        }).catch(err => {
-            console.error(err);
-            this.loginView.showMessage('Erreur réseau', true);
-        });
-    }
-
-    // Handle signup (from card-back flip)
+    // Gestion de l'inscription
     handleSignup(username, password) {
         if (!username || !password) {
             this.loginView.showSignupMessage('Nom d\'utilisateur et mot de passe requis', true);
@@ -256,42 +286,7 @@ class App {
             this.loginView.showSignupMessage('Erreur réseau', true);
         });
     }
-
-    // recupere les events d'un agenda sur une plage de temps donnée
-    async loadEventsFromServer(agendaId = null, start = null, end = null) {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        try {
-            let url = agendaId ? `/api/events?agendaId=${agendaId}` : '/api/events';
-            if (start && end) url += `&start=${start.toISOString()}&end=${end.toISOString()}`;
-
-            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-            const events = await res.json();
-
-            // Vide juste les events existants, **pas le calendrier complet**
-            this.calendarManager.removeAllEvents();
-
-
-            // Ajouter les events
-            events.forEach(ev => {
-                // add silently to avoid re-posting to server
-                const emoji = ev.emoji || '📅';
-                const displayTitle = `${emoji} ${ev.title}`;
-                // Lors du chargement initial, on ajoute les événements en mode "silent"
-                // pour éviter que la logique d'ajout local -> serveur ne renvoie un double POST.
-                this.calendarManager.addEvent({ id: ev.id, title: displayTitle, start: ev.start, end: ev.end, extendedProps: { description: ev.extendedProps ? ev.extendedProps.description : ev.description, emoji: emoji, originalTitle: ev.title } }, { silent: true });
-            });
-        } catch (err) {
-            console.error('Erreur chargement events période visible:', err);
-        }
-    }
-
-
-
-    // (setupCalendarCallbacks is implemented above with persistence wiring)
-
-    // gere la deconnexion
+    // gestion de la deconnexion
     handleLogout() {
         this.currentUser = null;
         this.loginView.clear();
@@ -301,7 +296,7 @@ class App {
         this.loginView.show();
     }
 
-    // gere l'ajout d'un evenement avec en param la date cliquee
+    // gestion de l'ajout d'un evenement avec en param la date cliquee
     handleAddEvent(dateStr) {
         this.editingEventId = null;
         this.modalView.openForAdd(dateStr);
@@ -323,7 +318,7 @@ class App {
         this.modalView.openForEdit(eventData);
     }
 
-    // gere la sauvegarde d'un evenemnt (ajout ou modification)
+    // gestion de la sauvegarde d'un evenemnt (ajout ou modification)
     async handleSaveEvent() {
         // validation
         if (!this.modalView.isValid()) {
@@ -355,8 +350,7 @@ class App {
                     originalTitle: formData.title
                 }
             });
-            
-            // persist update -> appelle l'API PUT /api/events/:id
+            // Suppression permanente -> appelle l'API PUT /api/events/:id
             const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
             
             // Si échec, restaurer les anciennes valeurs
@@ -381,7 +375,7 @@ class App {
                 }
             });
 
-            // Persist creation au serveur via POST /api/events
+            // Permanent creation au serveur via POST /api/events
             // On crée d'abord localement (pour une UX instantanée), puis on appelle
             // le backend. Le backend renvoie l'_id MongoDB ; on remplace alors
             // l'id local (timestamp) par l'id retourné pour garder la cohérence.
@@ -399,7 +393,7 @@ class App {
         this.modalView.close();
     }
 
-    // Persist event create
+    // Création d'événement permanent
     async createEventOnServer(eventData) {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -442,7 +436,7 @@ class App {
     }
 
 
-    // Persist event update
+    // Modification d'événement permanent
     async updateEventOnServer(eventData) {
         const token = localStorage.getItem('token');
         if (!token) return false;
@@ -469,7 +463,7 @@ class App {
         }
     }
 
-    // Persist event delete
+    // Suppression d'événement permanent
     async deleteEventOnServer(id) {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -480,19 +474,17 @@ class App {
         }
     }
 
-    // gere la suppression d'un evenement
-     
+    // gestion de la suppression d'un evenement
     handleDeleteEvent() {
         if (this.modalView.confirmDelete()) {
             this.calendarManager.removeEvent(this.editingEventId);
-            // persist delete
+            // Suppression permanente
             this.deleteEventOnServer(this.editingEventId);
             this.modalView.close();
         }
     }
 
     // formate une date pour les inputs datetime-local,  date / Date a formater, retourne un format ANNEES-MOIS-JOURS-Heurs-mins
-     
     formatDateTimeLocal(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -515,11 +507,168 @@ class App {
             if (!res.ok) throw new Error('Erreur de chargement des agendas');
             this.agendas = await res.json();
 
-            // Mise à jour du header pour afficher le sélecteur
+            // Update du header pour afficher le sélecteur
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+            
+            // Update du menu de superposition
+            this.updateOverlayMenu();
 
         } catch (error) {
             console.error('Erreur lors du chargement des agendas :', error);
+        }
+    }
+
+    // Création du menu simple avec les checkboxes
+    updateOverlayMenu() {
+        const overlayList = document.getElementById('agenda-overlay-list');
+        if (!overlayList) return;
+
+        overlayList.innerHTML = '';
+
+        // Pour chaque agenda, créer une checkbox (SAUF l'agenda principal actuellement sélectionné)
+        this.agendas.forEach(agenda => {
+            // Exclure l'agenda actuellement sélectionné comme principal
+            if (this.currentAgenda && agenda.id === this.currentAgenda.id) {
+                return; // Skip cet agenda
+            }
+
+            const item = document.createElement('div');
+            item.className = 'agenda-overlay-item';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = this.selectedAgendas.includes(agenda.id);
+            if (checkbox.checked) {
+                item.classList.add('selected');
+            }
+            
+            // Selection / désélection
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    // Ajouter l'agenda à la liste
+                    this.selectedAgendas.push(agenda.id);
+                    item.classList.add('selected');
+                } else {
+                    // Retirer l'agenda de la liste
+                    this.selectedAgendas = this.selectedAgendas.filter(id => id !== agenda.id);
+                    item.classList.remove('selected');
+                }
+                this.reloadAllEvents(); // Recharger tous les événements
+            });
+
+            const label = document.createElement('label');
+            label.textContent = agenda.name;
+            label.style.cursor = 'pointer';
+            label.addEventListener('click', () => checkbox.click());
+
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            overlayList.appendChild(item);
+        });
+    }
+
+    // Tout décocher
+    clearAllOverlayAgendas() {
+        this.selectedAgendas = [];
+        this.updateOverlayMenu();
+        this.reloadAllEvents();
+    }
+
+    // Recharge TOUS les événements (agenda principal + sélectionnés)
+    async reloadAllEvents() {
+        // Vider COMPLÈTEMENT le calendrier (y compris les jours fériés)
+        this.calendarManager.removeAllEvents(false);
+
+        // Liste de tous les agendas à afficher (agenda courant + sélectionnés)
+        const agendasToShow = [...this.selectedAgendas];
+        if (this.currentAgenda) {
+            agendasToShow.push(this.currentAgenda.id);
+        }
+
+        // Charger les événements de chaque agenda
+        for (const agendaId of agendasToShow) {
+            await this.loadEventsFromOneAgenda(agendaId);
+        }
+    }
+
+    // Charge les événements d'UN agenda avec filtrage rapide
+    async loadEventsFromOneAgenda(agendaId) {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            // Optimisation (chargement seulement la période visible + 1 mois)
+            let url = `/api/events?agendaId=${agendaId}`;
+            
+            if (this.calendarManager.calendar) {
+                const view = this.calendarManager.calendar.view;
+                if (view && view.activeStart && view.activeEnd) {
+                    const start = new Date(view.activeStart);
+                    start.setMonth(start.getMonth() - 1);
+                    
+                    const end = new Date(view.activeEnd);
+                    end.setMonth(end.getMonth() + 1);
+                    
+                    url += `&start=${start.toISOString()}&end=${end.toISOString()}`;
+                }
+            }
+
+            const res = await fetch(url, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const events = await res.json();
+            const agenda = this.agendas.find(a => a.id === agendaId);
+            const agendaName = agenda ? agenda.name : 'Agenda';
+            
+            const isHolidaysAgenda = agendaName === 'Jours fériés';
+            const isMainAgenda = this.currentAgenda && agendaId === this.currentAgenda.id;
+            
+            let backgroundColor;
+            if (isHolidaysAgenda) {
+                backgroundColor = '#e74c3c'; // Rouge pour les jours fériés
+            } else if (isMainAgenda) {
+                backgroundColor = '#3498db'; // Bleu pour l'agenda principal
+            } else {
+                backgroundColor = 'rgba(102, 126, 234, 0.6)'; // Bleu translucide pour les autres
+            }
+
+            // Ajouter chaque événement au calendrier
+            events.forEach(ev => {
+                const emoji = ev.emoji || '📅';
+                // Exception spéciale : les jours fériés n'ont pas de particules
+                let title;
+                if (isMainAgenda || isHolidaysAgenda) {
+                    title = `${emoji} ${ev.title}`;
+                } else {
+                    title = `${emoji} ${ev.title} [${agendaName}]`;
+                }
+                
+                // Configuration spéciale pour les jours fériés : ROUGE !
+                const eventConfig = {
+                    id: `${agendaId}-${ev.id}`,
+                    title: title,
+                    start: ev.start,
+                    backgroundColor: backgroundColor,
+                    extendedProps: {
+                        description: ev.description,
+                        emoji: emoji,
+                        originalTitle: ev.title
+                    }
+                };
+
+                if (ev.end) {
+                    eventConfig.end = ev.end;
+                }
+
+                if (isHolidaysAgenda) {
+                    eventConfig.backgroundColor = '#dc3545'; // Rouge vif
+                    eventConfig.textColor = '#ffffff'; // Texte blanc
+                    eventConfig.classNames = ['holiday-event']; // Classe CSS personnalisée
+                }
+                
+                this.calendarManager.addEvent(eventConfig, { silent: true });
+            });
+        } catch (err) {
+            console.error('Erreur chargement agenda:', err);
         }
     }
 
@@ -625,19 +774,14 @@ class App {
         resultsDiv.style.display = 'none';
         document.getElementById('filter-results-list').innerHTML = '';
     }
-    
-
-
-
 }
 
-// on demarre l'appli
+// Démarrage de l'appli
 document.addEventListener('DOMContentLoaded', async() => {
     const app = new App();
-    // if token present, initialize calendar and load events so reload keeps events visible
     const token = localStorage.getItem('token');
     if (token) {
-        // try to set the header username from token if possible
+        // essayer de définir le nom d'utilisateur de l'en-tête à partir du token si possible
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             app.currentUser = payload.username;

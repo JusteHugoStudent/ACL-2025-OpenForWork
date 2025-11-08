@@ -96,56 +96,93 @@
                 <p id="user-name"></p>
             </div>
             <div class="header-actions d-flex align-items-center gap-3">
-                <button id="newAgendaBtn" class="btn btn-primary">+ Nouvel agenda</button>
-                <select id="agendaSelect" class="form-control w-auto"></select>
                 <button id="btn-logout" class="btn btn-danger">Déconnexion</button>
             </div>
         </div>
 
-        <!-- Section Filtre -->
-        <div class="filter-section">
-            <h3>🔍 Filtrer les événements</h3>
-            <div class="filter-controls">
-                <div class="filter-input-group">
-                    <label for="filter-start">Date début :</label>
-                    <input type="date" id="filter-start">
+        <!-- Conteneur principal avec sidebar à gauche -->
+        <div class="main-container">
+            <!-- Sidebar gauche avec les menus -->
+            <div class="sidebar-left">
+                <!-- Panneau Agendas -->
+                <div class="agenda-panel">
+                    <h3>📋 Gestion des Agendas</h3>
+                    <div class="agenda-controls">
+                        <div class="agenda-control-group">
+                            <label>Créer un agenda :</label>
+                            <button id="newAgendaBtn">+ Nouvel agenda</button>
+                        </div>
+                        <div class="agenda-control-group">
+                            <label>Agenda actuel :</label>
+                            <select id="agendaSelect"></select>
+                        </div>
+                        <div class="agenda-control-group">
+                            <label>Superposer agendas :</label>
+                            <!-- Menu déroulant pour afficher plusieurs agendas -->
+                            <div class="agenda-overlay-dropdown">
+                                <button id="agenda-overlay-btn">📋 Superposer agendas</button>
+                                <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
+                                    <div class="agenda-overlay-header">
+                                        <h6>Agendas à afficher :</h6>
+                                        <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
+                                    </div>
+                                    <div id="agenda-overlay-list" class="agenda-overlay-list">
+                                        <!-- Les checkboxes seront ajoutées dynamiquement -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="filter-input-group">
-                    <label for="filter-end">Date fin :</label>
-                    <input type="date" id="filter-end">
-                </div>
-                <div class="filter-input-group">
-                    <label for="filter-emoji">Emoji :</label>
-                    <select id="filter-emoji">
-                        <option value="">Tous</option>
-                        <option value="📅">📅 Calendrier</option>
-                        <option value="💼">💼 Travail</option>
-                        <option value="🎓">🎓 Études</option>
-                        <option value="🏃">🏃 Sport</option>
-                        <option value="🎉">🎉 Fête</option>
-                        <option value="🍽️">🍽️ Repas</option>
-                        <option value="✈️">✈️ Voyage</option>
-                        <option value="🏥">🏥 Santé</option>
-                        <option value="🎵">🎵 Musique</option>
-                        <option value="📞">📞 Appel</option>
-                        <option value="🎮">🎮 Jeux</option>
-                        <option value="📚">📚 Lecture</option>
-                    </select>
-                </div>
-                <div class="filter-buttons">
-                    <button id="btn-filter" class="btn-filter">Filtrer</button>
-                    <button id="btn-clear-filter" class="btn-filter-clear">Réinitialiser</button>
+
+                <!-- Section Filtre -->
+                <div class="filter-section">
+                    <h3>🔍 Filtrer les événements</h3>
+                    <div class="filter-controls">
+                        <div class="filter-input-group">
+                            <label for="filter-start">Date début :</label>
+                            <input type="date" id="filter-start">
+                        </div>
+                        <div class="filter-input-group">
+                            <label for="filter-end">Date fin :</label>
+                            <input type="date" id="filter-end">
+                        </div>
+                        <div class="filter-input-group">
+                            <label for="filter-emoji">Emoji :</label>
+                            <select id="filter-emoji">
+                                <option value="">Tous</option>
+                                <option value="📅">📅 Calendrier</option>
+                                <option value="💼">💼 Travail</option>
+                                <option value="🎓">🎓 Études</option>
+                                <option value="🏃">🏃 Sport</option>
+                                <option value="🎉">🎉 Fête</option>
+                                <option value="🍽️">🍽️ Repas</option>
+                                <option value="✈️">✈️ Voyage</option>
+                                <option value="🏥">🏥 Santé</option>
+                                <option value="🎵">🎵 Musique</option>
+                                <option value="📞">📞 Appel</option>
+                                <option value="🎮">🎮 Jeux</option>
+                                <option value="📚">📚 Lecture</option>
+                            </select>
+                        </div>
+                        <div class="filter-buttons">
+                            <button id="btn-filter" class="btn-filter">🔍</button>
+                            <button id="btn-clear-filter" class="btn-filter-clear">Réinitialiser</button>
+                        </div>
+                    </div>
+                    <!-- Résultats du filtre -->
+                    <div id="filter-results" class="filter-results">
+                        <h4>📋 Résultats</h4>
+                        <ul id="filter-results-list"></ul>
+                    </div>
                 </div>
             </div>
-            <!-- Résultats du filtre -->
-            <div id="filter-results" class="filter-results">
-                <h4>📋 Résultats</h4>
-                <ul id="filter-results-list"></ul>
+
+            <!-- Container du calendrier -->
+            <div class="calendar-container">
+                <div id="calendar" class="p-3"></div>
             </div>
         </div>
-
-        <!-- Calendrier -->
-        <div id="calendar" class="p-3"></div>
     </div>
 
     <!-- Modale -->
@@ -202,5 +239,17 @@
 
     <!-- 3. App.js en dernier -->
     <script src="views/App.js"></script>
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/690eb0862c21aa19580ba8b6/1j9gm33f9';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
 </body>
 </html>

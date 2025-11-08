@@ -10,6 +10,12 @@
     --blanc: #ffffff;
 }
 
+/* Désactiver toutes les transitions pour éviter le clignotement */
+* {
+    transition: none !important;
+    animation: none !important;
+}
+
 /* Général */
 * {
     margin: 0;
@@ -112,45 +118,285 @@ body {
 }
 
 /* ========================================
-   EN-TÊTE
+   EN-TÊTE - Design moderne et élégant
    ======================================== */
 
 .header {
-    background: var(--noir-clair);
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 30px;
+    border-radius: 20px;
+    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 2px solid var(--jaune);
+    border: none;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+    height: 120px;
+}
+.agenda-overlay-list element {
+  color: gray;
+}
+
+html body div#page-agenda div.main-container div.sidebar-left div.agenda-panel div.agenda-controls div.agenda-control-group div.agenda-overlay-dropdown div#agenda-overlay-menu.agenda-overlay-menu div#agenda-overlay-list.agenda-overlay-list div.agenda-overlay-item label {
+  color: gray;
+}
+
+html body div#page-agenda div.main-container div.sidebar-left div.agenda-panel div.agenda-controls div.agenda-control-group div.agenda-overlay-dropdown div#agenda-overlay-menu.agenda-overlay-menu div#agenda-overlay-list.agenda-overlay-list div.agenda-overlay-item.selected label {
+  color: #667eea;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 .header h1 {
-    font-size: 28px;
-    color: var(--jaune);
-    margin-bottom: 5px;
+    font-size: 32px;
+    color: var(--blanc);
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
 }
 
 .header p {
-    color: var(--jaune-clair);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.header-actions button,
+.header-actions select {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
     font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#newAgendaBtn {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--blanc);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+#newAgendaBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+#agendaSelect {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--blanc);
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 #btn-logout {
-    padding: 10px 25px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
+    background: rgba(220, 53, 69, 0.9);
+    color: var(--blanc);
+    border: 2px solid rgba(220, 53, 69, 0.5);
+    padding: 12px 25px;
+    font-size: 16px;
 }
 
 #btn-logout:hover {
-    background-color: #c82333;
+    background: rgba(200, 35, 51, 1);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+/* ========================================
+   MENU SUPERPOSITION AGENDAS
+   ======================================== */
+.agenda-overlay-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.agenda-overlay-dropdown {
+    position: relative;
+    display: block;
+    width: 100%;
+    z-index: 2;
+}
+
+#agenda-overlay-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--blanc);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#agenda-overlay-btn::after {
+    content: '▼';
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+#agenda-overlay-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+#agenda-overlay-btn.active::after {
+    transform: rotate(180deg);
+}
+
+.agenda-overlay-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #667eea;
+    border-radius: 15px;
+    padding: 15px;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.agenda-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.agenda-overlay-header h6 {
+    margin: 0;
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.btn-small {
+    background: none;
+    border: 1px solid #667eea;
+    color: #667eea;
+    padding: 2px 4px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+html body div#page-agenda div.main-container div.sidebar-left div.agenda-panel div.agenda-controls div.agenda-control-group div.agenda-overlay-dropdown div#agenda-overlay-menu.agenda-overlay-menu div.agenda-overlay-header button#clear-all-overlay.btn-small
+{
+    padding: 2px 4px;
+    color : red;
+}
+
+.agenda-overlay-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.agenda-overlay-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: rgba(248, 249, 250, 0.9);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.agenda-overlay-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    transform: translateX(2px);
+}
+
+.agenda-overlay-item.selected {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.agenda-overlay-item input[type="checkbox"] {
+    margin-right: 12px;
+    transform: scale(1.3);
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.agenda-overlay-item label {
+    flex: 1;
+    cursor: pointer;
+    color: #2d2d2d;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+.agenda-overlay-item.selected label {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.agenda-overlay-item label:hover {
+    color: #667eea;
+}
+
+/* Indicateur visuel pour les agendas sélectionnés */
+.agenda-overlay-item::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.agenda-overlay-item.selected::after {
+    background: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 /* ========================================
@@ -158,7 +404,7 @@ body {
    ======================================== */
 
 .navigation {
-    background: var(--noir-clair);
+    background: var(--noir--clair);
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 15px;
@@ -175,12 +421,10 @@ body {
     border: 1px solid var(--gris-clair);
     border-radius: 5px;
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .navigation button:hover {
     background-color: var(--gris-clair);
-    transform: translateY(-2px);
 }
 
 #btn-add {
@@ -775,29 +1019,161 @@ body:hover .card-3d-wrap {
 }
 
 /* ========================================
-   SECTION FILTRE
+   CONTENEUR PRINCIPAL - Layout avec sidebar à gauche
+   ======================================== */
+.main-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  position: relative;
+  overflow: visible;
+}
+
+.sidebar-left {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.calendar-container {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ========================================
+   SECTION FILTRE - Design moderne et élégant
    ======================================== */
 .filter-section {
-  background: var(--noir-clair);
+  background: var(--blanc);
   padding: 25px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  border: 2px solid var(--jaune);
-  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: visible;
+  z-index: 0;
+}
+
+.filter-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
 }
 
 .filter-section h3 {
-  color: var(--jaune);
+  color: var(--noir);
+  margin-bottom: 25px;
+  font-size: 26px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 2;
+}
+
+/* ========================================
+   PANNEAU AGENDAS - Pour la sidebar gauche
+   ======================================== */
+.agenda-panel {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 25px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: visible;
+}
+
+.agenda-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.agenda-panel h3 {
+  color: var(--blanc);
   margin-bottom: 20px;
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+.agenda-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.agenda-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agenda-control-group label {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.agenda-controls button,
+.agenda-controls select {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.agenda-controls button {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--blanc);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.agenda-controls button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.agenda-controls select {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--blanc);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.agenda-controls select option {
+  background-color: var(--noir-clair);
+  color: var(--blanc);
 }
 
 .filter-controls {
   display: flex;
+  flex-direction: column;
   gap: 15px;
-  align-items: flex-end;
-  flex-wrap: wrap;
 }
 
 .filter-input-group {
@@ -807,21 +1183,28 @@ body:hover .card-3d-wrap {
 }
 
 .filter-input-group label {
-  color: var(--jaune-clair);
-  font-weight: bold;
+  color: var(--gris);
+  font-weight: 600;
   font-size: 14px;
 }
 
 .filter-input-group input,
 .filter-input-group select {
-  padding: 10px 15px;
-  background-color: var(--noir);
-  border: 2px solid var(--gris);
-  border-radius: 5px;
-  color: var(--blanc);
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  color: var(--noir);
   font-size: 14px;
-  min-width: 180px;
-  transition: all 0.3s;
+  font-weight: 500;
+  width: 100%;
+}
+
+.filter-input-group input:focus,
+.filter-input-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .filter-input-group input:focus,
@@ -839,11 +1222,11 @@ body:hover .card-3d-wrap {
 .filter-buttons {
   display: flex;
   gap: 10px;
-  align-items: flex-end;
+  margin-top: 10px;
 }
 
 .btn-filter {
-  padding: 10px 25px;
+  padding: 10px 20px;
   background-color: var(--jaune);
   color: var(--noir);
   border: 2px solid var(--jaune);
@@ -862,13 +1245,13 @@ body:hover .card-3d-wrap {
 }
 
 .btn-filter-clear {
-  padding: 10px 25px;
+  padding: 4px 8px;
   background-color: var(--gris);
   color: var(--blanc);
   border: 2px solid var(--gris);
   border-radius: 5px;
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -1006,4 +1389,62 @@ body:hover .card-3d-wrap {
 #agenda-select option:checked {
     background-color: var(--jaune);
     color: var(--noir);
+}
+
+/* ========================================
+   PERSONNALISATION FULLCALENDAR
+   ======================================== */
+
+/* Personnalisation des en-têtes des jours de la semaine */
+.fc-col-header-cell {
+    background-color: var(--gris) !important;
+    color: var(--blanc) !important;
+    font-weight: bold;
+    border-color: var(--gris-clair) !important;
+}
+
+.fc-col-header-cell .fc-col-header-cell-cushion {
+    color: var(--blanc) !important;
+    padding: 10px;
+}
+
+/* ========================================
+   STYLES SPÉCIAUX POUR LES JOURS FÉRIÉS
+   ======================================== */
+
+/* Événements jours fériés - TRÈS VISIBLES */
+.fc-event.holiday-event {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    animation: holidayPulse 2s ease-in-out infinite alternate !important;
+}
+
+.fc-event.holiday-event:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.6) !important;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+}
+
+.fc-event.holiday-event .fc-event-title {
+    color: white !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+
+
+
+/* Pour les événements jours fériés dans la vue liste */
+.fc-list-event.fc-event.holiday-event {
+    background: linear-gradient(90deg, #dc3545 0%, #b02a37 100%) !important;
+}
+
+/* Pour les événements jours fériés en vue jour/semaine */
+.fc-timegrid-event.holiday-event {
+    border-radius: 6px !important;
+    min-height: 25px !important;
 }
