@@ -694,29 +694,44 @@ class App {
         if (!token) return;
 
         try {
-            // Récupérer tous les événements
-            const url = this.currentAgenda 
-                ? `/api/events?agendaId=${this.currentAgenda.id}`
-                : '/api/events';
-            
-            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-            const events = await res.json();
+            //Détermine tous les agendas visibles (en cas de superposition)
+            const agendasToCheck = [...this.selectedAgendas];
+            if (this.currentAgenda) {
+                agendasToCheck.push(this.currentAgenda.id);
+            }
 
-            // Filtrer les événements
-            const filteredEvents = events.filter(ev => {
+            let allEvents = [];
+
+            //Charger les événements pour chacun
+            for (const agendaId of agendasToCheck) {
+                const res = await fetch(`/api/events?agendaId=${agendaId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!res.ok) continue;
+
+                const events = await res.json();
+                const agenda = this.agendas.find(a => a.id === agendaId);
+                const agendaName = agenda ? agenda.name : 'Agenda';
+                
+                // Ajouter une référence à l’agenda pour l’affichage
+                events.forEach(ev => ev._agendaName = agendaName);
+
+                allEvents = allEvents.concat(events);
+            }
+
+            //Filtre tous les événements selon les critères
+            const filteredEvents = allEvents.filter(ev => {
                 const eventStart = new Date(ev.start);
                 const eventEmoji = ev.emoji || '📅';
-                
-                // Vérifier si l'événement est dans la période
+
                 const inPeriod = eventStart >= startDate && eventStart <= endDate;
-                
-                // Vérifier l'emoji si spécifié
                 const matchEmoji = !filterEmoji || eventEmoji === filterEmoji;
-                
+
                 return inPeriod && matchEmoji;
             });
 
-            // Afficher les résultats
+            //Afficher le résultat
             this.displayFilterResults(filteredEvents);
 
         } catch (err) {
@@ -724,6 +739,7 @@ class App {
             alert('Erreur lors du filtrage des événements');
         }
     }
+
 
     // Affiche les résultats du filtre
     displayFilterResults(events) {
@@ -742,19 +758,21 @@ class App {
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                const endDate = new Date(ev.end).toLocaleString('fr-FR', {
+                const endDate = ev.end ? new Date(ev.end).toLocaleString('fr-FR', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
-                });
-                const description = ev.extendedProps?.description || '';
+                }) : '';
+                const description = ev.extendedProps?.description || ev.description || '';
+                const agendaName = ev._agendaName ? ` (${ev._agendaName})` : '';
+
                 return `
                     <li>
-                        <strong>${emoji} ${ev.title}</strong>
+                        <strong>${emoji} ${ev.title}${agendaName}</strong>
                         <small>📅 ${startDate}</small>
-                        <small>🕒 ${endDate}</small>
+                        ${endDate ? `<small>🕒 ${endDate}</small>` : ''}
                         ${description ? `<small>📝 ${description}</small>` : ''}
                     </li>
                 `;
@@ -763,6 +781,7 @@ class App {
 
         resultsDiv.style.display = 'block';
     }
+
 
     // Réinitialise le filtre
     handleClearFilter() {
