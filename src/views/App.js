@@ -42,10 +42,7 @@ class App {
             this.updateOverlayMenu();
 
             // Charger les events pour la période visible
-            const view = this.calendarManager.calendar?.view;
-            if (view) {
-                await this.loadEventsFromServer(this.currentAgenda.id, view.activeStart, view.activeEnd);
-            }
+            await this.loadEventsFromOneAgenda(this.currentAgenda.id);
         //}
     }
 
@@ -138,9 +135,11 @@ class App {
             // Affiche le bon agenda dans le select
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
 
+            //mets à jours l'overlay menu
+            this.updateOverlayMenu();
+
             // Recharge les events (normalement vide)
-            const view = this.calendarManager.calendar.view;
-            this.loadEventsFromServer(this.currentAgenda.id, view.activeStart, view.activeEnd);
+            this.reloadAllEvents();
         });
 
         // Filtre d'événements
