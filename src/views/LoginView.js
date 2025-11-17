@@ -1,11 +1,23 @@
-//Gere la page de connexion et inscription (card flip)
+/**
+ * ============================================
+ * LOGINVIEW - GESTION DE LA PAGE DE CONNEXION
+ * ============================================
+ * 
+ * Cette vue gère l'affichage et les interactions avec la page
+ * de connexion/inscription (carte flip avec deux faces).
+ * 
+ * Responsabilités :
+ * - Gérer les champs de formulaire (connexion et inscription)
+ * - Attacher les callbacks aux boutons
+ * - Afficher les messages de succès/erreur
+ * - Gérer l'affichage/masquage de la page
+ */
 
 class LoginView {
     constructor() {
-        // Element HTML de la page de connexion
+        // Élément HTML de la page de connexion
         this.pageLogin = document.getElementById('page-login');
         this.btnLogin = document.getElementById('btn-login');
-        this.btnRegister = document.getElementById('btn-register');
         
         // Champs de connexion (card-front)
         this.inputUsername = document.getElementById('username');
@@ -19,8 +31,12 @@ class LoginView {
         this.signupMessageBox = document.getElementById('signup-message');
     }
 
-    // Attache un callback au bouton de connexion
-
+    /**
+     * Attache un callback au bouton de connexion
+     * Gère aussi la validation par la touche Entrée
+     * 
+     * @param {Function} callback - Fonction appelée avec (username, password)
+     */
     onLoginClick(callback) {
         this.btnLogin.addEventListener('click', () => {
             const username = this.inputUsername.value;
@@ -38,6 +54,12 @@ class LoginView {
         });
     }
 
+    /**
+     * Attache un callback au bouton d'inscription
+     * Gère aussi la validation par la touche Entrée
+     * 
+     * @param {Function} callback - Fonction appelée avec (username, password)
+     */
     onSignupClick(callback) {
         if (!this.btnSignup) return;
         this.btnSignup.addEventListener('click', () => {
@@ -58,17 +80,23 @@ class LoginView {
         }
     }
 
-    // Cache la page de connexion
+    /**
+     * Cache la page de connexion/inscription
+     */
     hide() {
         this.pageLogin.classList.add('hidden');
     }
 
-    //Affiche la page de connexion
+    /**
+     * Affiche la page de connexion/inscription
+     */
     show() {
         this.pageLogin.classList.remove('hidden');
     }
 
-    // Vide les champs du formulaire
+    /**
+     * Vide tous les champs des formulaires de connexion et d'inscription
+     */
     clear() {
         if (this.inputUsername) this.inputUsername.value = '';
         if (this.inputPassword) this.inputPassword.value = '';
@@ -76,25 +104,27 @@ class LoginView {
         if (this.inputSignupPassword) this.inputSignupPassword.value = '';
     }
 
+    /**
+     * Affiche un message dans la section connexion
+     * 
+     * @param {string} msg - Message à afficher
+     * @param {boolean} isError - true pour un message d'erreur (rouge), false pour succès (vert)
+     */
     showMessage(msg, isError = false) {
         if (!this.messageBox) return;
         this.messageBox.textContent = msg;
         this.messageBox.style.color = isError ? 'crimson' : 'green';
     }
 
+    /**
+     * Affiche un message dans la section inscription
+     * 
+     * @param {string} msg - Message à afficher
+     * @param {boolean} isError - true pour un message d'erreur (rouge), false pour succès (vert clair)
+     */
     showSignupMessage(msg, isError = false) {
         if (!this.signupMessageBox) return;
         this.signupMessageBox.textContent = msg;
         this.signupMessageBox.style.color = isError ? 'crimson' : '#95e1d3';
-    }
-
-    // Recup le nom d'utilisateur
-    getUsername() {
-        return this.inputUsername.value;
-    }
-
-    // Recup le nom d'utilisateur
-    getPassword() {
-        return this.inputPassword.value;
     }
 }

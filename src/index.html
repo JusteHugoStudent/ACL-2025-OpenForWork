@@ -16,9 +16,6 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Conteneur de notifications -->
-    <div id="notification-container" class="notification-container"></div>
-    
     <!-- Page de Connexion / Inscription -->
     <div id="page-login" class="section">
         <div class="container">
@@ -92,6 +89,9 @@
 
     <!-- Page Principale -->
     <div id="page-agenda" class="hidden">
+        <!-- Zone de notifications -->
+        <div id="notification-area" class="notification-area"></div>
+        
         <!-- En-tête -->
         <div class="header d-flex justify-content-between align-items-center px-4 py-3">
             <div>
@@ -99,6 +99,9 @@
                 <p id="user-name"></p>
             </div>
             <div class="header-actions d-flex align-items-center gap-3">
+                <button id="btn-clear-notif-cache" class="btn btn-secondary btn-sm" title="Vider le cache des notifications (pour tester)">
+                    🔔 Clear Cache
+                </button>
                 <button id="btn-logout" class="btn btn-danger">Déconnexion</button>
             </div>
         </div>
@@ -157,18 +160,7 @@
                         <div class="filter-input-group">
                             <label>Emojis :</label>
                             <div id="filter-emoji-buttons" class="emoji-filter-buttons">
-                                <button type="button" class="emoji-btn" data-emoji="📅">📅</button>
-                                <button type="button" class="emoji-btn" data-emoji="💼">💼</button>
-                                <button type="button" class="emoji-btn" data-emoji="🎓">🎓</button>
-                                <button type="button" class="emoji-btn" data-emoji="🏃">🏃</button>
-                                <button type="button" class="emoji-btn" data-emoji="🎉">🎉</button>
-                                <button type="button" class="emoji-btn" data-emoji="🍽️">🍽️</button>
-                                <button type="button" class="emoji-btn" data-emoji="✈️">✈️</button>
-                                <button type="button" class="emoji-btn" data-emoji="🏥">🏥</button>
-                                <button type="button" class="emoji-btn" data-emoji="🎵">🎵</button>
-                                <button type="button" class="emoji-btn" data-emoji="📞">📞</button>
-                                <button type="button" class="emoji-btn" data-emoji="🎮">🎮</button>
-                                <button type="button" class="emoji-btn" data-emoji="📚">📚</button>
+                                <!-- Les boutons emoji seront générés dynamiquement depuis constants.js -->
                             </div>
                         </div>
                         <div class="filter-buttons">
@@ -215,18 +207,7 @@
 
             <label for="input-color">Emoji :</label>
             <select id="input-color">
-                <option value="📅">📅 Calendrier</option>
-                <option value="💼">💼 Travail</option>
-                <option value="🎓">🎓 Études</option>
-                <option value="🏃">🏃 Sport</option>
-                <option value="🎉">🎉 Fête</option>
-                <option value="🍽️">🍽️ Repas</option>
-                <option value="✈️">✈️ Voyage</option>
-                <option value="🏥">🏥 Santé</option>
-                <option value="🎵">🎵 Musique</option>
-                <option value="📞">📞 Appel</option>
-                <option value="🎮">🎮 Jeux</option>
-                <option value="📚">📚 Lecture</option>
+                <!-- Les options emoji seront générées dynamiquement depuis constants.js -->
             </select>
 
             <div class="modal-buttons">
@@ -238,17 +219,37 @@
     </div>
 
     <!-- Scripts -->
-    <!-- 1. FullCalendar -->
+    <!-- 1. Bibliothèques externes -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- 2. Configuration (constantes) -->
+    <script src="config/constants.js"></script>
+    
+    <!-- 3. Utilitaires (fonctions helpers) -->
+    <script src="utils/domUtils.js"></script>
+    <script src="utils/dateUtils.js"></script>
+    <script src="utils/storageUtils.js"></script>
+    <script src="utils/validationUtils.js"></script>
+    
+    <!-- 4. Services (accès API) -->
+    <script src="services/AuthService.js"></script>
+    <script src="services/ApiServices.js"></script>
+    
+    <!-- 5. Contrôleurs (logique métier) -->
+    <script src="controllers/AgendaControllerFront.js"></script>
+    <script src="controllers/EventControllerFront.js"></script>
+    <script src="controllers/NotificationController.js"></script>
+    <script src="controllers/FilterController.js"></script>
 
-    <!-- 2. Nos classes de vues -->
+    <!-- 6. Vues (UI) -->
     <script src="views/LoginView.js"></script>
-    <script src="views/RegisterView.js"></script>
     <script src="views/HeaderView.js"></script>
     <script src="views/ModalView.js"></script>
     <script src="views/CalendarManager.js"></script>
+    <script src="views/AppUIManager.js"></script>
 
-    <!-- 3. App.js en dernier -->
+    <!-- 7. App.js en dernier (orchestrateur) -->
     <script src="views/App.js"></script>
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">

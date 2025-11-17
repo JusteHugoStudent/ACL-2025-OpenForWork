@@ -1,4 +1,18 @@
-// Gere la fenetre modale (ajouter/modifier événement/ le pop up)
+/**
+ * ============================================
+ * MODALVIEW - GESTION DE LA FENÊTRE MODALE
+ * ============================================
+ * 
+ * Cette vue gère la fenêtre modale popup pour créer ou modifier
+ * un événement dans le calendrier.
+ * 
+ * Responsabilités :
+ * - Afficher/masquer la modale
+ * - Gérer les champs du formulaire d'événement
+ * - Valider les données saisies
+ * - Gérer les modes création/édition
+ * - Afficher les messages d'erreur
+ */
 
 class ModalView {
     constructor() {
@@ -19,11 +33,14 @@ class ModalView {
         this.btnDelete = document.getElementById('btn-delete');
         this.btnCancel = document.getElementById('btn-cancel');
         
-        // Initialiser l'event de fermeture en cliquant à l'extérieur
+        // Initialiser l'événement de fermeture en cliquant à l'extérieur
         this.initCloseOnClickOutside();
     }
 
-    // Permet de fermer la modal en cliquant à l'extérieur
+    /**
+     * Permet de fermer la modale en cliquant à l'extérieur (sur le fond sombre)
+     * Améliore l'expérience utilisateur
+     */
     initCloseOnClickOutside() {
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
@@ -32,7 +49,12 @@ class ModalView {
         });
     }
 
-    // Ouvre la modal en mode AJOUT
+    /**
+     * Ouvre la modale en mode AJOUT d'un nouvel événement
+     * Réinitialise tous les champs et cache le bouton Supprimer
+     * 
+     * @param {string} dateStr - Date au format YYYY-MM-DD (optionnel) pour pré-remplir les dates
+     */
     openForAdd(dateStr = '') {
         this.modalTitle.textContent = 'Ajouter un événement';
         this.btnDelete.classList.add('hidden');
@@ -55,7 +77,12 @@ class ModalView {
         this.modal.classList.remove('hidden');
     }
 
-    // eventDAta : Data de l'evenement a modifier
+    /**
+     * Ouvre la modale en mode ÉDITION d'un événement existant
+     * Remplit les champs avec les données de l'événement et affiche le bouton Supprimer
+     * 
+     * @param {Object} eventData - Données de l'événement à modifier
+     */
     openForEdit(eventData) {
         this.modalTitle.textContent = 'Modifier l\'événement';
         this.btnDelete.classList.remove('hidden');
@@ -75,12 +102,18 @@ class ModalView {
         this.modal.classList.remove('hidden');
     }
 
-    // Ferme la modale
+    /**
+     * Ferme la fenêtre modale
+     */
     close() {
         this.modal.classList.add('hidden');
     }
 
-    // Récupère les données du formulaire
+    /**
+     * Récupère toutes les données saisies dans le formulaire
+     * 
+     * @returns {Object} Objet contenant {title, start, end, description, agendaId, emoji}
+     */
     getFormData() {
         return {
             title: this.inputTitle.value.trim(),
@@ -92,18 +125,30 @@ class ModalView {
         };
     }
 
-    // Vérifie si le formulaire est valide
+    /**
+     * Vérifie si le formulaire est valide (titre et date de début obligatoires)
+     * 
+     * @returns {boolean} true si valide, false sinon
+     */
     isValid() {
         const data = this.getFormData();
         return data.title !== '' && data.start !== '';
     }
 
-    // Affiche un message d'erreur
+    /**
+     * Affiche un message d'erreur à l'utilisateur
+     * 
+     * @param {string} message - Message d'erreur à afficher
+     */
     showError(message) {
         alert(message);
     }
 
-    // Demande une confirmation de suppression
+    /**
+     * Demande une confirmation de suppression à l'utilisateur
+     * 
+     * @returns {boolean} true si l'utilisateur confirme, false sinon
+     */
     confirmDelete() {
         return confirm('Voulez-vous vraiment supprimer cet événement ?');
     }
@@ -123,13 +168,19 @@ class ModalView {
         this.btnCancel.addEventListener('click', callback);
     }
 
-    // Remplit le sélecteur d'agendas avec la liste disponible
+    /**
+     * Remplit le sélecteur d'agendas dans la modale
+     * Exclut l'agenda "Jours fériés" (lecture seule)
+     * 
+     * @param {Array} agendas - Liste de tous les agendas disponibles
+     * @param {string} currentAgendaId - ID de l'agenda à sélectionner par défaut
+     */
     populateAgendaSelector(agendas, currentAgendaId) {
         this.inputAgenda.innerHTML = '';
         
         agendas.forEach(agenda => {
             // Ne pas afficher l'agenda "Jours fériés" (lecture seule)
-            if (agenda.name !== 'Jours fériés') {
+            if (agenda.name !== HOLIDAYS_AGENDA_NAME) {
                 const option = document.createElement('option');
                 option.value = agenda.id;
                 option.textContent = agenda.name;

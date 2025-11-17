@@ -1,13 +1,40 @@
+/**
+ * ============================================
+ * MODÈLE USER - UTILISATEUR MONGODB
+ * ============================================
+ * 
+ * Définit le schéma MongoDB pour les utilisateurs de l'application.
+ * Chaque utilisateur possède un nom, un mot de passe hashé,
+ * et une liste de références vers ses agendas.
+ */
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+// Schéma de la collection "users"
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  agendas: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Agenda' }]
+  username: { 
+    type: String, 
+    required: true, 
+    unique: true // Pas de doublons
+  },
+  password: { 
+    type: String, 
+    required: true // Hashé avec bcrypt
+  },
+  agendas: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Agenda' // Références vers les agendas de l'utilisateur
+  }]
 });
 
-// helper to compare password
+/**
+ * Méthode helper pour comparer un mot de passe avec le hash stocké
+ * Utilisée lors de la connexion
+ * 
+ * @param {string} candidate - Mot de passe en clair à vérifier
+ * @returns {Promise<boolean>} true si le mot de passe correspond
+ */
 userSchema.methods.comparePassword = function (candidate) {
   return bcrypt.compare(candidate, this.password);
 };
