@@ -17,6 +17,12 @@ class App {
         this.currentUser = null;
         this.editingEventId = null; // ID de l'event en cours de modification
         
+        // Système de notifications
+        this.notificationInterval = null;
+        this.notificationTimeout = null; // Pour le timeout de synchronisation
+        this.notifiedEvents = new Set(); // Pour éviter les doublons
+        this.loadNotifiedEvents(); // Charger l'historique des notifications
+        
         // initialisation des gestionnaires d'événements (boutons, modale, header)
         this.initEvents();
     }
@@ -44,6 +50,9 @@ class App {
             // Charger les events pour la période visible
             await this.loadEventsFromOneAgenda(this.currentAgenda.id);
         //}
+        
+        // Démarrer le système de notifications
+        this.startNotificationPolling();
     }
 
 /* ========================================
@@ -302,11 +311,16 @@ class App {
         this.headerView.hide();
         localStorage.removeItem('token');
         this.loginView.show();
+        
+        // Arrêter le polling des notifications
+        this.stopNotificationPolling();
+        // Ne pas effacer this.notifiedEvents pour garder l'historique
     }
 
     // gestion de l'ajout d'un evenement avec en param la date cliquee
     handleAddEvent(dateStr) {
         this.editingEventId = null;
+        this.modalView.populateAgendaSelector(this.agendas, this.currentAgenda.id);
         this.modalView.openForAdd(dateStr);
     }
 
@@ -314,15 +328,20 @@ class App {
     handleEditEvent(event) {
         this.editingEventId = event.id;
         
+        // Déterminer l'agenda de l'événement
+        const eventAgendaId = event.extendedProps.agendaId || this.currentAgenda.id;
+        
         // prepare les data pour la modale
         const eventData = {
             title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
             start: this.formatDateTimeLocal(new Date(event.start)),
             end: event.end ? this.formatDateTimeLocal(new Date(event.end)) : '',
             description: event.extendedProps.description || '',
-            emoji: event.extendedProps.emoji || '📅'
+            emoji: event.extendedProps.emoji || '📅',
+            agendaId: eventAgendaId
         };
         
+        this.modalView.populateAgendaSelector(this.agendas, eventAgendaId);
         this.modalView.openForEdit(eventData);
     }
 
@@ -346,6 +365,7 @@ class App {
                 end: oldEvent.end,
                 extendedProps: oldEvent.extendedProps
             };
+            const oldAgendaId = oldEvent.extendedProps.agendaId;
             
             const displayTitle = `${formData.emoji} ${formData.title}`;
             this.calendarManager.updateEvent(this.editingEventId, {
@@ -355,16 +375,30 @@ class App {
                 extendedProps: {
                     description: formData.description,
                     emoji: formData.emoji,
-                    originalTitle: formData.title
+                    originalTitle: formData.title,
+                    agendaId: formData.agendaId
                 }
             });
             // Suppression permanente -> appelle l'API PUT /api/events/:id
-            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
+            const success = await this.updateEventOnServer({ id: this.editingEventId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji, agendaId: formData.agendaId });
             
             // Si échec, restaurer les anciennes valeurs
             if (!success) {
                 this.calendarManager.updateEvent(this.editingEventId, oldData);
                 return; // Ne pas fermer la modal
+            }
+            
+            // Si l'agenda a changé, recharger les événements des deux agendas
+            if (oldAgendaId !== formData.agendaId) {
+                // Supprimer l'événement du calendrier (il sera rechargé depuis le bon agenda)
+                const ev = this.calendarManager.getEventById(this.editingEventId);
+                if (ev) ev.remove();
+                
+                // Recharger les événements de l'agenda actuel et des agendas superposés
+                await this.loadEventsFromOneAgenda(this.currentAgenda.id);
+                for (const agendaId of this.selectedAgendas) {
+                    await this.loadEventsFromOneAgenda(agendaId);
+                }
             }
         } 
         else {
@@ -387,10 +421,22 @@ class App {
             // On crée d'abord localement (pour une UX instantanée), puis on appelle
             // le backend. Le backend renvoie l'_id MongoDB ; on remplace alors
             // l'id local (timestamp) par l'id retourné pour garder la cohérence.
-            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji });
+            const created = await this.createEventOnServer({ id: localId, title: formData.title, start: new Date(formData.start), end: formData.end ? new Date(formData.end) : new Date(formData.start), description: formData.description, emoji: formData.emoji, agendaId: formData.agendaId });
             if (created && created.id) {
                 const ev = this.calendarManager.getEventById(localId);
-                if (ev) ev.setProp('id', created.id);
+                if (ev) {
+                    ev.setProp('id', created.id);
+                    // Ajouter l'agendaId dans les extendedProps
+                    ev.setExtendedProp('agendaId', formData.agendaId);
+                }
+                
+                // Si l'événement est créé dans un agenda différent de l'agenda actuel
+                // et que cet agenda n'est pas superposé, l'événement ne sera pas visible
+                // On peut soit le supprimer du calendrier, soit basculer vers cet agenda
+                if (formData.agendaId !== this.currentAgenda.id && !this.selectedAgendas.includes(formData.agendaId)) {
+                    // Supprimer l'événement du calendrier (il n'est pas dans un agenda visible)
+                    if (ev) ev.remove();
+                }
             } else {
                 // Si la création a échoué, supprimer l'événement local
                 const ev = this.calendarManager.getEventById(localId);
@@ -405,8 +451,8 @@ class App {
     async createEventOnServer(eventData) {
         const token = localStorage.getItem('token');
         if (!token) return;
-        if (!this.currentAgenda) {
-            console.error("Aucun agenda actif pour l'ajout de l'événement !");
+        if (!eventData.agendaId) {
+            console.error("Aucun agenda sélectionné pour l'ajout de l'événement !");
             return;
         }
 
@@ -417,7 +463,7 @@ class App {
                 end: eventData.end ? eventData.end.toISOString() : undefined,
                 description: eventData.description,
                 emoji: eventData.emoji,
-                agendaId: this.currentAgenda.id
+                agendaId: eventData.agendaId
             };
 
             const res = await fetch('/api/events', {
@@ -823,6 +869,203 @@ class App {
         const resultsDiv = document.getElementById('filter-results');
         resultsDiv.style.display = 'none';
         document.getElementById('filter-results-list').innerHTML = '';
+    }
+
+/* ========================================
+    Système de notifications
+   ======================================== */
+
+    // Démarre le polling pour vérifier les événements à venir
+    startNotificationPolling() {
+        // Vérifier immédiatement à la connexion
+        this.checkUpcomingEvents();
+        
+        // Calculer le délai jusqu'à la prochaine minute pile (secondes = 0)
+        const now = new Date();
+        const secondsUntilNextMinute = 60 - now.getSeconds();
+        const msUntilNextMinute = secondsUntilNextMinute * 1000 - now.getMilliseconds();
+        
+        // Attendre jusqu'à la prochaine minute pile, puis vérifier toutes les minutes
+        this.notificationTimeout = setTimeout(() => {
+            this.checkUpcomingEvents();
+            
+            // Maintenant on est synchronisé, vérifier toutes les 60 secondes exactement
+            this.notificationInterval = setInterval(() => {
+                this.checkUpcomingEvents();
+            }, 60 * 1000);
+        }, msUntilNextMinute);
+    }
+
+    // Arrête le polling (lors de la déconnexion)
+    stopNotificationPolling() {
+        if (this.notificationInterval) {
+            clearInterval(this.notificationInterval);
+            this.notificationInterval = null;
+        }
+        if (this.notificationTimeout) {
+            clearTimeout(this.notificationTimeout);
+            this.notificationTimeout = null;
+        }
+    }
+
+    // Vérifie les événements à venir et envoie des notifications
+    async checkUpcomingEvents() {
+        const token = localStorage.getItem('token');
+        if (!token || !this.currentAgenda) return;
+
+        try {
+            const now = new Date();
+            const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+            // Récupérer tous les événements de tous les agendas visibles
+            const agendasToCheck = [this.currentAgenda.id, ...this.selectedAgendas];
+            let allEvents = [];
+
+            for (const agendaId of agendasToCheck) {
+                const res = await fetch(`/api/events?agendaId=${agendaId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const events = await res.json();
+                    allEvents = allEvents.concat(events);
+                }
+            }
+
+            // Vérifier chaque événement
+            allEvents.forEach(event => {
+                const eventStart = new Date(event.start);
+                const timeDiff = eventStart - now;
+
+                // Ne notifier que pour les événements futurs dans les prochaines 24h
+                if (timeDiff > 0 && timeDiff <= 24 * 60 * 60 * 1000) {
+                    // Vérifier les différents seuils de notification
+                    this.checkNotificationThreshold(event, timeDiff);
+                }
+            });
+
+        } catch (err) {
+            console.error('Erreur lors de la vérification des événements:', err);
+        }
+    }
+
+    // Vérifie si une notification doit être envoyée pour un événement
+    checkNotificationThreshold(event, timeDiff) {
+        const eventId = event._id || event.id;
+        const thresholds = [
+            { time: 24 * 60 * 60 * 1000, label: '24 heures', key: '24h' },
+            { time: 12 * 60 * 60 * 1000, label: '12 heures', key: '12h' },
+            { time: 6 * 60 * 60 * 1000, label: '6 heures', key: '6h' },
+            { time: 1 * 60 * 60 * 1000, label: '1 heure', key: '1h' }
+        ];
+
+        thresholds.forEach(threshold => {
+            const notificationKey = `${eventId}-${threshold.key}`;
+            
+            // Si on n'a pas encore notifié pour ce seuil et qu'on est dans la fenêtre
+            // (entre le seuil et 5 minutes avant le seuil pour éviter de rater)
+            if (!this.notifiedEvents.has(notificationKey) && 
+                timeDiff <= threshold.time && 
+                timeDiff > (threshold.time - 5 * 60 * 1000)) {
+                
+                this.showNotification(event, threshold.label);
+                this.notifiedEvents.add(notificationKey);
+                this.saveNotifiedEvents(); // Sauvegarder dans localStorage
+            }
+        });
+    }
+
+    // Affiche une notification
+    showNotification(event, timeLabel) {
+        const container = document.getElementById('notification-container');
+        if (!container) return;
+
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        
+        const emoji = event.emoji || '📅';
+        const eventDate = new Date(event.start);
+        const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        const formattedTime = eventDate.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        notification.innerHTML = `
+            <div class="notification-icon">${emoji}</div>
+            <div class="notification-content">
+                <div class="notification-title">Rappel : ${event.title}</div>
+                <div class="notification-time">Dans ${timeLabel}</div>
+                <div class="notification-date">${formattedDate} à ${formattedTime}</div>
+            </div>
+            <button class="notification-close">✕</button>
+        `;
+
+        // Ajouter l'événement de fermeture
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.add('notification-exit');
+            setTimeout(() => notification.remove(), 300);
+        });
+
+        // Ajouter la notification au conteneur
+        container.appendChild(notification);
+
+        // Animation d'entrée
+        setTimeout(() => notification.classList.add('notification-show'), 10);
+
+        // Auto-fermeture après 10 secondes
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.classList.add('notification-exit');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 10000);
+    }
+
+    // Charge l'historique des notifications depuis localStorage
+    loadNotifiedEvents() {
+        try {
+            const stored = localStorage.getItem('notifiedEvents');
+            if (stored) {
+                const data = JSON.parse(stored);
+                const now = new Date().getTime();
+                
+                // Ne garder que les notifications des 7 derniers jours
+                // (après 7 jours, on peut re-notifier pour un événement récurrent)
+                const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+                
+                data.forEach(item => {
+                    // item format: { key: "eventId-24h", timestamp: 1234567890 }
+                    if (item.timestamp > sevenDaysAgo) {
+                        this.notifiedEvents.add(item.key);
+                    }
+                });
+                
+                // Sauvegarder la version nettoyée
+                this.saveNotifiedEvents();
+            }
+        } catch (err) {
+            console.error('Erreur lors du chargement des notifications:', err);
+        }
+    }
+
+    // Sauvegarde l'historique des notifications dans localStorage
+    saveNotifiedEvents() {
+        try {
+            const now = new Date().getTime();
+            const data = Array.from(this.notifiedEvents).map(key => ({
+                key: key,
+                timestamp: now
+            }));
+            localStorage.setItem('notifiedEvents', JSON.stringify(data));
+        } catch (err) {
+            console.error('Erreur lors de la sauvegarde des notifications:', err);
+        }
     }
 }
 

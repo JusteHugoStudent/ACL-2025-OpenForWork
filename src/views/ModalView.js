@@ -11,6 +11,7 @@ class ModalView {
         this.inputStart = document.getElementById('input-start');
         this.inputEnd = document.getElementById('input-end');
         this.inputDescription = document.getElementById('input-description');
+        this.inputAgenda = document.getElementById('input-agenda');
         this.inputColor = document.getElementById('input-color');
         
         // Boutons
@@ -66,6 +67,11 @@ class ModalView {
         this.inputDescription.value = eventData.description || '';
         this.inputColor.value = eventData.emoji || '📅';
         
+        // Sélectionner l'agenda si fourni
+        if (eventData.agendaId) {
+            this.inputAgenda.value = eventData.agendaId;
+        }
+        
         this.modal.classList.remove('hidden');
     }
 
@@ -80,7 +86,8 @@ class ModalView {
             title: this.inputTitle.value.trim(),
             start: this.inputStart.value,
             end: this.inputEnd.value,
-            description: this.inputDescription.value,
+            description: this.inputDescription.value.trim(),
+            agendaId: this.inputAgenda.value,
             emoji: this.inputColor.value
         };
     }
@@ -111,8 +118,29 @@ class ModalView {
         this.btnDelete.addEventListener('click', callback);
     }
 
-    // Attache un callback au bouton Annuler
+    // Définit le callback pour annuler
     onCancelClick(callback) {
         this.btnCancel.addEventListener('click', callback);
+    }
+
+    // Remplit le sélecteur d'agendas avec la liste disponible
+    populateAgendaSelector(agendas, currentAgendaId) {
+        this.inputAgenda.innerHTML = '';
+        
+        agendas.forEach(agenda => {
+            // Ne pas afficher l'agenda "Jours fériés" (lecture seule)
+            if (agenda.name !== 'Jours fériés') {
+                const option = document.createElement('option');
+                option.value = agenda.id;
+                option.textContent = agenda.name;
+                
+                // Sélectionner l'agenda actuel par défaut
+                if (agenda.id === currentAgendaId) {
+                    option.selected = true;
+                }
+                
+                this.inputAgenda.appendChild(option);
+            }
+        });
     }
 }

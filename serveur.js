@@ -362,7 +362,7 @@ app.post('/api/events', authMiddleware, async (req, res) => {
 // Update event
 app.put('/api/events/:id', authMiddleware, async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, color, emoji } = req.body;
+  const { title, start, end, description, color, emoji, agendaId } = req.body;
   try {
     const ev = await Event.findById(id);
     if (!ev) return res.status(404).json({ error: 'event not found' });
@@ -381,6 +381,7 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
     if (description !== undefined) ev.description = description;
     if (emoji) ev.emoji = emoji;
     if (color) ev.color = color;
+    if (agendaId) ev.agendaId = agendaId;
     await ev.save();
     return res.json({
       id: ev._id,
@@ -389,7 +390,8 @@ app.put('/api/events/:id', authMiddleware, async (req, res) => {
       end: ev.end,
       description: ev.description,
       emoji: ev.emoji,
-      color: ev.color
+      color: ev.color,
+      agendaId: ev.agendaId
     });
   } catch (err) {
     console.error(err);

@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Conteneur de notifications -->
+    <div id="notification-container" class="notification-container"></div>
+    
     <!-- Page de Connexion / Inscription -->
     <div id="page-login" class="section">
         <div class="container">
@@ -204,6 +207,11 @@
 
             <label for="input-description">Description :</label>
             <textarea id="input-description" rows="3" placeholder="Description"></textarea>
+
+            <label for="input-agenda">Agenda :</label>
+            <select id="input-agenda">
+                <!-- Options remplies dynamiquement -->
+            </select>
 
             <label for="input-color">Emoji :</label>
             <select id="input-color">
