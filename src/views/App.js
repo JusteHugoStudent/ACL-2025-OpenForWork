@@ -650,6 +650,15 @@ class App {
         if (!token) return;
 
         try {
+            // Supprimer d'abord tous les événements existants de cet agenda pour éviter les doublons
+            const allEvents = this.calendarManager.calendar.getEvents();
+            allEvents.forEach(event => {
+                // Les IDs sont au format "agendaId-eventId"
+                if (event.id && event.id.startsWith(`${agendaId}-`)) {
+                    event.remove();
+                }
+            });
+            
             // Optimisation (chargement seulement la période visible + 1 mois)
             let url = `/api/events?agendaId=${agendaId}`;
             
