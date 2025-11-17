@@ -1219,6 +1219,48 @@ body:hover .card-3d-wrap {
   color: var(--blanc);
 }
 
+/* Boutons emoji pour sélection multiple */
+.emoji-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.emoji-btn {
+  background-color: var(--noir-clair);
+  border: 2px solid var(--gris);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-btn:hover {
+  background-color: var(--gris);
+  border-color: var(--jaune);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+}
+
+.emoji-btn.selected {
+  background-color: var(--jaune);
+  border-color: var(--jaune);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  transform: scale(1.05);
+}
+
+.emoji-btn.selected:hover {
+  background-color: var(--jaune-clair);
+  border-color: var(--jaune-clair);
+}
+
 .filter-buttons {
   display: flex;
   gap: 10px;

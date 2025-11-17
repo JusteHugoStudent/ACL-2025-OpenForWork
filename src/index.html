@@ -137,8 +137,12 @@
 
                 <!-- Section Filtre -->
                 <div class="filter-section">
-                    <h3>🔍 Filtrer les événements</h3>
+                    <h3>🔍 Rechercher/Filtrer les événements</h3>
                     <div class="filter-controls">
+                        <div class="filter-input-group">
+                            <label for="filter-keywords">Mots-clés :</label>
+                            <input type="text" id="filter-keywords" placeholder="Rechercher...">
+                        </div>
                         <div class="filter-input-group">
                             <label for="filter-start">Date début :</label>
                             <input type="date" id="filter-start">
@@ -148,22 +152,21 @@
                             <input type="date" id="filter-end">
                         </div>
                         <div class="filter-input-group">
-                            <label for="filter-emoji">Emoji :</label>
-                            <select id="filter-emoji">
-                                <option value="">Tous</option>
-                                <option value="📅">📅 Calendrier</option>
-                                <option value="💼">💼 Travail</option>
-                                <option value="🎓">🎓 Études</option>
-                                <option value="🏃">🏃 Sport</option>
-                                <option value="🎉">🎉 Fête</option>
-                                <option value="🍽️">🍽️ Repas</option>
-                                <option value="✈️">✈️ Voyage</option>
-                                <option value="🏥">🏥 Santé</option>
-                                <option value="🎵">🎵 Musique</option>
-                                <option value="📞">📞 Appel</option>
-                                <option value="🎮">🎮 Jeux</option>
-                                <option value="📚">📚 Lecture</option>
-                            </select>
+                            <label>Emojis :</label>
+                            <div id="filter-emoji-buttons" class="emoji-filter-buttons">
+                                <button type="button" class="emoji-btn" data-emoji="📅">📅</button>
+                                <button type="button" class="emoji-btn" data-emoji="💼">💼</button>
+                                <button type="button" class="emoji-btn" data-emoji="🎓">🎓</button>
+                                <button type="button" class="emoji-btn" data-emoji="🏃">🏃</button>
+                                <button type="button" class="emoji-btn" data-emoji="🎉">🎉</button>
+                                <button type="button" class="emoji-btn" data-emoji="🍽️">🍽️</button>
+                                <button type="button" class="emoji-btn" data-emoji="✈️">✈️</button>
+                                <button type="button" class="emoji-btn" data-emoji="🏥">🏥</button>
+                                <button type="button" class="emoji-btn" data-emoji="🎵">🎵</button>
+                                <button type="button" class="emoji-btn" data-emoji="📞">📞</button>
+                                <button type="button" class="emoji-btn" data-emoji="🎮">🎮</button>
+                                <button type="button" class="emoji-btn" data-emoji="📚">📚</button>
+                            </div>
                         </div>
                         <div class="filter-buttons">
                             <button id="btn-filter" class="btn-filter">🔍</button>

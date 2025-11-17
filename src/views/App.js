@@ -157,6 +157,15 @@ class App {
                 this.handleClearFilter();
             });
         }
+        
+        // Gestion des boutons emoji pour la sélection multiple
+        const emojiButtons = document.querySelectorAll('.emoji-btn');
+        emojiButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                btn.classList.toggle('selected');
+            });
+        });
 
         // Menu de superposition des agendas
         const overlayBtn = document.getElementById('agenda-overlay-btn');
@@ -673,10 +682,15 @@ class App {
 
     // Filtre les événements selon les critères
     async handleFilterEvents() {
+        const filterKeywords = document.getElementById('filter-keywords').value.trim().toLowerCase();
         const filterStart = document.getElementById('filter-start').value;
         const filterEnd = document.getElementById('filter-end').value;
-        const filterEmoji = document.getElementById('filter-emoji').value;
+        
+        // Récupérer les emojis sélectionnés
+        const selectedEmojiButtons = document.querySelectorAll('.emoji-btn.selected');
+        const filterEmojis = Array.from(selectedEmojiButtons).map(btn => btn.dataset.emoji);
 
+        // Les dates de début et de fin sont obligatoires
         if (!filterStart || !filterEnd) {
             alert('Veuillez sélectionner une date de début et une date de fin');
             return;
@@ -685,6 +699,7 @@ class App {
         const startDate = new Date(filterStart);
         const endDate = new Date(filterEnd);
 
+        // Validation des dates
         if (startDate > endDate) {
             alert('La date de début doit être antérieure à la date de fin');
             return;
@@ -724,11 +739,22 @@ class App {
             const filteredEvents = allEvents.filter(ev => {
                 const eventStart = new Date(ev.start);
                 const eventEmoji = ev.emoji || '📅';
-
+                const eventTitle = (ev.title || '').toLowerCase();
+                const eventDescription = (ev.extendedProps?.description || '').toLowerCase();
+                
+                // Filtre par mots-clés (titre ou description)
+                let matchKeywords = true;
+                if (filterKeywords) {
+                    matchKeywords = eventTitle.includes(filterKeywords) || eventDescription.includes(filterKeywords);
+                }
+                
+                // Filtre par période (les dates sont obligatoires)
                 const inPeriod = eventStart >= startDate && eventStart <= endDate;
-                const matchEmoji = !filterEmoji || eventEmoji === filterEmoji;
+                
+                // Filtre par emoji (plusieurs possibles)
+                const matchEmoji = filterEmojis.length === 0 || filterEmojis.includes(eventEmoji);
 
-                return inPeriod && matchEmoji;
+                return matchKeywords && inPeriod && matchEmoji;
             });
 
             //Afficher le résultat
@@ -785,9 +811,15 @@ class App {
 
     // Réinitialise le filtre
     handleClearFilter() {
+        document.getElementById('filter-keywords').value = '';
         document.getElementById('filter-start').value = '';
         document.getElementById('filter-end').value = '';
-        document.getElementById('filter-emoji').value = '';
+        
+        // Désélectionner tous les boutons emoji
+        document.querySelectorAll('.emoji-btn.selected').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
         const resultsDiv = document.getElementById('filter-results');
         resultsDiv.style.display = 'none';
         document.getElementById('filter-results-list').innerHTML = '';
