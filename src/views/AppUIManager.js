@@ -202,17 +202,29 @@ class AppUIManager {
                 end: event.end ? formatDateTimeLocal(new Date(event.end)) : '',
                 description: event.extendedProps.description || '',
                 emoji: event.extendedProps.emoji || '📅',
-                agendaId: eventAgendaId
+                agendaId: eventAgendaId,
+                recurrence: event.extendedProps.recurrence || { type: 'none' }
             };
 
-            // Stocke l'ID complet (agendaId-eventId) pour le calendrier
-            // mais extrait juste l'eventId pour l'API
-            this.app.eventController.setEditingEvent(event.id);
+            // Pour événement récurrent, utiliser l'ID original
+            const eventIdToEdit = event.extendedProps.isRecurring 
+                ? event.extendedProps.originalEventId 
+                : (event.id.includes('-') ? event.id.split('-')[1] : event.id);
+
+            // Stocke l'ID réel pour l'API (sans agendaId ni occurrenceIndex)
+            this.app.eventController.setEditingEvent(eventIdToEdit);
             this.app.modalView.openForEdit(eventData, this.app.agendaController.getAllAgendas());
         });
 
         // Déplacement d'événement (drag & drop) et redimensionnement
         const handleEventChange = async (event) => {
+            // Bloquer le déplacement des événements récurrents
+            if (event.extendedProps.isRecurring) {
+                alert('Les événements récurrents ne peuvent pas être déplacés. Modifiez l\'événement pour changer sa récurrence.');
+                this.app.reloadAllEvents();
+                return;
+            }
+            
             // Extrait l'eventId réel (format FullCalendar: "agendaId-eventId")
             const realEventId = event.id.includes('-') 
                 ? event.id.split('-')[1] 

@@ -125,7 +125,8 @@ class EventService {
                     end: eventData.end || undefined,
                     description: eventData.description,
                     emoji: eventData.emoji,
-                    agendaId: eventData.agendaId
+                    agendaId: eventData.agendaId,
+                    recurrence: eventData.recurrence
                 })
             });
             
@@ -160,7 +161,8 @@ class EventService {
                     end: eventData.end || undefined,
                     description: eventData.description,
                     emoji: eventData.emoji,
-                    agendaId: eventData.agendaId
+                    agendaId: eventData.agendaId,
+                    recurrence: eventData.recurrence
                 })
             });
             

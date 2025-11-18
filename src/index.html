@@ -210,6 +210,34 @@
                 <!-- Les options emoji seront générées dynamiquement depuis constants.js -->
             </select>
 
+            <!-- Configuration de récurrence -->
+            <label for="input-recurrence">Récurrence :</label>
+            <select id="input-recurrence">
+                <option value="none">Aucune</option>
+                <option value="daily">Quotidienne</option>
+                <option value="weekly">Hebdomadaire</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="yearly">Annuelle</option>
+            </select>
+
+            <div id="recurrence-options" class="hidden">
+                <label for="input-recurrence-end">Se termine le :</label>
+                <input type="date" id="input-recurrence-end">
+
+                <div id="weekly-days" class="hidden">
+                    <label>Jours de la semaine :</label>
+                    <div class="days-selector">
+                        <label><input type="checkbox" value="1"> Lun</label>
+                        <label><input type="checkbox" value="2"> Mar</label>
+                        <label><input type="checkbox" value="3"> Mer</label>
+                        <label><input type="checkbox" value="4"> Jeu</label>
+                        <label><input type="checkbox" value="5"> Ven</label>
+                        <label><input type="checkbox" value="6"> Sam</label>
+                        <label><input type="checkbox" value="0"> Dim</label>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-buttons">
                 <button id="btn-save">Enregistrer</button>
                 <button id="btn-delete" class="hidden">Supprimer</button>
@@ -231,6 +259,7 @@
     <script src="utils/dateUtils.js"></script>
     <script src="utils/storageUtils.js"></script>
     <script src="utils/validationUtils.js"></script>
+    <script src="utils/recurrenceUtils.js"></script>
     
     <!-- 4. Services (accès API) -->
     <script src="services/AuthService.js"></script>

@@ -854,6 +854,47 @@ h6 span {
     min-height: 80px;
 }
 
+/* Configuration de récurrence */
+#recurrence-options {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+#weekly-days {
+    margin-top: 12px;
+}
+
+.days-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.days-selector label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    margin: 0;
+}
+
+.days-selector label:hover {
+    background: var(--border);
+}
+
+.days-selector input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
 .modal-buttons {
     display: flex;
     gap: 10px;

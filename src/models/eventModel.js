@@ -6,6 +6,21 @@
 
 const mongoose = require('mongoose');
 
+// Sous-schéma pour la récurrence
+const recurrenceSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['none', 'daily', 'weekly', 'monthly', 'yearly'],
+    default: 'none'
+  },
+  interval: {
+    type: Number,
+    default: 1
+  },
+  endDate: Date,
+  daysOfWeek: [Number]
+}, { _id: false });
+
 // Schéma de la collection "events"
 const eventSchema = new mongoose.Schema({
   title: String,            // Titre de l'événement
@@ -13,7 +28,13 @@ const eventSchema = new mongoose.Schema({
   end: Date,                // Date/heure de fin
   description: String,      // Description optionnelle
   color: String,            // Couleur (legacy, remplacé par emoji)
-  emoji: String             // Emoji pour catégoriser l'événement
+  emoji: String,            // Emoji pour catégoriser l'événement
+  
+  // Configuration de récurrence
+  recurrence: recurrenceSchema
+}, { 
+  strict: false,
+  minimize: false 
 });
 
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);

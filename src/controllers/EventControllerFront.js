@@ -38,7 +38,8 @@ class EventControllerFront {
                 end: eventData.end ? (eventData.end instanceof Date ? eventData.end.toISOString() : new Date(eventData.end).toISOString()) : undefined,
                 description: eventData.description,
                 emoji: eventData.emoji,
-                agendaId: eventData.agendaId
+                agendaId: eventData.agendaId,
+                recurrence: eventData.recurrence || { type: 'none' }
             };
 
             // Utilise EventService pour créer l'événement
@@ -68,7 +69,8 @@ class EventControllerFront {
                 end: eventData.end ? (eventData.end instanceof Date ? eventData.end.toISOString() : new Date(eventData.end).toISOString()) : undefined,
                 description: eventData.description,
                 emoji: eventData.emoji,
-                agendaId: eventData.agendaId // Inclue l'agenda pour permettre le changement d'agenda
+                agendaId: eventData.agendaId, // Inclue l'agenda pour permettre le changement d'agenda
+                recurrence: eventData.recurrence || { type: 'none' }
             };
             
             console.log(`🔄 Mise à jour événement ${id}:`, body);
@@ -167,34 +169,57 @@ class EventControllerFront {
 
             // Ajoute chaque événement au calendrier
             events.forEach(ev => {
-                const fullTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
-                
-                // Le backend renvoie 'id' et non '_id'
-                const eventId = ev.id || ev._id;
-                const compositeId = `${agendaId}-${eventId}`;
-                console.log(`📌 Ajout événement: compositeId="${compositeId}", eventId="${eventId}", title="${ev.title}"`);
-                
-                this.calendarManager.addEvent({
-                    id: compositeId,
-                    title: fullTitle,
-                    start: ev.start,
-                    end: ev.end,
-                    backgroundColor: backgroundColor,
-                    borderColor: backgroundColor,
-                    extendedProps: {
-                        agendaId: agendaId,
-                        agendaName: agendaName,
-                        originalTitle: ev.title,
-                        // Le backend peut renvoyer la description dans ev.description OU ev.extendedProps.description
-                        description: ev.description || ev.extendedProps?.description || '',
-                        emoji: ev.emoji || '📅'
-                    }
-                });
+                // Vérifier si l'événement a une récurrence
+                if (hasRecurrence(ev)) {
+                    // Générer toutes les occurrences pour la plage visible
+                    const view = this.calendarManager.calendar.view;
+                    const rangeStart = view ? view.activeStart : new Date();
+                    const rangeEnd = view ? view.activeEnd : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+                    
+                    const occurrences = generateRecurringOccurrences(ev, rangeStart, rangeEnd);
+                    
+                    occurrences.forEach((occurrence, index) => {
+                        this.addEventToCalendar(occurrence, agendaId, agendaName, backgroundColor, index);
+                    });
+                } else {
+                    // Événement simple (non récurrent)
+                    this.addEventToCalendar(ev, agendaId, agendaName, backgroundColor, 0);
+                }
             });
 
         } catch (err) {
             console.error(`Erreur chargement événements agenda ${agendaId}:`, err);
         }
+    }
+
+    // Ajoute un événement (ou une occurrence) au calendrier
+    addEventToCalendar(ev, agendaId, agendaName, backgroundColor, occurrenceIndex) {
+        const fullTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
+        
+        // Le backend renvoie 'id' et non '_id'
+        const eventId = ev.id || ev._id || ev.originalEventId;
+        const compositeId = ev.isRecurring 
+            ? `${agendaId}-${eventId}-${occurrenceIndex}`
+            : `${agendaId}-${eventId}`;
+        
+        this.calendarManager.addEvent({
+            id: compositeId,
+            title: fullTitle,
+            start: ev.start,
+            end: ev.end,
+            backgroundColor: backgroundColor,
+            borderColor: backgroundColor,
+            extendedProps: {
+                agendaId: agendaId,
+                agendaName: agendaName,
+                originalTitle: ev.title,
+                description: ev.description || ev.extendedProps?.description || '',
+                emoji: ev.emoji || '📅',
+                isRecurring: ev.isRecurring || false,
+                originalEventId: eventId,
+                recurrence: ev.recurrence
+            }
+        });
     }
 
     

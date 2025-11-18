@@ -112,7 +112,8 @@ router.get('/', async (req, res) => {
         extendedProps: { description: e.description },
         emoji: e.emoji,
         color: e.color,
-        backgroundColor: e.color
+        backgroundColor: e.color,
+        recurrence: e.recurrence || { type: 'none' }
       }))
     );
 
@@ -127,7 +128,7 @@ router.get('/', async (req, res) => {
 // Body: { title, start, end?, description?, emoji?, color?, agendaId? }
 
 router.post('/', async (req, res) => {
-  const { title, start, end, description, color, emoji, agendaId } = req.body;
+  const { title, start, end, description, color, emoji, agendaId, recurrence } = req.body;
   
   if (!title || !start) {
     return res.status(400).json({ error: 'title and start required' });
@@ -156,7 +157,8 @@ router.post('/', async (req, res) => {
         end: endDate,
         description: description || '',
         emoji: emoji || '📅',
-        color: color || '#ffd700'
+        color: color || '#ffd700',
+        recurrence: recurrence || { type: 'none' }
       });
       createdEvent = await ev.save({ session });
 
@@ -199,6 +201,7 @@ router.post('/', async (req, res) => {
       description: createdEvent.description,
       emoji: createdEvent.emoji,
       color: createdEvent.color,
+      recurrence: createdEvent.recurrence,
       agendaId
     });
   } catch (err) {
@@ -217,7 +220,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, color, emoji, agendaId } = req.body;
+  const { title, start, end, description, color, emoji, agendaId, recurrence } = req.body;
   
   try {
     const ev = await Event.findById(id);
@@ -236,35 +239,34 @@ router.put('/:id', async (req, res) => {
     }
     
     // Si changement d'agenda, gérer le transfert
-    if (agendaId && agendaId !== String(ev.agendaId)) {
-      console.log(`🔄 Transfert événement ${id} vers agenda ${agendaId}`);
-      console.log(`   Ancien agendaId: ${ev.agendaId || 'non défini'}`);
+    if (agendaId) {
+      // Trouver l'agenda actuel de l'événement
+      const currentAgenda = await Agenda.findOne({ events: ev._id });
+      const currentAgendaId = currentAgenda ? String(currentAgenda._id) : null;
       
-      // Vérifier que le nouvel agenda existe et appartient à l'utilisateur
-      const newAgenda = await Agenda.findById(agendaId);
-      if (!newAgenda) {
-        return res.status(404).json({ error: 'new agenda not found' });
-      }
-      
-      const user = await User.findById(req.user.id);
-      if (!user || !user.agendas.includes(newAgenda._id)) {
-        return res.status(403).json({ error: 'unauthorized access to this agenda' });
-      }
-      
-      // Retirer l'événement de TOUS les agendas qui le contiennent
-      const removedCount = await Agenda.updateMany(
-        { events: ev._id },
-        { $pull: { events: ev._id } }
-      );
-      console.log(`  ✅ Retiré de ${removedCount.modifiedCount} agenda(s)`);
-      
-      // Ajouter l'événement au nouvel agenda (si pas déjà présent)
-      if (!newAgenda.events.includes(ev._id)) {
-        newAgenda.events.push(ev._id);
-        await newAgenda.save();
-        console.log(`  ✅ Ajouté au nouvel agenda ${agendaId}`);
-      } else {
-        console.log(`  ℹ️ Événement déjà dans l'agenda ${agendaId}`);
+      if (agendaId !== currentAgendaId) {
+        // Vérifier que le nouvel agenda existe et appartient à l'utilisateur
+        const newAgenda = await Agenda.findById(agendaId);
+        if (!newAgenda) {
+          return res.status(404).json({ error: 'new agenda not found' });
+        }
+        
+        const user = await User.findById(req.user.id);
+        if (!user || !user.agendas.includes(newAgenda._id)) {
+          return res.status(403).json({ error: 'unauthorized access to this agenda' });
+        }
+        
+        // Retirer l'événement de TOUS les agendas qui le contiennent
+        await Agenda.updateMany(
+          { events: ev._id },
+          { $pull: { events: ev._id } }
+        );
+        
+        // Ajouter l'événement au nouvel agenda (si pas déjà présent)
+        if (!newAgenda.events.includes(ev._id)) {
+          newAgenda.events.push(ev._id);
+          await newAgenda.save();
+        }
       }
     }
     
@@ -276,6 +278,7 @@ router.put('/:id', async (req, res) => {
     if (emoji) ev.emoji = emoji;
     if (color) ev.color = color;
     if (agendaId) ev.agendaId = agendaId;
+    if (recurrence !== undefined) ev.recurrence = recurrence;
     
     await ev.save();
     
@@ -287,6 +290,7 @@ router.put('/:id', async (req, res) => {
       description: ev.description,
       emoji: ev.emoji,
       color: ev.color,
+      recurrence: ev.recurrence,
       agendaId: ev.agendaId
     });
   } catch (err) {

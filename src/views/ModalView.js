@@ -23,6 +23,12 @@ class ModalView {
         this.inputAgenda = document.getElementById('input-agenda');
         this.inputColor = document.getElementById('input-color');
         
+        // Champs de récurrence
+        this.inputRecurrence = document.getElementById('input-recurrence');
+        this.recurrenceOptions = document.getElementById('recurrence-options');
+        this.inputRecurrenceEnd = document.getElementById('input-recurrence-end');
+        this.weeklyDays = document.getElementById('weekly-days');
+        
         // Boutons
         this.btnSave = document.getElementById('btn-save');
         this.btnDelete = document.getElementById('btn-delete');
@@ -30,6 +36,9 @@ class ModalView {
         
         // Initialise l'événement de fermeture en cliquant à l'extérieur
         this.initCloseOnClickOutside();
+        
+        // Gère l'affichage des options de récurrence
+        this.initRecurrenceHandlers();
     }
 
     // Permet de fermer la modale en cliquant à l'extérieur (sur le fond sombre)
@@ -39,6 +48,27 @@ class ModalView {
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
                 this.close();
+            }
+        });
+    }
+
+    // Initialise les gestionnaires d'événements pour la récurrence
+    initRecurrenceHandlers() {
+        this.inputRecurrence.addEventListener('change', () => {
+            const type = this.inputRecurrence.value;
+            
+            if (type === 'none') {
+                this.recurrenceOptions.classList.add('hidden');
+                this.weeklyDays.classList.add('hidden');
+            } else {
+                this.recurrenceOptions.classList.remove('hidden');
+                
+                // Afficher les jours de la semaine uniquement pour récurrence hebdomadaire
+                if (type === 'weekly') {
+                    this.weeklyDays.classList.remove('hidden');
+                } else {
+                    this.weeklyDays.classList.add('hidden');
+                }
             }
         });
     }
@@ -55,6 +85,13 @@ class ModalView {
         this.inputTitle.value = '';
         this.inputDescription.value = '';
         this.inputColor.value = '📅';
+        
+        // Réinitialise la récurrence
+        this.inputRecurrence.value = 'none';
+        this.inputRecurrenceEnd.value = '';
+        this.recurrenceOptions.classList.add('hidden');
+        this.weeklyDays.classList.add('hidden');
+        this.clearWeeklyDays();
         
         // Preremplit les dates si fourni
         if (dateStr) {
@@ -85,6 +122,31 @@ class ModalView {
         this.inputDescription.value = eventData.description || '';
         this.inputColor.value = eventData.emoji || '📅';
         
+        // Remplit les champs de récurrence
+        if (eventData.recurrence) {
+            this.inputRecurrence.value = eventData.recurrence.type || 'none';
+            
+            // Convertir la date de fin si nécessaire
+            if (eventData.recurrence.endDate) {
+                const endDate = new Date(eventData.recurrence.endDate);
+                this.inputRecurrenceEnd.value = endDate.toISOString().split('T')[0];
+            } else {
+                this.inputRecurrenceEnd.value = '';
+            }
+            
+            if (eventData.recurrence.type !== 'none') {
+                this.recurrenceOptions.classList.remove('hidden');
+            }
+            
+            if (eventData.recurrence.type === 'weekly' && eventData.recurrence.daysOfWeek) {
+                this.weeklyDays.classList.remove('hidden');
+                this.setWeeklyDays(eventData.recurrence.daysOfWeek);
+            }
+        } else {
+            this.inputRecurrence.value = 'none';
+            this.recurrenceOptions.classList.add('hidden');
+        }
+        
         // Remplit le sélecteur d'agendas si fourni
         if (agendas.length > 0) {
             this.populateAgendaSelector(agendas, eventData.agendaId);
@@ -100,10 +162,12 @@ class ModalView {
     }
 
     // Récupère toutes les données saisies dans le formulaire 
-    // retourne un objet contenant {title, start, end, description, agendaId, emoji}
+    // retourne un objet contenant {title, start, end, description, agendaId, emoji, recurrence}
      
     getFormData() {
-        return {
+        const recurrenceType = this.inputRecurrence.value;
+        
+        const data = {
             title: this.inputTitle.value.trim(),
             start: this.inputStart.value,
             end: this.inputEnd.value,
@@ -111,6 +175,24 @@ class ModalView {
             agendaId: this.inputAgenda.value,
             emoji: this.inputColor.value
         };
+        
+        // Ajouter les données de récurrence si activée
+        if (recurrenceType !== 'none') {
+            data.recurrence = {
+                type: recurrenceType,
+                interval: 1,
+                endDate: this.inputRecurrenceEnd.value || null
+            };
+            
+            // Pour récurrence hebdomadaire, récupérer les jours sélectionnés
+            if (recurrenceType === 'weekly') {
+                data.recurrence.daysOfWeek = this.getSelectedWeeklyDays();
+            }
+        } else {
+            data.recurrence = { type: 'none' };
+        }
+        
+        return data;
     }
 
     // Vérifie si le formulaire est valide (titre et date de début obligatoires)
@@ -173,5 +255,26 @@ class ModalView {
                 this.inputAgenda.appendChild(option);
             }
         });
+    }
+
+    // Récupère les jours de la semaine sélectionnés
+    getSelectedWeeklyDays() {
+        const checkboxes = this.weeklyDays.querySelectorAll('input[type="checkbox"]:checked');
+        return Array.from(checkboxes).map(cb => parseInt(cb.value));
+    }
+
+    // Coche les jours de la semaine
+    setWeeklyDays(days) {
+        this.clearWeeklyDays();
+        days.forEach(day => {
+            const checkbox = this.weeklyDays.querySelector(`input[value="${day}"]`);
+            if (checkbox) checkbox.checked = true;
+        });
+    }
+
+    // Décoche tous les jours de la semaine
+    clearWeeklyDays() {
+        const checkboxes = this.weeklyDays.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
     }
 }

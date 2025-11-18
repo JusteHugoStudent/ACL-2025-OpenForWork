@@ -175,17 +175,17 @@ class App {
 
         const editingEventId = this.eventController.getEditingEventId();
         
-        console.log('🔍 EditingEventId brut:', editingEventId);
-        
         if (editingEventId) {
             // Mode Edition
-            // Extrait l'eventId réel (format: "agendaId-eventId")
-            const realEventId = editingEventId.includes('-') 
-                ? editingEventId.split('-')[1] 
-                : editingEventId;
-            
-            console.log('🔍 RealEventId extrait:', realEventId);
-            console.log('🔍 EventData à envoyer:', { id: realEventId, ...eventData });
+            // Extrait l'eventId réel (format: "agendaId-eventId" ou "agendaId-eventId-occurrenceIndex")
+            let realEventId;
+            if (editingEventId.includes('-')) {
+                const parts = editingEventId.split('-');
+                // Si 3 parties (agendaId-eventId-occurrenceIndex), prendre la partie du milieu
+                realEventId = parts.length === 3 ? parts[1] : parts[1];
+            } else {
+                realEventId = editingEventId;
+            }
             
             const success = await this.eventController.updateEvent({
                 id: realEventId,
