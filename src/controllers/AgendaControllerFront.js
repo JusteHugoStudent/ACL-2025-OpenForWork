@@ -18,6 +18,10 @@ class AgendaControllerFront {
         this.selectedAgendas = []; // IDs des agendas en superposition
     }
 
+    // Permet d'enregistrer une instance d'EventControllerFront pour déléguer createEvent
+    setEventController(eventController) {
+        this.eventController = eventController;
+    }
     
     // Récupère tous les agendas de l'utilisateur depuis le serveur
     // Met à jour l'affichage du sélecteur d'agendas
@@ -48,9 +52,10 @@ class AgendaControllerFront {
     
     // Crée un nouvel agenda avec validation
     // prend en paramettre le nom de l'agenda à créer
+    // options: { setCurrent: true } - si false, ne remplace pas this.currentAgenda (utile pour import)
     // retourne L'agenda créé ou null en cas d'erreur
      
-    async createAgenda(name) {
+    async createAgenda(name, { setCurrent = true } = {}) {
         // Validation avec validationUtils
         if (!isNotEmpty(name)) {
             alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
@@ -70,7 +75,9 @@ class AgendaControllerFront {
             await this.loadAgendas();
 
             // Définir le nouvel agenda comme courant
-            this.currentAgenda = created;
+            if (setCurrent) {
+                this.currentAgenda = created;
+            }
 
             // Mettre à jour l'affichage
             this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
@@ -249,5 +256,176 @@ class AgendaControllerFront {
     
     getAllAgendas() {
         return this.agendas;
+    }
+
+    // Exporte l'agenda courant en JSON et déclenche le téléchargement d'un fichier .json
+    // Retourne la chaîne JSON produite ou null en cas d'erreur
+    async exportCurrentAgendaToFile() {
+        console.log('Export agenda courant en JSON');
+        if (!this.currentAgenda) {
+            alert('Aucun agenda courant à exporter.');
+            return null;
+        }
+
+        try {
+            const payload = { agenda: this.currentAgenda };
+
+            // Si le service expose fetchEvents, essaye de récupérer les événements associés
+            if (this.agendaService && typeof this.agendaService.fetchEvents === 'function') {
+                try {
+                    const events = await this.agendaService.fetchEvents(this.currentAgenda.id);
+                    payload.events = events;
+                } catch (e) {
+                    console.warn('Impossible de récupérer les événements pour export :', e);
+                }
+            }
+
+            const json = JSON.stringify(payload, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const filename = `${(this.currentAgenda.name || 'agenda')}.json`;
+
+            // Support IE/Edge
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveOrOpenBlob(blob, filename);
+            } else {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            }
+
+            return json;
+        } catch (error) {
+            console.error('Erreur export agenda :', error);
+            alert('Erreur lors de l\'export de l\'agenda.');
+            return null;
+        }
+    }
+
+    // Importe un agenda depuis une chaîne JSON.
+    // Si createNew = true et que agendaService.create existe, crée un nouvel agenda et ajoute les événements si possible.
+    // Sinon émet un CustomEvent 'agendaJsonImported' avec le payload pour que l'application gère l'import.
+    async importAgendaFromJson(jsonString, { createNew = true, sourceFilename = null } = {}) {
+        try {
+            const data = JSON.parse(jsonString);
+
+            const filenameName = sourceFilename ? String(sourceFilename).replace(/\.[^/.]+$/, '') : null;
+            let name = filenameName || data?.agenda?.name || data?.name;
+
+            if (!name) {
+                alert('Fichier JSON invalide : nom d\'agenda manquant.');
+                return null;
+            }
+
+            if (name.length > 15) {
+                console.warn('Nom d\'agenda trop long, tronqué à 15 caractères.');
+                name = name.slice(0, 15);
+            }
+
+            // Supporte events à la racine ou sous agenda.events
+            const events = Array.isArray(data.events) ? data.events
+                         : Array.isArray(data?.agenda?.events) ? data.agenda.events
+                         : [];
+
+            if (createNew && this.agendaService && typeof this.agendaService.create === 'function') {
+                // Utilise la fonction createAgenda locale pour créer l'agenda,
+                // sans remplacer l'agenda courant (setCurrent: false)
+                const created = await this.createAgenda(name, { setCurrent: false });
+
+                // assure un id pour created (si backend ne renvoie pas d'id)
+                let createdId = created && created.id ? created.id : null;
+                if (!createdId) {
+                    // recharger agendas pour récupérer l'objet créé côté serveur si possible
+                    await this.loadAgendas();
+                    const found = this.agendas.find(a => a.name === name);
+                    if (found && found.id) createdId = found.id;
+                }
+                if (!createdId) {
+                    // fallback id côté client (unique local)
+                    createdId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `local-${Date.now()}-${Math.floor(Math.random()*1000000)}`;
+                    if (created) created.id = createdId;
+                }
+
+                const failed = [];
+                if (events.length > 0 && (typeof this.eventController?.createEvent === 'function' || typeof this.agendaService.createEvent === 'function')) {
+                    for (const ev of events) {
+                        // sanitize / normalise
+                        const payload = {
+                            title: ev.title || ev.summary || ev.name || 'Sans titre',
+                            start: ev.start || ev.startDate || ev.begin || null,
+                            end: ev.end || ev.endDate || ev.finish || null,
+                            description: ev.description ?? ev.desc ?? '',
+                            color: ev.color ?? ev.backgroundColor ?? ev.colour ?? null,
+                            allDay: ev.allDay ?? ev.all_day ?? undefined,
+                            location: ev.location ?? ev.place ?? undefined
+                        };
+                        Object.keys(payload).forEach(k => payload[k] == null && delete payload[k]);
+
+                        try {
+                            console.debug('Import createEvent payload:', payload);
+                            // Si on a un EventController, appeler createEvent avec agendaId dans l'objet
+                            if (typeof this.eventController?.createEvent === 'function') {
+                                await this.eventController.createEvent({ ...payload, agendaId: createdId });
+                            } else {
+                                // Fallback : agendaService.createEvent(agendaId, payload) si c'est l'API attendue
+                                await this.agendaService.createEvent(createdId, payload);
+                            }
+                        } catch (e) {
+                            console.warn('Échec création événement importé:', e, payload);
+                            failed.push({ error: e?.message || String(e), event: payload });
+                        }
+                    }
+                } else {
+                    console.info('Aucun événement à importer ou createEvent non disponible.');
+                }
+
+                await this.loadAgendas();
+                this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+                this.updateOverlayMenu();
+
+                if (failed.length > 0) {
+                    console.warn(`${failed.length} événement(s) n'ont pas été importé(s). Voir console pour détails.`, failed);
+                    alert(`${failed.length} événement(s) n'ont pas pu être importés (voir console).`);
+                }
+
+                return created;
+            } else {
+                const event = new CustomEvent('agendaJsonImported', { detail: data });
+                document.dispatchEvent(event);
+                return data;
+            }
+        } catch (error) {
+            console.error('Erreur import JSON agenda :', error);
+            alert('Erreur lors de l\'import du fichier JSON.');
+            return null;
+        }
+    }
+
+    // Lit un File (input type="file") et lance l'import
+    // Le nom du fichier est transmis pour nommer le nouvel agenda
+    // Retourne la valeur renvoyée par importAgendaFromJson ou null
+    async importAgendaFromFile(file) {
+        if (!file) {
+            alert('Aucun fichier sélectionné pour l\'import.');
+            return null;
+        }
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const result = await this.importAgendaFromJson(String(e.target.result), { createNew: true, sourceFilename: file.name });
+                resolve(result);
+            };
+            reader.onerror = (e) => {
+                console.error('Erreur lecture fichier import :', e);
+                alert('Impossible de lire le fichier sélectionné.');
+                resolve(null);
+            };
+            reader.readAsText(file, 'utf-8');
+        });
     }
 }

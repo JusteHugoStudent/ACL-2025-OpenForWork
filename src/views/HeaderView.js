@@ -16,6 +16,34 @@ class HeaderView {
         this.btnLogout = document.getElementById('btn-logout');
         this.newAgendaBtn = document.getElementById('newAgendaBtn');
         this.agendaSelect = document.getElementById('agendaSelect'); // récupère le select existant
+
+        // nouveaux boutons Import / Export (crée si absent)
+        this.importBtn = document.getElementById('btn-import');
+        this.exportBtn = document.getElementById('btn-export');
+
+        const container = (this.agendaSelect && this.agendaSelect.parentElement) || document.querySelector('header') || document.body;
+
+        // input file caché pour l'import
+        this.fileInput = document.getElementById('agendaImportInput') || document.createElement('input');
+        this.fileInput.type = 'file';
+        this.fileInput.accept = '.json,application/json';
+        this.fileInput.style.display = 'none';
+        this.fileInput.id = 'agendaImportInput';
+        if (!document.body.contains(this.fileInput)) document.body.appendChild(this.fileInput);
+
+        // callback interne pour l'import (reçoit le File)
+        this._importCallback = null;
+
+        // wiring import button -> ouvre le sélecteur de fichier
+        this.importBtn.addEventListener('click', () => this.fileInput.click());
+
+        // lecture du fichier et appel du callback
+        this.fileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+            if (file && this._importCallback) this._importCallback(file);
+            // réinitialise l'input pour permettre de re-sélectionner le même fichier plus tard
+            e.target.value = '';
+        });
     }
 
     // Définit le nom de l'utilisateur affiché dans l'en-tête
@@ -69,5 +97,18 @@ class HeaderView {
     
     onAddAgendaClick(callback) {
         this.newAgendaBtn.addEventListener('click', callback);
+    }
+
+    // Attache un callback au bouton d'export
+    // callback sans argument (ex: () => controller.exportCurrentAgendaToFile())
+    onExportClick(callback) {
+        if (!this.exportBtn) return;
+        this.exportBtn.addEventListener('click', callback);
+    }
+
+    // Attache un callback au bouton d'import
+    // callback reçoit le File sélectionné (ex: (file) => controller.importAgendaFromFile(file))
+    onImportClick(callback) {
+        this._importCallback = callback;
     }
 }

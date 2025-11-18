@@ -179,6 +179,14 @@
             <!-- Container du calendrier -->
             <div class="calendar-container">
                 <div id="calendar" class="p-3"></div>
+
+                <!-- Boutons Import / Export sous l'agenda -->
+                <div id="agenda-controls" style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+                    <button id="btn-export" type="button" class="btn btn-small">Exporter</button>
+                    <button id="btn-import" type="button" class="btn btn-small">Importer</button>
+                    <!-- input file caché pour l'import ; HeaderView lira cet élément si présent -->
+                    <input id="agendaImportInput" type="file" accept=".json,application/json" style="display:none" />
+                </div>
             </div>
         </div>
     </div>
