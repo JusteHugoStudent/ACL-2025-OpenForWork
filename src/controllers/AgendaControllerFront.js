@@ -5,22 +5,19 @@
 class AgendaControllerFront {
     // Constructeur du contrôleur d'agendas
 
-    // prend en paramettre agendaService pour les appels API agendas
+    // prend en parametre agendaService pour les appels API agendas
     // et headerView pour la Vue de l'en-tête, pour l'afficher le sélecteur
+    // et eventController pour créer les événements lors de l'import
      
-    constructor(agendaService, headerView) {
+    constructor(agendaService, headerView, eventController = null) {
         this.agendaService = agendaService;
         this.headerView = headerView;
+        this.eventController = eventController;
         
         // État des agendas
         this.agendas = [];
         this.currentAgenda = null;
         this.selectedAgendas = []; // IDs des agendas en superposition
-    }
-
-    // Permet d'enregistrer une instance d'EventControllerFront pour déléguer createEvent
-    setEventController(eventController) {
-        this.eventController = eventController;
     }
     
     // Récupère tous les agendas de l'utilisateur depuis le serveur
@@ -270,14 +267,16 @@ class AgendaControllerFront {
         try {
             const payload = { agenda: this.currentAgenda };
 
-            // Si le service expose fetchEvents, essaye de récupérer les événements associés
-            if (this.agendaService && typeof this.agendaService.fetchEvents === 'function') {
+            // Récupère les événements de l'agenda via eventController ou eventService
+            if (this.eventController?.eventService) {
                 try {
-                    const events = await this.agendaService.fetchEvents(this.currentAgenda.id);
+                    const events = await this.eventController.eventService.fetchByAgenda(this.currentAgenda.id);
                     payload.events = events;
                 } catch (e) {
                     console.warn('Impossible de récupérer les événements pour export :', e);
                 }
+            } else {
+                console.warn('EventController non disponible pour l\'export');
             }
 
             const json = JSON.stringify(payload, null, 2);
@@ -351,6 +350,7 @@ class AgendaControllerFront {
                 }
 
                 const failed = [];
+                
                 if (events.length > 0 && (typeof this.eventController?.createEvent === 'function' || typeof this.agendaService.createEvent === 'function')) {
                     for (const ev of events) {
                         // sanitize / normalise
@@ -358,15 +358,16 @@ class AgendaControllerFront {
                             title: ev.title || ev.summary || ev.name || 'Sans titre',
                             start: ev.start || ev.startDate || ev.begin || null,
                             end: ev.end || ev.endDate || ev.finish || null,
-                            description: ev.description ?? ev.desc ?? '',
+                            description: ev.description ?? ev.extendedProps?.description ?? ev.desc ?? '',
+                            emoji: ev.emoji ?? ev.icon ?? null,
                             color: ev.color ?? ev.backgroundColor ?? ev.colour ?? null,
+                            recurrence: ev.recurrence ?? { type: 'none' },
                             allDay: ev.allDay ?? ev.all_day ?? undefined,
                             location: ev.location ?? ev.place ?? undefined
                         };
                         Object.keys(payload).forEach(k => payload[k] == null && delete payload[k]);
 
                         try {
-                            console.debug('Import createEvent payload:', payload);
                             // Si on a un EventController, appeler createEvent avec agendaId dans l'objet
                             if (typeof this.eventController?.createEvent === 'function') {
                                 await this.eventController.createEvent({ ...payload, agendaId: createdId });
@@ -384,6 +385,13 @@ class AgendaControllerFront {
                 }
 
                 await this.loadAgendas();
+                
+                // Sélectionne automatiquement l'agenda importé
+                const importedAgenda = this.agendas.find(a => a.id === createdId);
+                if (importedAgenda) {
+                    this.switchAgenda(importedAgenda);
+                }
+                
                 this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
                 this.updateOverlayMenu();
 

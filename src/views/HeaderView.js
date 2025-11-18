@@ -35,7 +35,9 @@ class HeaderView {
         this._importCallback = null;
 
         // wiring import button -> ouvre le sélecteur de fichier
-        this.importBtn.addEventListener('click', () => this.fileInput.click());
+        if (this.importBtn) {
+            this.importBtn.addEventListener('click', () => this.fileInput.click());
+        }
 
         // lecture du fichier et appel du callback
         this.fileInput.addEventListener('change', (e) => {

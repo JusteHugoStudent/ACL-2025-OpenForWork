@@ -159,6 +159,22 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Boutons Import / Export agenda -->
+                    <div class="agenda-overlay-section">
+                        <button id="btn-export" type="button" class="btn-overlay">
+                            <i class="uil uil-download-alt"></i>
+                            Exporter agenda
+                        </button>
+                    </div>
+                    <div class="agenda-overlay-section">
+                        <button id="btn-import" type="button" class="btn-overlay">
+                            <i class="uil uil-upload-alt"></i>
+                            Importer agenda
+                        </button>
+                        <!-- input file caché pour l'import ; HeaderView lira cet élément si présent -->
+                        <input id="agendaImportInput" type="file" accept=".json,application/json" style="display:none" />
+                    </div>
                 </div>
             </aside>
 
@@ -251,12 +267,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Container du calendrier -->
-            <div class="calendar-container">
-                <div id="calendar" class="p-3"></div>
-            </div>
+            </main>
         </div>
     </div>
 

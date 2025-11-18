@@ -26,8 +26,8 @@ class App {
         this.calendarManager = new CalendarManager();
         
         // Controleurs (Logique métier)
-        this.agendaController = new AgendaControllerFront(this.agendaService, this.headerView);
         this.eventController = new EventControllerFront(this.eventService, this.calendarManager, this.modalView);
+        this.agendaController = new AgendaControllerFront(this.agendaService, this.headerView, this.eventController);
         this.notificationController = new NotificationController();
         this.filterController = new FilterController(this.eventController);
         
