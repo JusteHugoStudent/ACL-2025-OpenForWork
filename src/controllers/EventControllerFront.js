@@ -143,6 +143,11 @@ class EventControllerFront {
             
             console.log(`📥 Chargement agenda ${agendaId}:`, events.length, 'événements');
             
+            // Debug: vérifier le format du premier événement
+            if (events.length > 0) {
+                console.log('🔍 Format événement:', events[0]);
+            }
+            
             // Récupére le nom de l'agenda pour l'affichage
             const agenda = allAgendas.find(a => a.id === agendaId);
             const agendaName = agenda ? agenda.name : 'Agenda';
@@ -180,7 +185,8 @@ class EventControllerFront {
                         agendaId: agendaId,
                         agendaName: agendaName,
                         originalTitle: ev.title,
-                        description: ev.description || '',
+                        // Le backend peut renvoyer la description dans ev.description OU ev.extendedProps.description
+                        description: ev.description || ev.extendedProps?.description || '',
                         emoji: ev.emoji || '📅'
                     }
                 });

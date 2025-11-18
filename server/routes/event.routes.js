@@ -225,7 +225,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'event not found' });
     }
     
-    // Vérifie l'erreur horaire pour la mise à jour
+    // Vérification erreur horaire pour la mise à jour
     const newStart = start ? new Date(start) : ev.start;
     const newEnd = end ? new Date(end) : ev.end;
     
@@ -235,7 +235,40 @@ router.put('/:id', async (req, res) => {
       });
     }
     
-    // Met à jour les champs fournis
+    // Si changement d'agenda, gérer le transfert
+    if (agendaId && agendaId !== String(ev.agendaId)) {
+      console.log(`🔄 Transfert événement ${id} vers agenda ${agendaId}`);
+      console.log(`   Ancien agendaId: ${ev.agendaId || 'non défini'}`);
+      
+      // Vérifier que le nouvel agenda existe et appartient à l'utilisateur
+      const newAgenda = await Agenda.findById(agendaId);
+      if (!newAgenda) {
+        return res.status(404).json({ error: 'new agenda not found' });
+      }
+      
+      const user = await User.findById(req.user.id);
+      if (!user || !user.agendas.includes(newAgenda._id)) {
+        return res.status(403).json({ error: 'unauthorized access to this agenda' });
+      }
+      
+      // Retirer l'événement de TOUS les agendas qui le contiennent
+      const removedCount = await Agenda.updateMany(
+        { events: ev._id },
+        { $pull: { events: ev._id } }
+      );
+      console.log(`  ✅ Retiré de ${removedCount.modifiedCount} agenda(s)`);
+      
+      // Ajouter l'événement au nouvel agenda (si pas déjà présent)
+      if (!newAgenda.events.includes(ev._id)) {
+        newAgenda.events.push(ev._id);
+        await newAgenda.save();
+        console.log(`  ✅ Ajouté au nouvel agenda ${agendaId}`);
+      } else {
+        console.log(`  ℹ️ Événement déjà dans l'agenda ${agendaId}`);
+      }
+    }
+    
+    // Mettre à jour les champs fournis
     if (title) ev.title = title;
     if (start) ev.start = newStart;
     if (end) ev.end = newEnd;

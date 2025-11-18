@@ -72,8 +72,9 @@ class ModalView {
     // Ouvre la modale en mode ÉDITION d'un événement existant
     // Remplit les champs avec les données de l'événement et affiche le bouton Supprimer 
     // prend en paramettre eventData - Données de l'événement à modifier
+    // prend en paramettre agendas - Liste des agendas disponibles pour le sélecteur
     
-    openForEdit(eventData) {
+    openForEdit(eventData, agendas = []) {
         this.modalTitle.textContent = 'Modifier l\'événement';
         this.btnDelete.classList.remove('hidden');
         
@@ -84,9 +85,9 @@ class ModalView {
         this.inputDescription.value = eventData.description || '';
         this.inputColor.value = eventData.emoji || '📅';
         
-        // Sélectionne l'agenda si fourni
-        if (eventData.agendaId) {
-            this.inputAgenda.value = eventData.agendaId;
+        // Remplit le sélecteur d'agendas si fourni
+        if (agendas.length > 0) {
+            this.populateAgendaSelector(agendas, eventData.agendaId);
         }
         
         this.modal.classList.remove('hidden');

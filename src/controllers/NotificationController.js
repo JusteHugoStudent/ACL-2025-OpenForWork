@@ -131,19 +131,21 @@ class NotificationController {
                     
                     // Utilise la fenêtre de tolérance configurée
                     if (timeDiff < NOTIFICATION_CONFIG.TOLERANCE_WINDOW) {
-                        const notifKey = `${event._id}-${threshold.minutes}`;
+                        // Le backend renvoie 'id' et non '_id'
+                        const eventId = event.id || event._id;
+                        const notifKey = `${eventId}-${threshold.minutes}`;
                         
-                        console.log(`⏰ Événement "${event.title}" dans ${minutesUntil} min - Seuil ${threshold.label} (diff: ${minutesDiff} min)`);
+                        console.log(`⏰ Événement "${event.title}" dans ${minutesUntil} min - Seuil ${threshold.label} (diff: ${minutesDiff} min) - Key: ${notifKey}`);
                         
                         // Vérifie si pas déjà notifié
                         if (!this.notifiedEvents.has(notifKey)) {
-                            console.log(`✅ Envoi notification pour "${event.title}" - ${threshold.label}`);
+                            console.log(`✅ Envoi notification pour "${event.title}" - ${threshold.label} (clé: ${notifKey})`);
                             this.sendNotification(event, threshold.label);
                             this.notifiedEvents.add(notifKey);
                             this.saveNotifiedEvents();
                             notificationsSent++;
                         } else {
-                            console.log(`⏭️ Déjà notifié pour "${event.title}" - ${threshold.label}`);
+                            console.log(`⏭️ Déjà notifié pour "${event.title}" - ${threshold.label} (clé: ${notifKey} existe dans le cache)`);
                         }
                     }
                 });
@@ -169,10 +171,11 @@ class NotificationController {
         
         // Notification navigateur (si permissions accordées)
         if ('Notification' in window && Notification.permission === 'granted') {
+            const eventId = event.id || event._id;
             new Notification('Événement à venir', {
                 body: `${title} commence dans ${timeLabel}`,
                 icon: '/favicon.ico',
-                tag: `event-${event._id}` // Évite les doublons
+                tag: `event-${eventId}` // Évite les doublons
             });
         }
     }
@@ -312,7 +315,11 @@ class NotificationController {
     clearAll() {
         this.notifiedEvents.clear();
         setItem(STORAGE_KEYS.NOTIFIED_EVENTS, JSON.stringify([]));
-        console.log('🗑️ Cache des notifications vidé');
+        
+        // Aussi nettoyer l'ancien format potentiellement corrompu
+        localStorage.removeItem('notifiedEvents');
+        
+        console.log('🗑️ Cache des notifications vidé (localStorage nettoyé)');
     }
 
     // Fonction de debug pour tester les notifications manuellement
@@ -338,8 +345,9 @@ class NotificationController {
         console.log('═══════════════════════════════════════');
         console.log('Polling actif:', !!this.pollingInterval);
         console.log('Événements notifiés:', this.notifiedEvents.size);
-        console.log('Liste:', Array.from(this.notifiedEvents));
+        console.log('Liste des clés:', Array.from(this.notifiedEvents));
         console.log('Permission navigateur:', Notification?.permission || 'Non disponible');
+        console.log('LocalStorage (brut):', localStorage.getItem(STORAGE_KEYS.NOTIFIED_EVENTS));
         console.log('═══════════════════════════════════════');
     }
 }

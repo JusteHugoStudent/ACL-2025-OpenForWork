@@ -151,9 +151,12 @@ class App {
         
         // Arrête le système de notifications
         this.notificationController.stopPolling();
-        this.notificationController.clearAll(); // Vide le cache des notifications
         
-        console.log('👋 Déconnexion : cache des notifications vidé');
+        // Note: On ne vide PAS le cache des notifications à la déconnexion
+        // pour éviter de re-notifier les mêmes événements à la reconnexion
+        // this.notificationController.clearAll();
+        
+        console.log('👋 Déconnexion');
     }
 
 // Gestion des evenements
@@ -240,26 +243,35 @@ class App {
     async reloadAllEvents() {
         // Protection contre les appels multiples simultanés
         if (this.isReloading) {
+            console.log('⚠️ Rechargement déjà en cours, ignoré');
             return;
         }
         
         this.isReloading = true;
         
         try {
-            // Efface tous les événements du calendrier
+            console.log('🔄 Rechargement de tous les événements...');
+            
+            // Effacer tous les événements du calendrier
             this.calendarManager.removeAllEvents();
+            
+            console.log('✅ Calendrier vidé');
 
-            // Récupére les IDs des agendas visibles
+            // Récupérer les IDs des agendas visibles
             const visibleAgendaIds = this.agendaController.getVisibleAgendaIds();
             const allAgendas = this.agendaController.getAllAgendas();
             const currentAgendaId = this.agendaController.getCurrentAgenda()?.id;
 
-            // Charge les événements de tous les agendas visibles
+            console.log('📋 Agendas visibles:', visibleAgendaIds);
+
+            // Charger les événements de tous les agendas visibles
             await this.eventController.loadEventsFromMultipleAgendas(
                 visibleAgendaIds,
                 allAgendas,
                 currentAgendaId
             );
+            
+            console.log('✅ Rechargement terminé');
         } finally {
             this.isReloading = false;
         }
