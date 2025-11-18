@@ -188,52 +188,54 @@
         <div class="modal-content">
             <h3 id="modal-title">Ajouter un événement</h3>
 
-            <label for="input-title">Titre :</label>
-            <input type="text" id="input-title" placeholder="Titre de l'événement">
+            <div class="modal-body">
+                <label for="input-title">Titre :</label>
+                <input type="text" id="input-title" placeholder="Titre de l'événement">
 
-            <label for="input-start">Date début :</label>
-            <input type="datetime-local" id="input-start">
+                <label for="input-start">Date début :</label>
+                <input type="datetime-local" id="input-start">
 
-            <label for="input-end">Date fin :</label>
-            <input type="datetime-local" id="input-end">
+                <label for="input-end">Date fin :</label>
+                <input type="datetime-local" id="input-end">
 
-            <label for="input-description">Description :</label>
-            <textarea id="input-description" rows="3" placeholder="Description"></textarea>
+                <label for="input-description">Description :</label>
+                <textarea id="input-description" rows="3" placeholder="Description"></textarea>
 
-            <label for="input-agenda">Agenda :</label>
-            <select id="input-agenda">
-                <!-- Options remplies dynamiquement -->
-            </select>
+                <label for="input-agenda">Agenda :</label>
+                <select id="input-agenda">
+                    <!-- Options remplies dynamiquement -->
+                </select>
 
-            <label for="input-color">Emoji :</label>
-            <select id="input-color">
-                <!-- Les options emoji seront générées dynamiquement depuis constants.js -->
-            </select>
+                <label for="input-color">Emoji :</label>
+                <select id="input-color">
+                    <!-- Les options emoji seront générées dynamiquement depuis constants.js -->
+                </select>
 
-            <!-- Configuration de récurrence -->
-            <label for="input-recurrence">Récurrence :</label>
-            <select id="input-recurrence">
-                <option value="none">Aucune</option>
-                <option value="daily">Quotidienne</option>
-                <option value="weekly">Hebdomadaire</option>
-                <option value="monthly">Mensuelle</option>
-                <option value="yearly">Annuelle</option>
-            </select>
+                <!-- Configuration de récurrence -->
+                <label for="input-recurrence">Récurrence :</label>
+                <select id="input-recurrence">
+                    <option value="none">Aucune</option>
+                    <option value="daily">Quotidienne</option>
+                    <option value="weekly">Hebdomadaire</option>
+                    <option value="monthly">Mensuelle</option>
+                    <option value="yearly">Annuelle</option>
+                </select>
 
-            <div id="recurrence-options" class="hidden">
-                <label for="input-recurrence-end">Se termine le :</label>
-                <input type="date" id="input-recurrence-end">
+                <div id="recurrence-options" class="hidden">
+                    <label for="input-recurrence-end">Se termine le :</label>
+                    <input type="date" id="input-recurrence-end">
 
-                <div id="weekly-days" class="hidden">
-                    <label>Jours de la semaine :</label>
-                    <div class="days-selector">
-                        <label><input type="checkbox" value="1"> Lun</label>
-                        <label><input type="checkbox" value="2"> Mar</label>
-                        <label><input type="checkbox" value="3"> Mer</label>
-                        <label><input type="checkbox" value="4"> Jeu</label>
-                        <label><input type="checkbox" value="5"> Ven</label>
-                        <label><input type="checkbox" value="6"> Sam</label>
-                        <label><input type="checkbox" value="0"> Dim</label>
+                    <div id="weekly-days" class="hidden">
+                        <label>Jours de la semaine :</label>
+                        <div class="days-selector">
+                            <label><input type="checkbox" value="1"> Lun</label>
+                            <label><input type="checkbox" value="2"> Mar</label>
+                            <label><input type="checkbox" value="3"> Mer</label>
+                            <label><input type="checkbox" value="4"> Jeu</label>
+                            <label><input type="checkbox" value="5"> Ven</label>
+                            <label><input type="checkbox" value="6"> Sam</label>
+                            <label><input type="checkbox" value="0"> Dim</label>
+                        </div>
                     </div>
                 </div>
             </div>
