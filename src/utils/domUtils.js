@@ -17,8 +17,19 @@ function generateEmojiFilterButtons() {
         button.dataset.emoji = option.value;
         button.textContent = option.value;
         button.title = option.label; // Info-bulle avec le label
+        
+        // Ajouter l'événement de sélection
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            button.classList.toggle('selected');
+            console.log('🎯 Emoji toggled:', option.value, 'Selected:', button.classList.contains('selected'));
+        });
+        
         container.appendChild(button);
     });
+    
+    console.log('✅ Generated', EMOJI_OPTIONS.length, 'emoji buttons with click handlers');
 }
 
 // Génère les options emoji pour le select de la modale

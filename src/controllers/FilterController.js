@@ -80,22 +80,23 @@ class FilterController {
     // prend en paramettre events - Liste des événements filtrés
     
     generateFilteredList(events) {
-        const resultDiv = document.getElementById('filter-results');
+        const modal = document.getElementById('search-results-modal');
+        const resultDiv = document.getElementById('filter-results-list');
         
-        if (!resultDiv) {
+        if (!modal || !resultDiv) {
             return;
         }
 
-        // Affiche la div des résultats
-        resultDiv.style.display = 'block';
+        // Affiche la modale
+        modal.classList.remove('hidden');
 
         if (events.length === 0) {
-            resultDiv.innerHTML = '<h4>📋 Résultats</h4><p style="padding: 10px; color: white;">Aucun événement trouvé pour cette période.</p>';
+            resultDiv.innerHTML = '<div class="no-results"><i class="uil uil-info-circle"></i><p>Aucun événement trouvé pour cette période.</p></div>';
             return;
         }
 
-        // Crée le HTML de la liste avec le titre
-        let html = '<h4>📋 Résultats</h4><ul style="list-style: none; padding: 0;">';
+        // Crée le HTML de la liste
+        let html = '<div class="search-results-list">';
         
         events.forEach(ev => {
             const eventDate = new Date(ev.start);
@@ -103,43 +104,53 @@ class FilterController {
             const eventTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
             
             html += `
-                <li style="padding: 10px; border-bottom: 1px solid #eee;">
-                    <strong>${eventTitle}</strong><br>
-                    <span style="color: #666; font-size: 0.9em;">
-                        📅 ${formattedDate}<br>
-                        📂 ${ev._agendaName || 'Agenda'}
-                    </span>
-                    ${ev.description ? `<br><span style="color: #999; font-size: 0.85em;">${ev.description}</span>` : ''}
-                </li>
+                <div class="search-result-item">
+                    <div class="result-title">${eventTitle}</div>
+                    <div class="result-info">
+                        <span><i class="uil uil-calendar-alt"></i> ${formattedDate}</span>
+                        <span><i class="uil uil-folder"></i> ${ev._agendaName || 'Agenda'}</span>
+                    </div>
+                    ${ev.description ? `<div class="result-description">${ev.description}</div>` : ''}
+                </div>
             `;
         });
         
-        html += '</ul>';
-        
-        // Ajoute un bouton d'export PDF
-        html += `
-            <div style="padding: 10px; text-align: center;">
-                <button id="export-pdf-btn" style="
-                    padding: 10px 20px;
-                    background-color: ${THEME_COLORS.AGENDA_PRINCIPAL};
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-size: 1em;
-                ">
-                    📄 Exporter en PDF
-                </button>
-            </div>
-        `;
+        html += '</div>';
         
         resultDiv.innerHTML = html;
 
-        // Attache le gestionnaire d'événement au bouton d'export
+        // Attache le gestionnaire d'export PDF
         const exportBtn = document.getElementById('export-pdf-btn');
         if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
+            // Clone pour supprimer les anciens listeners
+            const newExportBtn = exportBtn.cloneNode(true);
+            exportBtn.parentNode.replaceChild(newExportBtn, exportBtn);
+            newExportBtn.addEventListener('click', () => {
                 this.exportFilteredEvents(events);
+            });
+        }
+        
+        // Bouton fermer
+        const closeBtn = document.getElementById('close-search-results');
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔴 Closing search modal');
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // Fermer en cliquant sur l'overlay
+        const overlay = modal.querySelector('.search-modal-overlay');
+        if (overlay) {
+            const newOverlay = overlay.cloneNode(true);
+            overlay.parentNode.replaceChild(newOverlay, overlay);
+            newOverlay.addEventListener('click', () => {
+                console.log('🔴 Closing via overlay');
+                modal.classList.add('hidden');
             });
         }
     }

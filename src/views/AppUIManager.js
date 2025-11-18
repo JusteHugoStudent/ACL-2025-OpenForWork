@@ -137,27 +137,150 @@ class AppUIManager {
     initFilterEvents() {
         const btnFilter = document.getElementById('btn-filter');
         const btnClearFilter = document.getElementById('btn-clear-filter');
+        const btnEmojiFilter = document.getElementById('btn-emoji-filter');
+        const btnEmojiClear = document.getElementById('btn-emoji-clear');
+        const btnSearch = document.getElementById('btn-search');
         
+        // Chips de filtres
+        const filterChips = document.querySelectorAll('.filter-chip');
+        const datePanel = document.getElementById('date-filter-panel');
+        const emojiPanel = document.getElementById('emoji-filter-panel');
+        
+        console.log('🔍 Init filter events:', {
+            filterChips: filterChips.length,
+            datePanel: !!datePanel,
+            emojiPanel: !!emojiPanel,
+            btnSearch: !!btnSearch
+        });
+        
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const filterType = chip.dataset.filter;
+                console.log('✨ Chip clicked:', filterType);
+                
+                // Toggle du chip actif
+                const wasActive = chip.classList.contains('active');
+                
+                // Ferme tous les panneaux et désactive tous les chips
+                filterChips.forEach(c => c.classList.remove('active'));
+                datePanel?.classList.add('hidden');
+                emojiPanel?.classList.add('hidden');
+                
+                // Si le chip n'était pas actif, l'activer et ouvrir son panneau
+                if (!wasActive) {
+                    chip.classList.add('active');
+                    
+                    if (filterType === 'date' && datePanel) {
+                        console.log('📅 Opening date panel');
+                        // Positionner le panneau sous le chip
+                        const rect = chip.getBoundingClientRect();
+                        datePanel.style.top = `${rect.bottom + 8}px`;
+                        datePanel.style.left = `${rect.left}px`;
+                        datePanel.classList.remove('hidden');
+                    } else if (filterType === 'emoji' && emojiPanel) {
+                        console.log('😀 Opening emoji panel');
+                        const existingButtons = document.querySelectorAll('.emoji-btn');
+                        console.log('🔍 Existing emoji buttons:', existingButtons.length);
+                        // Positionner le panneau sous le chip
+                        const rect = chip.getBoundingClientRect();
+                        emojiPanel.style.top = `${rect.bottom + 8}px`;
+                        emojiPanel.style.left = `${rect.left}px`;
+                        emojiPanel.classList.remove('hidden');
+                    }
+                }
+            });
+        });
+        
+        // Bouton Rechercher principal - Lance la recherche/filtrage
+        if (btnSearch) {
+            btnSearch.addEventListener('click', () => {
+                console.log('🔎 Searching...');
+                this.app.handleFilterEvents();
+            });
+        }
+        
+        // Boutons Appliquer des panneaux - Ferment juste les panneaux
         if (btnFilter) {
             btnFilter.addEventListener('click', () => {
-                this.app.handleFilterEvents();
+                console.log('✅ Date filter applied');
+                datePanel?.classList.add('hidden');
+                document.querySelector('[data-filter="date"]')?.classList.remove('active');
             });
         }
         
         if (btnClearFilter) {
             btnClearFilter.addEventListener('click', () => {
-                this.app.filterController.resetFilter();
+                document.getElementById('filter-start').value = '';
+                document.getElementById('filter-end').value = '';
+                datePanel?.classList.add('hidden');
+                document.querySelector('[data-filter="date"]')?.classList.remove('active');
             });
         }
         
-        // Boutons emoji pour sélection multiple
-        const emojiButtons = document.querySelectorAll('.emoji-btn');
-        emojiButtons.forEach(btn => {
+        if (btnEmojiFilter) {
+            btnEmojiFilter.addEventListener('click', () => {
+                console.log('✅ Emoji filter applied');
+                emojiPanel?.classList.add('hidden');
+                document.querySelector('[data-filter="emoji"]')?.classList.remove('active');
+            });
+        }
+        
+        if (btnEmojiClear) {
+            btnEmojiClear.addEventListener('click', () => {
+                // Désélectionne tous les emojis
+                const emojiButtons = document.querySelectorAll('.emoji-btn');
+                emojiButtons.forEach(btn => btn.classList.remove('selected'));
+                emojiPanel?.classList.add('hidden');
+                document.querySelector('[data-filter="emoji"]')?.classList.remove('active');
+            });
+        }
+        
+        // Ferme les panneaux si clic à l'extérieur
+        document.addEventListener('click', (e) => {
+            const isChip = e.target.closest('.filter-chip');
+            const isPanel = e.target.closest('.filter-panel');
+            
+            if (!isChip && !isPanel) {
+                filterChips.forEach(c => c.classList.remove('active'));
+                datePanel?.classList.add('hidden');
+                emojiPanel?.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Initialise la grille d'emojis
+     
+    initEmojiGrid() {
+        const container = document.getElementById('filter-emoji-buttons');
+        if (!container) return;
+        
+        // Ne recrée pas si déjà créé
+        if (container.children.length > 0) {
+            console.log('✅ Emoji grid already exists');
+            return;
+        }
+        
+        const emojis = ['📅', '🎉', '💼', '🎓', '🏥', '🍕', '🏋️', '✈️', '🎵', '📚', '🎮', '🎨'];
+        
+        console.log('🎨 Creating emoji grid');
+        container.innerHTML = '';
+        emojis.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'emoji-btn';
+            btn.type = 'button'; // Important pour éviter la soumission de formulaire
+            btn.textContent = emoji;
+            btn.dataset.emoji = emoji;
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 btn.classList.toggle('selected');
+                console.log('🎯 Emoji clicked:', emoji, 'Selected:', btn.classList.contains('selected'));
             });
+            container.appendChild(btn);
         });
+        
+        console.log('✅ Emoji grid created with', emojis.length, 'emojis');
     }
 
     // Initialise les événements globaux

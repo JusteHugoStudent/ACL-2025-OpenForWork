@@ -1,0 +1,11 @@
+/* Import des modules CSS */
+@import 'variables.css';
+@import 'base.css';
+@import 'login.css';
+@import 'layout/header.css';
+@import 'layout/sidebar.css';
+@import 'layout/calendar.css';
+@import 'components/notifications.css';
+@import 'components/modal.css';
+@import 'components/filters.css';
+@import 'responsive.css';

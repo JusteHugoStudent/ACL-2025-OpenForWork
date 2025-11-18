@@ -38,7 +38,8 @@ class CalendarManager {
 
         this.calendar = new FullCalendar.Calendar(this.calendarEl, {
             locale: 'fr',
-            height: 'auto',
+            height: '100%',
+            expandRows: true,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',

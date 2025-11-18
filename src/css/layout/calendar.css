@@ -1,0 +1,288 @@
+/* ========================================
+   CALENDAR LAYOUT
+   ======================================== */
+.calendar-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.calendar-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 400px;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 40px 10px 40px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.filter-chips {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.filter-chip {
+    position: relative;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.filter-chip i {
+    font-size: 14px;
+}
+
+.btn-search {
+    padding: 10px 20px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-search::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-search:hover::before {
+    left: 100%;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+}
+
+.btn-search i {
+    font-size: 16px;
+}
+
+.calendar-container-modern {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    flex: 1;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-container-modern:hover {
+    box-shadow: var(--shadow-glow);
+    border-color: var(--border-light);
+}
+
+.calendar-container-modern #calendar {
+    flex: 1;
+    min-height: 0;
+}
+
+/* ========================================
+   FULLCALENDAR CUSTOMIZATION
+   ======================================== */
+.fc {
+    --fc-border-color: var(--border);
+    --fc-button-bg-color: var(--bg-hover);
+    --fc-button-border-color: var(--border);
+    --fc-button-hover-bg-color: var(--border);
+    --fc-button-hover-border-color: var(--border-light);
+    --fc-button-active-bg-color: var(--primary);
+    --fc-button-active-border-color: var(--primary);
+    --fc-today-bg-color: rgba(37, 99, 235, 0.1);
+}
+
+.fc .fc-button-primary {
+    background: var(--bg-hover);
+    border-color: var(--border);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.fc .fc-button-primary:hover {
+    background: var(--border);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.fc-theme-standard th {
+    background: var(--bg-dark);
+    border-color: var(--border);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 12px 8px;
+}
+
+.fc-theme-standard td {
+    border-color: var(--border);
+}
+
+/* Suppression des contours et fonds blancs des en-têtes */
+.fc-col-header-cell {
+    background: transparent !important;
+    border-color: var(--border) !important;
+}
+
+.fc-scrollgrid {
+    border-color: var(--border) !important;
+    background: transparent !important;
+}
+
+.fc-scrollgrid,
+.fc-scrollgrid td,
+.fc-scrollgrid th,
+.fc-scrollgrid-sync-table,
+.fc-scrollgrid-section,
+.fc-scrollgrid-section > *,
+.fc-scrollgrid-section-header td,
+.fc-scrollgrid-section-header th,
+.fc-col-header,
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid table,
+.fc .fc-scrollgrid tbody,
+.fc .fc-scrollgrid thead,
+.fc .fc-scrollgrid tr,
+.fc .fc-scrollgrid td,
+.fc .fc-scrollgrid th {
+    background: transparent !important;
+}
+
+.fc-scrollgrid td,
+.fc-scrollgrid th {
+    border-color: var(--border) !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: var(--text-secondary) !important;
+    font-weight: 600;
+}
+
+.fc-daygrid-day-number {
+    color: var(--text-primary);
+    padding: 8px;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fc-event {
+    border-radius: var(--radius-sm);
+    border: none;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.fc-event::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fc-event:hover::before {
+    opacity: 1;
+}
+
+.fc-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fc-event.holiday-event {
+    background: var(--error) !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}

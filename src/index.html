@@ -12,8 +12,8 @@
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 
-    <!-- Notre CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Notre CSS modulaire -->
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
     <!-- Page de Connexion / Inscription -->
@@ -27,13 +27,18 @@
                             <span class="title-word">Équipe</span>
                             <span class="title-word">8</span>
                         </h1>
+                        <p class="hero-subtitle">Organisez vos événements, gérez vos agendas</p>
 
-                        <h6 class="mb-0 pb-3">
-                            <span>Connexion</span>
-                            <span>Inscription</span>
-                        </h6>
-                        <input class="checkbox" type="checkbox" id="reg-log" name="reg-log">
-                        <label for="reg-log"></label>
+                        <div class="auth-tabs">
+                            <button class="auth-tab active" data-tab="login">
+                                <i class="uil uil-signin"></i>
+                                Connexion
+                            </button>
+                            <button class="auth-tab" data-tab="signup">
+                                <i class="uil uil-user-plus"></i>
+                                Inscription
+                            </button>
+                        </div>
 
                         <div class="card-3d-wrap mx-auto">
                             <div class="card-3d-wrapper">
@@ -42,7 +47,11 @@
                                 <div class="card-front">
                                     <div class="center-wrap">
                                         <div class="section text-center">
-                                            <h4 class="mb-4 pb-3">Connexion</h4>
+                                            <div class="auth-icon">
+                                                <i class="uil uil-lock-access"></i>
+                                            </div>
+                                            <h4 class="mb-2 pb-2">Bienvenue !</h4>
+                                            <p class="auth-description">Connectez-vous pour accéder à vos agendas</p>
                                             <div class="form-group">
                                                 <input type="text" id="username" class="form-style" placeholder="Nom d'utilisateur">
                                                 <i class="input-icon uil uil-user"></i>
@@ -63,7 +72,11 @@
                                 <div class="card-back">
                                     <div class="center-wrap">
                                         <div class="section text-center">
-                                            <h4 class="mb-3 pb-3">Inscription</h4>
+                                            <div class="auth-icon">
+                                                <i class="uil uil-user-plus"></i>
+                                            </div>
+                                            <h4 class="mb-2 pb-2">Créer un compte</h4>
+                                            <p class="auth-description">Rejoignez-nous pour organiser vos événements</p>
                                             <div class="form-group">
                                                 <input type="text" id="signup-username" class="form-style" placeholder="Nom d'utilisateur">
                                                 <i class="input-icon uil uil-user"></i>
@@ -93,93 +106,152 @@
         <div id="notification-area" class="notification-area"></div>
         
         <!-- En-tête -->
-        <div class="header d-flex justify-content-between align-items-center px-4 py-3">
-            <div>
-                <h1>Agenda ACL</h1>
-                <p id="user-name"></p>
+        <div class="header">
+            <div class="header-left">
+                <div class="header-logo">
+                    <i class="uil uil-calendar-alt"></i>
+                    <div>
+                        <h1>Agenda ACL</h1>
+                        <p id="user-name"></p>
+                    </div>
+                </div>
             </div>
-            <div class="header-actions d-flex align-items-center gap-3">
-                <button id="btn-clear-notif-cache" class="btn btn-secondary btn-sm" title="Vider le cache des notifications (pour tester)">
-                    🔔 Clear Cache
+            <div class="header-actions">
+                <button id="btn-clear-notif-cache" class="btn-icon" title="Vider le cache des notifications">
+                    <i class="uil uil-bell"></i>
                 </button>
-                <button id="btn-logout" class="btn btn-danger">Déconnexion</button>
+                <button id="btn-logout" class="btn-logout">
+                    <i class="uil uil-sign-out-alt"></i>
+                    Déconnexion
+                </button>
             </div>
         </div>
 
-        <!-- Conteneur principal avec sidebar à gauche -->
-        <div class="main-container">
-            <!-- Sidebar gauche avec les menus -->
-            <div class="sidebar-left">
-                <!-- Panneau Agendas -->
-                <div class="agenda-panel">
-                    <h3>📋 Gestion des Agendas</h3>
-                    <div class="agenda-controls">
-                        <div class="agenda-control-group">
-                            <label>Créer un agenda :</label>
-                            <button id="newAgendaBtn">+ Nouvel agenda</button>
+        <!-- Conteneur principal avec layout moderne -->
+        <div class="main-container-modern">
+            <!-- Sidebar gauche compacte - Agendas -->
+            <aside class="sidebar-agendas">
+                <div class="sidebar-section">
+                    <div class="sidebar-header">
+                        <i class="uil uil-folder"></i>
+                        <h3>Agendas</h3>
+                    </div>
+                    <button id="newAgendaBtn" class="btn-create-agenda">
+                        <i class="uil uil-plus"></i>
+                        Nouvel agenda
+                    </button>
+                    <div class="agenda-selector">
+                        <label>Agenda actuel</label>
+                        <select id="agendaSelect"></select>
+                    </div>
+                    <div class="agenda-overlay-section">
+                        <button id="agenda-overlay-btn" class="btn-overlay">
+                            <i class="uil uil-layers"></i>
+                            Superposer
+                        </button>
+                        <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
+                            <div class="agenda-overlay-header">
+                                <h6>Agendas à afficher</h6>
+                                <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
+                            </div>
+                            <div id="agenda-overlay-list" class="agenda-overlay-list">
+                                <!-- Les checkboxes seront ajoutées dynamiquement -->
+                            </div>
                         </div>
-                        <div class="agenda-control-group">
-                            <label>Agenda actuel :</label>
-                            <select id="agendaSelect"></select>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Zone centrale - Calendrier avec barre de recherche -->
+            <main class="calendar-main">
+                <!-- Barre d'outils avec recherche et filtres rapides -->
+                <div class="calendar-toolbar">
+                    <div class="search-box">
+                        <i class="uil uil-search"></i>
+                        <input type="text" id="filter-keywords" placeholder="Rechercher un événement...">
+                    </div>
+                    <div class="filter-chips">
+                        <div class="filter-chip" data-filter="date">
+                            <i class="uil uil-calendar-alt"></i>
+                            Date
                         </div>
-                        <div class="agenda-control-group">
-                            <label>Superposer agendas :</label>
-                            <!-- Menu déroulant pour afficher plusieurs agendas -->
-                            <div class="agenda-overlay-dropdown">
-                                <button id="agenda-overlay-btn">📋 Superposer agendas</button>
-                                <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
-                                    <div class="agenda-overlay-header">
-                                        <h6>Agendas à afficher :</h6>
-                                        <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
+                        <div class="filter-chip" data-filter="emoji">
+                            <i class="uil uil-smile"></i>
+                            Emoji
+                        </div>
+                        <button id="btn-search" class="btn-search">
+                            <i class="uil uil-search"></i>
+                            Rechercher
+                        </button>
+                        
+                        <!-- Panneaux de filtres dropdown -->
+                        <div id="date-filter-panel" class="filter-panel hidden">
+                            <div class="filter-panel-content">
+                                <h4><i class="uil uil-calendar-alt"></i> Filtrer par date</h4>
+                                <div class="date-inputs">
+                                    <div class="input-group">
+                                        <label for="filter-start">Date de début :</label>
+                                        <input type="date" id="filter-start">
                                     </div>
-                                    <div id="agenda-overlay-list" class="agenda-overlay-list">
-                                        <!-- Les checkboxes seront ajoutées dynamiquement -->
+                                    <div class="input-group">
+                                        <label for="filter-end">Date de fin :</label>
+                                        <input type="date" id="filter-end">
                                     </div>
+                                </div>
+                                <div class="filter-panel-actions">
+                                    <button id="btn-filter" class="btn-apply">
+                                        <i class="uil uil-check"></i> Appliquer
+                                    </button>
+                                    <button id="btn-clear-filter" class="btn-clear">
+                                        <i class="uil uil-times"></i> Effacer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="emoji-filter-panel" class="filter-panel hidden">
+                            <div class="filter-panel-content">
+                                <h4><i class="uil uil-smile"></i> Filtrer par emoji</h4>
+                                <div id="filter-emoji-buttons" class="emoji-grid"></div>
+                                <div class="filter-panel-actions">
+                                    <button id="btn-emoji-filter" class="btn-apply">
+                                        <i class="uil uil-check"></i> Appliquer
+                                    </button>
+                                    <button id="btn-emoji-clear" class="btn-clear">
+                                        <i class="uil uil-times"></i> Effacer
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section Filtre -->
-                <div class="filter-section">
-                    <h3>🔍 Rechercher/Filtrer les événements</h3>
-                    <div class="filter-controls">
-                        <div class="filter-input-group">
-                            <label for="filter-keywords">Mots-clés :</label>
-                            <input type="text" id="filter-keywords" placeholder="Rechercher...">
+                <!-- Calendrier -->
+                <div class="calendar-container-modern">
+                    <div id="calendar"></div>
+                </div>
+
+                <!-- Résultats de recherche (modale) -->
+                <div id="search-results-modal" class="search-modal hidden">
+                    <div class="search-modal-overlay"></div>
+                    <div class="search-modal-content">
+                        <div class="search-modal-header">
+                            <h3><i class="uil uil-search"></i> Résultats de la recherche</h3>
+                            <button class="search-modal-close" id="close-search-results">
+                                <i class="uil uil-times"></i>
+                            </button>
                         </div>
-                        <div class="filter-input-group">
-                            <label for="filter-start">Date début :</label>
-                            <input type="date" id="filter-start">
+                        <div class="search-modal-body" id="filter-results-list">
+                            <!-- Les résultats seront insérés ici -->
                         </div>
-                        <div class="filter-input-group">
-                            <label for="filter-end">Date fin :</label>
-                            <input type="date" id="filter-end">
+                        <div class="search-modal-footer">
+                            <button id="export-pdf-btn" class="btn-export-pdf">
+                                <i class="uil uil-file-download"></i> Exporter en PDF
+                            </button>
                         </div>
-                        <div class="filter-input-group">
-                            <label>Emojis :</label>
-                            <div id="filter-emoji-buttons" class="emoji-filter-buttons">
-                                <!-- Les boutons emoji seront générés dynamiquement depuis constants.js -->
-                            </div>
-                        </div>
-                        <div class="filter-buttons">
-                            <button id="btn-filter" class="btn-filter">🔍</button>
-                            <button id="btn-clear-filter" class="btn-filter-clear">Réinitialiser</button>
-                        </div>
-                    </div>
-                    <!-- Résultats du filtre -->
-                    <div id="filter-results" class="filter-results">
-                        <h4>📋 Résultats</h4>
-                        <ul id="filter-results-list"></ul>
                     </div>
                 </div>
-            </div>
-
-            <!-- Container du calendrier -->
-            <div class="calendar-container">
-                <div id="calendar" class="p-3"></div>
-            </div>
+            </main>
         </div>
     </div>
 

@@ -219,8 +219,21 @@ class App {
         
         // Récupére les emojis sélectionnés
         const selectedEmojis = [];
-        document.querySelectorAll('.emoji-btn.selected').forEach(btn => {
-            selectedEmojis.push(btn.dataset.emoji);
+        const emojiButtons = document.querySelectorAll('.emoji-btn.selected');
+        console.log('🔍 Found emoji buttons:', emojiButtons.length);
+        
+        emojiButtons.forEach(btn => {
+            console.log('  - Button:', btn.textContent, 'Data:', btn.dataset.emoji);
+            if (btn.dataset.emoji) {
+                selectedEmojis.push(btn.dataset.emoji);
+            }
+        });
+
+        console.log('🔍 Filter criteria:', {
+            startDate: startDateStr,
+            endDate: endDateStr,
+            keywords: keywords,
+            emojis: selectedEmojis
         });
 
         const visibleAgendaIds = this.agendaController.getVisibleAgendaIds();

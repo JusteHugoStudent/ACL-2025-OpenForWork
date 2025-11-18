@@ -23,6 +23,34 @@ class LoginView {
         this.inputSignupUsername = document.getElementById('signup-username');
         this.inputSignupPassword = document.getElementById('signup-password');
         this.signupMessageBox = document.getElementById('signup-message');
+        
+        // Éléments pour les onglets
+        this.authTabs = document.querySelectorAll('.auth-tab');
+        this.cardWrapper = document.querySelector('.card-3d-wrapper');
+        
+        this.initTabs();
+    }
+    
+    // Initialise les onglets de connexion/inscription
+    initTabs() {
+        this.authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Retirer la classe active de tous les onglets
+                this.authTabs.forEach(t => t.classList.remove('active'));
+                
+                // Ajouter la classe active à l'onglet cliqué
+                tab.classList.add('active');
+                
+                // Basculer la carte
+                if (targetTab === 'signup') {
+                    this.cardWrapper.style.transform = 'rotateY(180deg)';
+                } else {
+                    this.cardWrapper.style.transform = 'rotateY(0deg)';
+                }
+            });
+        });
     }
 
     // Attache un callback au bouton de connexion
