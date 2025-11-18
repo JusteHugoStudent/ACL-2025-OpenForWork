@@ -70,6 +70,34 @@ class AppUIManager {
                 this.app.reloadAllEvents();
             }
         });
+
+        // Callback pour l'export : déclenche l'export de l'agenda courant
+        this.app.headerView.onExportClick(() => {
+            this.app.agendaController.exportCurrentAgendaToFile().catch(err => {
+                console.error('Export failed:', err);
+                alert('Erreur lors de l\'export de l\'agenda.');
+            });
+        });
+        
+        // Callback pour l'import : reçoit un File et lance l'import (crée un nouvel agenda)
+        this.app.headerView.onImportClick(async (file) => {
+            if (!file) return;
+
+            try {
+                const created = await this.app.agendaController.importAgendaFromFile(file);
+                if (created) {
+                    // Recharge l'affichage / les événements
+                    await this.app.reloadAllEvents();
+                    alert(`Agenda importé : ${created.name || file.name.replace(/\.[^/.]+$/, '')}`);
+                } else {
+                    // importAgendaFromFile signale déjà les erreurs ; on peut informer l'utilisateur si rien n'a été créé
+                    console.warn('Import terminé sans création d\'agenda.');
+                }
+            } catch (err) {
+                console.error('Import failed:', err);
+                alert('Erreur lors de l\'import du fichier JSON.');
+            }
+        });
     }
 
     // Initialise les événements du calendrier (modale)
