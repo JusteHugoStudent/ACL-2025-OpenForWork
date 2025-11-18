@@ -1,16 +1,13 @@
-/**
- * EventControllerFront.js
- * Contrôleur frontend responsable de la gestion des événements
- * Gère la création, modification, suppression et chargement des événements
- */
+// Contrôleur frontend responsable de la gestion des événements
+// Gère la création, modification, suppression et chargement des événements
+
 
 class EventControllerFront {
-    /**
-     * Constructeur du contrôleur d'événements
-     * @param {EventService} eventService - Service pour les appels API événements
-     * @param {CalendarManager} calendarManager - Gestionnaire du calendrier FullCalendar
-     * @param {ModalView} modalView - Vue de la modale pour créer/éditer des événements
-     */
+    // Constructeur du contrôleur d'événements
+    // prend en paramettre eventService - Service pour les appels API événements
+    // prend en paramettre calendarManager - Gestionnaire du calendrier FullCalendar
+    // prend en paramettre - Vue de la modale pour créer/éditer des événements
+     
     constructor(eventService, calendarManager, modalView) {
         this.eventService = eventService;
         this.calendarManager = calendarManager;
@@ -20,11 +17,11 @@ class EventControllerFront {
         this.editingEventId = null;
     }
 
-    /**
-     * Crée un nouvel événement sur le serveur et l'ajoute au calendrier
-     * @param {Object} eventData - Données de l'événement { title, start, end, description, emoji, agendaId }
-     * @returns {Promise<Object|null>} L'événement créé ou null en cas d'erreur
-     */
+    
+    // Crée un nouvel événement sur le serveur et l'ajoute au calendrier
+    // prend en paramettre eventData - Données de l'événement { title, start, end, description, emoji, agendaId }
+    // retourne l'événement créé ou null en cas d'erreur
+    
     async createEvent(eventData) {
         const token = getToken();
         if (!token) return null;
@@ -44,7 +41,7 @@ class EventControllerFront {
                 agendaId: eventData.agendaId
             };
 
-            // Utiliser EventService pour créer l'événement
+            // Utilise EventService pour créer l'événement
             const created = await this.eventService.create(body);
             return created;
         } catch (err) {
@@ -55,9 +52,9 @@ class EventControllerFront {
     }
 
     /**
-     * Met à jour un événement existant sur le serveur
-     * @param {Object} eventData - Données de l'événement { id, title, start, end, description, emoji }
-     * @returns {Promise<boolean>} true si la mise à jour a réussi
+    // Met à jour un événement existant sur le serveur
+    // prend en paramettre eventData - Données de l'événement { id, title, start, end, description, emoji }
+    // retourne true si la mise à jour a réussi
      */
     async updateEvent(eventData) {
         const token = getToken();
@@ -71,12 +68,12 @@ class EventControllerFront {
                 end: eventData.end ? (eventData.end instanceof Date ? eventData.end.toISOString() : new Date(eventData.end).toISOString()) : undefined,
                 description: eventData.description,
                 emoji: eventData.emoji,
-                agendaId: eventData.agendaId // Inclure l'agenda pour permettre le changement d'agenda
+                agendaId: eventData.agendaId // Inclue l'agenda pour permettre le changement d'agenda
             };
             
             console.log(`🔄 Mise à jour événement ${id}:`, body);
             
-            // Utiliser EventService pour mettre à jour l'événement
+            // Utilise EventService pour mettre à jour l'événement
             await this.eventService.update(id, body);
             
             console.log(`✅ Événement ${id} mis à jour avec succès`);
@@ -88,36 +85,33 @@ class EventControllerFront {
         }
     }
 
-    /**
-     * Supprime un événement du serveur
-     * @param {string} eventId - ID de l'événement à supprimer
-     * @returns {Promise<void>}
-     */
+    
+    // Supprime un événement du serveur
+    // prend en paramettre eventId - ID de l'événement à supprimer
+
     async deleteEvent(eventId) {
         const token = getToken();
         if (!token) return;
         
         try {
-            // Utiliser EventService pour supprimer l'événement
+            // Utilise EventService pour supprimer l'événement
             await this.eventService.delete(eventId);
         } catch (err) {
             console.error('Delete event failed:', err);
         }
     }
 
-    /**
-     * Charge les événements d'un agenda spécifique avec optimisation de période
-     * @param {string} agendaId - ID de l'agenda dont charger les événements
-     * @param {Array} allAgendas - Liste de tous les agendas pour récupérer les noms
-     * @param {string} currentAgendaId - ID de l'agenda principal pour le styling
-     * @returns {Promise<void>}
-     */
+    // Charge les événements d'un agenda spécifique avec optimisation de période
+    // prend en paramettre agendaId - ID de l'agenda dont charger les événements
+    // prend en paramettre allAgendas - Liste de tous les agendas pour récupérer les noms
+    // prend en paramettre currentAgendaId - ID de l'agenda principal pour le styling
+    
     async loadEventsFromAgenda(agendaId, allAgendas, currentAgendaId) {
         const token = getToken();
         if (!token) return;
 
         try {
-            // Supprimer d'abord tous les événements existants de cet agenda pour éviter les doublons
+            // Supprime d'abord tous les événements existants de cet agenda pour éviter les doublons
             const allEvents = this.calendarManager.calendar.getEvents();
             allEvents.forEach(event => {
                 // Les IDs sont au format "agendaId-eventId"
@@ -126,7 +120,7 @@ class EventControllerFront {
                 }
             });
             
-            // Optimisation : chargement seulement de la période visible + 1 mois
+            // chargement seulement de la période visible + 1 mois
             let url = `/api/events?agendaId=${agendaId}`;
             
             if (this.calendarManager.calendar) {
@@ -149,14 +143,14 @@ class EventControllerFront {
             
             console.log(`📥 Chargement agenda ${agendaId}:`, events.length, 'événements');
             
-            // Récupérer le nom de l'agenda pour l'affichage
+            // Récupére le nom de l'agenda pour l'affichage
             const agenda = allAgendas.find(a => a.id === agendaId);
             const agendaName = agenda ? agenda.name : 'Agenda';
             
             const isHolidaysAgenda = agendaName === HOLIDAYS_AGENDA_NAME;
             const isMainAgenda = currentAgendaId && agendaId === currentAgendaId;
             
-            // Définir la couleur selon le type d'agenda
+            // Définit la couleur selon le type d'agenda
             let backgroundColor;
             if (isHolidaysAgenda) {
                 backgroundColor = THEME_COLORS.JOURS_FERIES; // Rouge pour les jours fériés
@@ -166,7 +160,7 @@ class EventControllerFront {
                 backgroundColor = THEME_COLORS.AGENDA_SECONDAIRE; // Bleu translucide pour les autres
             }
 
-            // Ajouter chaque événement au calendrier
+            // Ajoute chaque événement au calendrier
             events.forEach(ev => {
                 const fullTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
                 
@@ -197,27 +191,26 @@ class EventControllerFront {
         }
     }
 
-    /**
-     * Charge les événements de plusieurs agendas
-     * @param {Array<string>} agendaIds - Liste des IDs d'agendas à charger
-     * @param {Array} allAgendas - Liste de tous les agendas
-     * @param {string} currentAgendaId - ID de l'agenda principal
-     * @returns {Promise<void>}
-     */
+    
+    // Charge les événements de plusieurs agendas
+    // prend en paramettre agendaIds - Liste des IDs d'agendas à charger
+    // prend en paramettre allAgendas - Liste de tous les agendas
+    // prend en paramettre currentAgendaId - ID de l'agenda principal
+     
     async loadEventsFromMultipleAgendas(agendaIds, allAgendas, currentAgendaId) {
         for (const agendaId of agendaIds) {
             await this.loadEventsFromAgenda(agendaId, allAgendas, currentAgendaId);
         }
     }
 
-    /**
-     * Filtre les événements selon des critères et génère une liste
-     * @param {Date} startDate - Date de début du filtre
-     * @param {Date} endDate - Date de fin du filtre
-     * @param {Array<string>} agendaIds - IDs des agendas à inclure
-     * @param {Array} allAgendas - Liste de tous les agendas
-     * @returns {Promise<Array>} Liste des événements filtrés
-     */
+    
+    // Filtre les événements selon des critères et génère une liste
+    // prend en paramettre startDate - Date de début du filtre
+    // prend en paramettre endDate - Date de fin du filtre
+    // prend en paramettre agendaIds - IDs des agendas à inclure
+    // prend en paramettre - Liste de tous les agendas
+    // retourne la liste des événements filtrés
+     
     async filterEvents(startDate, endDate, agendaIds, allAgendas) {
         const token = getToken();
         if (!token) return [];
@@ -225,7 +218,7 @@ class EventControllerFront {
         try {
             let allEvents = [];
 
-            // Charger les événements pour chaque agenda
+            // Charge les événements pour chaque agenda
             for (const agendaId of agendaIds) {
                 const res = await fetch(`/api/events?agendaId=${agendaId}`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -237,18 +230,18 @@ class EventControllerFront {
                 const agenda = allAgendas.find(a => a.id === agendaId);
                 const agendaName = agenda ? agenda.name : 'Agenda';
                 
-                // Ajouter une référence à l'agenda pour l'affichage
+                // Ajoute une référence à l'agenda pour l'affichage
                 events.forEach(ev => ev._agendaName = agendaName);
                 allEvents.push(...events);
             }
 
-            // Filtrer par dates
+            // Filtre par dates
             const filtered = allEvents.filter(ev => {
                 const evStart = new Date(ev.start);
                 return evStart >= startDate && evStart <= endDate;
             });
 
-            // Trier par date de début
+            // Trie par date de début
             filtered.sort((a, b) => new Date(a.start) - new Date(b.start));
 
             return filtered;
@@ -258,34 +251,32 @@ class EventControllerFront {
         }
     }
 
-    /**
-     * Définit l'ID de l'événement en cours d'édition
-     * @param {string} eventId - ID de l'événement
-     */
+    // Définit l'ID de l'événement en cours d'édition
+    // prend en paramettre eventId - ID de l'événement
+    
     setEditingEvent(eventId) {
         this.editingEventId = eventId;
     }
 
-    /**
-     * Obtient l'ID de l'événement en cours d'édition
-     * @returns {string|null}
-     */
+    // Obtient l'ID de l'événement en cours d'édition
+    // retourne un string ou un null
+    
     getEditingEventId() {
         return this.editingEventId;
     }
 
-    /**
-     * Supprime l'événement en cours d'édition avec confirmation
-     * @returns {Promise<boolean>} true si l'événement a été supprimé
-     */
+    
+    // Supprime l'événement en cours d'édition avec confirmation
+    // retourne true si l'événement a été supprimé
+
     async deleteEditingEvent() {
         if (!this.editingEventId) return false;
         
         if (this.modalView.confirmDelete()) {
-            // Supprimer du calendrier avec l'ID complet
+            // Supprime du calendrier avec l'ID complet
             this.calendarManager.removeEvent(this.editingEventId);
             
-            // Extraire l'eventId réel pour l'API (format: "agendaId-eventId")
+            // Extrait l'eventId réel pour l'API (format: "agendaId-eventId")
             const realEventId = this.editingEventId.includes('-') 
                 ? this.editingEventId.split('-')[1] 
                 : this.editingEventId;

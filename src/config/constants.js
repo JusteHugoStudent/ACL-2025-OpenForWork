@@ -1,16 +1,10 @@
-/**
- * ============================================
- * FICHIER DE CONFIGURATION - CONSTANTES
- * ============================================
- * 
- * Ce fichier centralise toutes les constantes de l'application
- * pour faciliter la maintenance et les modifications futures.
- */
+// Fichier de Configuration - des Constantes
+// Ce fichier centralise toutes les constantes de l'application
+// pour faciliter la maintenance et les modifications futures
 
-/**
- * Configuration des emojis disponibles pour les événements
- * Chaque emoji représente une catégorie d'événement
- */
+
+// Configuration des emojis disponibles pour les événements
+// Chaque emoji représente une catégorie d'événement
 const EMOJIS = {
     CALENDRIER: '📅',
     TRAVAIL: '💼',
@@ -26,10 +20,10 @@ const EMOJIS = {
     LECTURE: '📚'
 };
 
-/**
- * Liste complète des emojis avec leurs labels
- * Utilisé pour générer les options de sélection
- */
+
+// Liste complète des emojis avec leurs labels
+// Utilisé pour générer les options de sélection
+
 const EMOJI_OPTIONS = [
     { value: EMOJIS.CALENDRIER, label: 'Calendrier' },
     { value: EMOJIS.TRAVAIL, label: 'Travail' },
@@ -45,10 +39,9 @@ const EMOJI_OPTIONS = [
     { value: EMOJIS.LECTURE, label: 'Lecture' }
 ];
 
-/**
- * Configuration du système de notifications
- * Définit les seuils de rappel pour les événements à venir
- */
+// Configuration du système de notifications
+// Définit les seuils de rappel pour les événements à venir
+
 const NOTIFICATION_CONFIG = {
     // Intervalle de vérification (en millisecondes)
     POLLING_INTERVAL: 60 * 1000, // 1 minute
@@ -72,9 +65,9 @@ const NOTIFICATION_CONFIG = {
     HISTORY_RETENTION_DAYS: 7
 };
 
-/**
- * Configuration des couleurs du thème de l'application
- */
+
+ // Configuration des couleurs du thème de l'application
+ 
 const THEME_COLORS = {
     NOIR: '#1a1a1a',
     NOIR_CLAIR: '#2d2d2d',
@@ -90,18 +83,18 @@ const THEME_COLORS = {
     JOURS_FERIES: '#dc3545'           // Rouge
 };
 
-/**
- * Configuration des clés de stockage local (localStorage)
- */
+
+// Configuration des clés de stockage local (localStorage)
+ 
 const STORAGE_KEYS = {
     TOKEN: 'token',
     NOTIFIED_EVENTS: 'notifiedEvents',
     CURRENT_USER: 'currentUser'
 };
 
-/**
- * Configuration des endpoints API
- */
+
+// Configuration des endpoints API
+ 
 const API_ENDPOINTS = {
     AUTH: {
         LOGIN: '/api/login',
@@ -121,9 +114,9 @@ const API_ENDPOINTS = {
     }
 };
 
-/**
- * Messages d'erreur standardisés
- */
+
+// Messages d'erreur standardisés
+ 
 const ERROR_MESSAGES = {
     AUTH: {
         MISSING_CREDENTIALS: 'Veuillez saisir un nom d\'utilisateur et un mot de passe',
@@ -150,7 +143,7 @@ const ERROR_MESSAGES = {
     }
 };
 
-/**
- * Nom de l'agenda des jours fériés (non modifiable)
- */
+
+// Nom de l'agenda des jours fériés (non modifiable)
+ 
 const HOLIDAYS_AGENDA_NAME = 'Jours fériés';

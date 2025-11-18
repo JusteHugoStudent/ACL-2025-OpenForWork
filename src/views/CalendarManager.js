@@ -1,18 +1,13 @@
-/**
- * ============================================
- * CALENDARMANAGER - INTÉGRATION FULLCALENDAR
- * ============================================
- * 
- * Cette classe encapsule la bibliothèque FullCalendar et fournit
- * une interface simplifiée pour manipuler le calendrier.
- * 
- * Responsabilités :
- * - Initialiser et configurer FullCalendar
- * - Ajouter/modifier/supprimer des événements
- * - Gérer les vues (mois, semaine, jour)
- * - Détecter les doublons d'événements
- * - Gérer les callbacks d'interaction utilisateur
- */
+// Integration de FullCalendar
+// Cette classe encapsule la bibliothèque FullCalendar et fournit
+// une interface simplifiée pour manipuler le calendrier. 
+// Responsabilités :
+// - Initialiser et configurer FullCalendar
+// - Ajouter/modifier/supprimer des événements
+// - Gérer les vues (mois, semaine, jour)
+// - Détecter les doublons d'événements
+// - Gérer les callbacks d'interaction utilisateur
+
 
 class CalendarManager {
     constructor() {
@@ -30,13 +25,10 @@ class CalendarManager {
         this.onEventRemoveCallback = null;
     }
 
-    /**
-     * Initialise FullCalendar avec la configuration complète
-     * Configure la langue, les vues, les callbacks, etc.
-     * Attend que le DOM soit prêt avant de retourner
-     * 
-     * @returns {Promise<void>}
-     */
+    // Initialise FullCalendar avec la configuration complète
+    // Configure la langue, les vues, les callbacks, etc.
+    // Attend que le DOM soit prêt avant de retourner 
+     
     async init() {
 
         if (!this.calendarEl) {
@@ -91,7 +83,7 @@ class CalendarManager {
 
         this.calendar.render();
         
-        // Attendre que le DOM soit mis à jour après le render
+        // Attend que le DOM soit mis à jour après le render
         await new Promise(resolve => setTimeout(resolve, 150));
     }
 
@@ -100,21 +92,19 @@ class CalendarManager {
     setOnEventClick(callback) { this.onEventClickCallback = callback; }
     setOnDateClick(callback) { this.onDateClickCallback = callback; }
 
-    /**
-     * Ajoute un événement au calendrier avec détection de doublons
-     * Vérifie spécialement les jours fériés pour éviter les duplicatas
-     * 
-     * @param {Object} eventData - Données de l'événement à ajouter
-     * @param {Object} options - Options { silent: boolean } pour désactiver le callback
-     * @returns {Object|null} L'événement ajouté ou l'événement existant si doublon
-     */
+    // Ajoute un événement au calendrier avec détection de doublons
+    // Vérifie spécialement les jours fériés pour éviter les duplicatas
+    // prend en paramettre eventData - Données de l'événement à ajouter
+    // prend en paramettre options - Options pour désactiver le callback
+    // retourne l'événement ajouté ou l'événement existant si doublon
+     
     addEvent(eventData, options = {}) {
         if (!this.calendar) {
             console.warn('⚠️ CalendarManager: tentative d\'ajouter un événement alors que le calendrier est null.');
             return null;
         }
 
-        // Vérifier les doublons pour les jours fériés
+        // Vérifie les doublons pour les jours fériés
         const isHoliday = eventData.extendedProps?.source?.startsWith('holiday') || (eventData.title && eventData.title.toLowerCase().includes('férié'));
         
         if (isHoliday) {
@@ -135,12 +125,10 @@ class CalendarManager {
         return ev;
     }
 
-    /**
-     * Met à jour les propriétés d'un événement existant
-     * 
-     * @param {string} eventId - ID de l'événement à modifier
-     * @param {Object} updates - Nouvelles valeurs {title, start, end, backgroundColor, extendedProps}
-     */
+    // Met à jour les propriétés d'un événement existant
+    // prend en paramettre eventId - ID de l'événement à modifier
+    // prend en paramettre updates - Nouvelles valeurs {title, start, end, backgroundColor, extendedProps}
+     
     updateEvent(eventId, updates) {
         const event = this.calendar?.getEventById(eventId);
         if (event) {
@@ -153,11 +141,9 @@ class CalendarManager {
         }
     }
 
-    /**
-     * Supprime un événement du calendrier
-     * 
-     * @param {string} eventId - ID de l'événement à supprimer
-     */
+    // Supprime un événement du calendrier
+    // prend en paramettre eventId - ID de l'événement à supprimer
+     
     removeEvent(eventId) {
         const event = this.calendar?.getEventById(eventId);
         if (event) {
@@ -166,11 +152,9 @@ class CalendarManager {
         }
     }
 
-    /**
-     * Supprime tous les événements du calendrier
-     * 
-     * @param {boolean} preserveHolidays - Si true, conserve les jours fériés (par défaut true)
-     */
+    // Supprime tous les événements du calendrier
+    // prend en paramettre preserveHolidays - Si true, conserve les jours fériés (par défaut true)
+    
     removeAllEvents(preserveHolidays = true) {
         if (!this.calendar) return;
 
@@ -182,7 +166,7 @@ class CalendarManager {
 
                 if (!isHoliday) ev.remove();
             } else {
-                // Supprimer TOUS les événements (y compris les jours fériés)
+                // Supprime TOUS les événements (y compris les jours fériés)
                 ev.remove();
             }
         });
@@ -190,16 +174,16 @@ class CalendarManager {
 
 
 
-    // === CALLBACKS ===
+    //Callback
     onEventAdd(callback) { this.onEventAddCallback = callback; }
     onEventChange(callback) { this.onEventChangeCallback = callback; }
     onEventRemove(callback) { this.onEventRemoveCallback = callback; }
 
-    // === GETTERS ===
+    // Getters
     getAllEvents() { return this.calendar ? this.calendar.getEvents() : []; }
     getEventById(eventId) { return this.calendar?.getEventById(eventId); }
 
-    // === NAVIGATION ===
+    // Navigation
     changeView(viewName) { this.calendar?.changeView(viewName); }
     gotoDate(date) { this.calendar?.gotoDate(date); }
     today() { this.calendar?.today(); }
@@ -207,10 +191,9 @@ class CalendarManager {
     next() { this.calendar?.next(); }
     refetchEvents() { this.calendar?.refetchEvents(); }
 
-    /**
-     * Détruit complètement l'instance FullCalendar
-     * Utilisé lors de la déconnexion
-     */
+    // Détruit complètement l'instance FullCalendar
+    // Utilisé lors de la déconnexion
+    
     destroy() {
         if (this.calendar) {
             this.calendar.destroy();

@@ -1,12 +1,7 @@
-/**
- * ============================================
- * MODÈLE AGENDA - AGENDA MONGODB
- * ============================================
- * 
- * Définit le schéma MongoDB pour les agendas.
- * Chaque agenda a un nom et contient une liste de références
- * vers les événements qui lui appartiennent.
- */
+// Modele Agenda / Aganda MongoDB
+// Définit le schéma MongoDB pour les agendas
+// Chaque agenda a un nom et contient une liste de références
+// vers les événements qui lui appartiennent
 
 const mongoose = require('mongoose');
 

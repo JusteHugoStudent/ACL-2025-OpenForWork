@@ -1,24 +1,15 @@
-/**
- * ============================================
- * SERVICE D'AUTHENTIFICATION
- * ============================================
- * 
- * Ce service gère toutes les interactions avec l'API d'authentification
- * (connexion, inscription, gestion du token).
- */
+// Service d'authentification
 
-/**
- * Classe AuthService - Gestion de l'authentification
- */
+// Classe AuthService - Gestion de l'authentification
+ 
 class AuthService {
     
-    /**
-     * Connecte un utilisateur
-     * 
-     * @param {string} username - Nom d'utilisateur
-     * @param {string} password - Mot de passe
-     * @returns {Promise<Object>} { success: boolean, token?: string, error?: string }
-     */
+    
+    // Connecte un utilisateur 
+    // prend en paramettre username - Nom d'utilisateur
+    // prend en paramettre password - Mot de passe
+    // retourne un boolean, un token ou un msg d'erreur 
+     
     async login(username, password) {
         try {
             const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
@@ -53,13 +44,12 @@ class AuthService {
         }
     }
     
-    /**
-     * Inscrit un nouvel utilisateur
-     * 
-     * @param {string} username - Nom d'utilisateur
-     * @param {string} password - Mot de passe
-     * @returns {Promise<Object>} { success: boolean, message?: string, error?: string }
-     */
+    
+    // Inscrit un nouvel utilisateur
+    // prend en paramettre username - Nom d'utilisateur
+    // prend en paramettre password - Mot de passe
+    // retourne un boolean, un msg
+     
     async signup(username, password) {
         try {
             const response = await fetch(API_ENDPOINTS.AUTH.SIGNUP, {
@@ -91,18 +81,15 @@ class AuthService {
         }
     }
     
-    /**
-     * Vérifie si l'utilisateur est authentifié
-     * 
-     * @returns {boolean} true si un token valide existe
-     */
+    // Vérifie si l'utilisateur est authentifié 
+    // return un bool true si un token valide existe
+
     isAuthenticated() {
         return getToken() !== null;
     }
     
-    /**
-     * Déconnecte l'utilisateur (supprime le token)
-     */
+    // Déconnecte l'utilisateur (supprime le token)
+     
     logout() {
         removeToken();
     }

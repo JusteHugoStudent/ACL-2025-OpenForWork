@@ -1,14 +1,9 @@
-/**
- * ============================================
- * SERVICE DE GESTION DES AGENDAS
- * ============================================
- */
+// Service de gestion des agendas
 
 class AgendaService {
-    /**
-     * Récupère tous les agendas de l'utilisateur connecté
-     * @returns {Promise<Array>} Liste des agendas ou tableau vide si erreur
-     */
+    // Récupère tous les agendas de l'utilisateur connecté
+    // retourne une liste des agendas ou tableau vide si erreur
+     
     async fetchAll() {
         try {
             const token = getToken();
@@ -27,11 +22,10 @@ class AgendaService {
         }
     }
     
-    /**
-     * Crée un nouvel agenda
-     * @param {string} name - Nom de l'agenda
-     * @returns {Promise<Object|null>} Agenda créé ou null si erreur
-     */
+    // Crée un nouvel agenda
+    // prend en paramettre name - Nom de l'agenda
+    // retourne un Agenda créé ou null si erreur
+     
     async create(name) {
         try {
             const token = getToken();
@@ -55,11 +49,10 @@ class AgendaService {
         }
     }
     
-    /**
-     * Supprime un agenda
-     * @param {string} agendaId - ID de l'agenda à supprimer
-     * @returns {Promise<boolean>} true si succès, false sinon
-     */
+    // Supprime un agenda
+    // prend en paramettre agendaId - ID de l'agenda à supprimer
+    // retourne true si succès, false sinon
+    
     async delete(agendaId) {
         try {
             const token = getToken();
@@ -79,20 +72,15 @@ class AgendaService {
     }
 }
 
-/**
- * ============================================
- * SERVICE DE GESTION DES ÉVÉNEMENTS
- * ============================================
- */
+// Service des gestion d'evenements
 
 class EventService {
-    /**
-     * Récupère tous les événements d'un agenda
-     * @param {string} agendaId - ID de l'agenda
-     * @param {Date} start - Date de début (optionnel)
-     * @param {Date} end - Date de fin (optionnel)
-     * @returns {Promise<Array>} Liste des événements
-     */
+    // Récupère tous les événements d'un agenda
+    // prend en paramettre agendaId - ID de l'agenda
+    // prend en paramettre start - Date de début (optionnel)
+    // prend en paramettre end - Date de fin (optionnel)
+    // retourne une liste des événements
+     
     async fetchByAgenda(agendaId, start = null, end = null) {
         try {
             const token = getToken();
@@ -116,11 +104,10 @@ class EventService {
         }
     }
     
-    /**
-     * Crée un nouvel événement
-     * @param {Object} eventData - Données de l'événement
-     * @returns {Promise<Object|null>} Événement créé ou null
-     */
+    // Cree un nouvel evenement
+    // prend en paramettre eventData - Donnees de l'evenement
+    // retourne un evenement cree ou null
+    
     async create(eventData) {
         try {
             const token = getToken();
@@ -151,12 +138,11 @@ class EventService {
         }
     }
     
-    /**
-     * Met à jour un événement existant
-     * @param {string} eventId - ID de l'événement
-     * @param {Object} eventData - Nouvelles données
-     * @returns {Promise<boolean>} true si succès
-     */
+    // Met à jour un événement existant
+    // prend en paramettre eventId - ID de l'événement
+    // prend en paramettre eventData - Nouvelles données
+    // prend en paramettre true si succès
+     
     async update(eventId, eventData) {
         try {
             const token = getToken();
@@ -186,11 +172,10 @@ class EventService {
         }
     }
     
-    /**
-     * Supprime un événement
-     * @param {string} eventId - ID de l'événement
-     * @returns {Promise<boolean>} true si succès
-     */
+    // Supprime un événement
+    // prend en paramettre eventId - ID de l'événement
+    // retourne true si succès
+     
     async delete(eventId) {
         try {
             const token = getToken();

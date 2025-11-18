@@ -1,18 +1,12 @@
-/**
- * ============================================
- * LOGINVIEW - GESTION DE LA PAGE DE CONNEXION
- * ============================================
- * 
- * Cette vue gère l'affichage et les interactions avec la page
- * de connexion/inscription (carte flip avec deux faces).
- * 
- * Responsabilités :
- * - Gérer les champs de formulaire (connexion et inscription)
- * - Attacher les callbacks aux boutons
- * - Afficher les messages de succès/erreur
- * - Gérer l'affichage/masquage de la page
- */
-
+// Gestion de la page de connexion
+// Cette vue gère l'affichage et les interactions avec la page
+// de connexion/inscription (carte flip avec deux faces).
+// Responsabilités :
+// - Gérer les champs de formulaire (connexion et inscription)
+// - Attacher les callbacks aux boutons
+// - Afficher les messages de succès/erreur
+// - Gérer l'affichage/masquage de la page
+ 
 class LoginView {
     constructor() {
         // Élément HTML de la page de connexion
@@ -31,12 +25,10 @@ class LoginView {
         this.signupMessageBox = document.getElementById('signup-message');
     }
 
-    /**
-     * Attache un callback au bouton de connexion
-     * Gère aussi la validation par la touche Entrée
-     * 
-     * @param {Function} callback - Fonction appelée avec (username, password)
-     */
+    // Attache un callback au bouton de connexion
+    // Gère aussi la validation par la touche Entrée
+    // prend en paramettre un callback - Fonction appelée avec (username, password)
+    
     onLoginClick(callback) {
         this.btnLogin.addEventListener('click', () => {
             const username = this.inputUsername.value;
@@ -54,12 +46,10 @@ class LoginView {
         });
     }
 
-    /**
-     * Attache un callback au bouton d'inscription
-     * Gère aussi la validation par la touche Entrée
-     * 
-     * @param {Function} callback - Fonction appelée avec (username, password)
-     */
+    // Attache un callback au bouton d'inscription
+    // Gère aussi la validation par la touche Entrée
+    // prend en paramettre un callback - Fonction appelée avec (username, password)
+     
     onSignupClick(callback) {
         if (!this.btnSignup) return;
         this.btnSignup.addEventListener('click', () => {
@@ -80,23 +70,20 @@ class LoginView {
         }
     }
 
-    /**
-     * Cache la page de connexion/inscription
-     */
+    // Cache la page de connexion/inscription
+    
     hide() {
         this.pageLogin.classList.add('hidden');
     }
 
-    /**
-     * Affiche la page de connexion/inscription
-     */
+    // Affiche la page de connexion/inscription
+    
     show() {
         this.pageLogin.classList.remove('hidden');
     }
 
-    /**
-     * Vide tous les champs des formulaires de connexion et d'inscription
-     */
+    // Vide tous les champs des formulaires de connexion et d'inscription
+     
     clear() {
         if (this.inputUsername) this.inputUsername.value = '';
         if (this.inputPassword) this.inputPassword.value = '';
@@ -104,24 +91,20 @@ class LoginView {
         if (this.inputSignupPassword) this.inputSignupPassword.value = '';
     }
 
-    /**
-     * Affiche un message dans la section connexion
-     * 
-     * @param {string} msg - Message à afficher
-     * @param {boolean} isError - true pour un message d'erreur (rouge), false pour succès (vert)
-     */
+    // Affiche un message dans la section connexion 
+    // prend en paramettre msg - Message à afficher
+    // prend en paramettre un bool isError - true pour un message d'erreur (rouge), false pour succès (vert)
+     
     showMessage(msg, isError = false) {
         if (!this.messageBox) return;
         this.messageBox.textContent = msg;
         this.messageBox.style.color = isError ? 'crimson' : 'green';
     }
 
-    /**
-     * Affiche un message dans la section inscription
-     * 
-     * @param {string} msg - Message à afficher
-     * @param {boolean} isError - true pour un message d'erreur (rouge), false pour succès (vert clair)
-     */
+    // Affiche un message dans la section inscription 
+    // prend en paramettre msg - Message à afficher
+    // prend en paramettre un bool isError - true pour un message d'erreur (rouge), false pour succès (vert clair)
+    
     showSignupMessage(msg, isError = false) {
         if (!this.signupMessageBox) return;
         this.signupMessageBox.textContent = msg;

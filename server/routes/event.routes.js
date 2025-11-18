@@ -1,11 +1,6 @@
-/**
- * ============================================
- * ROUTES DES ÉVÉNEMENTS
- * ============================================
- * 
- * Gère les opérations CRUD sur les événements.
- * Toutes les routes nécessitent une authentification (authMiddleware).
- */
+// Routes des evenements
+// Gère les opérations CRUD sur les événements
+// Toutes les routes nécessitent une authentification (authMiddleware)
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -16,23 +11,23 @@ const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
-// Appliquer le middleware d'authentification à toutes les routes
+// Applique le middleware d'authentification à toutes les routes
 router.use(authMiddleware);
 
-/**
- * Récupère les événements d'un ou plusieurs agendas
- * GET /api/events?agendaId=xxx&start=xxx&end=xxx
- * Query params:
- *   - agendaId: ID d'un agenda spécifique
- *   - agendaIds[]: Tableau d'IDs pour charger plusieurs agendas
- *   - start: Date de début (ISO) pour filtrage optimisé
- *   - end: Date de fin (ISO) pour filtrage optimisé
- */
+
+// Récupère les événements d'un ou plusieurs agendas
+// GET /api/events?agendaId=xxx&start=xxx&end=xxx
+// Query params:
+//   - agendaId: ID d'un agenda spécifique
+//   - agendaIds[]: Tableau d'IDs pour charger plusieurs agendas
+//   - start: Date de début (ISO) pour filtrage optimisé
+//   - end: Date de fin (ISO) pour filtrage optimisé
+
 router.get('/', async (req, res) => {
   try {
     const { agendaId, agendaIds, start, end } = req.query;
 
-    // OPTIMISATION : Filtrage dynamique selon la période demandée
+    // Filtrage dynamique selon la période demandée
     let dateFilter = {};
     if (start && end) {
       const startDate = new Date(start);
@@ -45,7 +40,7 @@ router.get('/', async (req, res) => {
         ]
       };
     } else {
-      // Fallback : limiter à ±2 mois autour de maintenant
+      // limite à + ou - 2 mois autour de maintenant
       const now = new Date();
       const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
       const twoMonthsLater = new Date(now.getFullYear(), now.getMonth() + 3, 0);
@@ -127,11 +122,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * Crée un nouvel événement
- * POST /api/events
- * Body: { title, start, end?, description?, emoji?, color?, agendaId? }
- */
+// Crée un nouvel événement
+// POST /api/events
+// Body: { title, start, end?, description?, emoji?, color?, agendaId? }
+
 router.post('/', async (req, res) => {
   const { title, start, end, description, color, emoji, agendaId } = req.body;
   
@@ -139,7 +133,7 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'title and start required' });
   }
 
-  // Vérification : la fin ne peut pas être avant le début
+  // Vérifie que la fin ne peut pas être avant le début
   const startDate = new Date(start);
   const endDate = end ? new Date(end) : new Date(start);
   
@@ -155,7 +149,7 @@ router.post('/', async (req, res) => {
     let createdEvent;
 
     await session.withTransaction(async () => {
-      // Créer l'événement
+      // Crée l'événement
       const ev = new Event({
         title,
         start: startDate,
@@ -166,7 +160,7 @@ router.post('/', async (req, res) => {
       });
       createdEvent = await ev.save({ session });
 
-      // Associer à un agenda
+      // Associe à un agenda
       let agenda;
       if (agendaId) {
         agenda = await Agenda.findById(agendaId).session(session);
@@ -216,11 +210,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * Met à jour un événement existant
- * PUT /api/events/:id
- * Body: { title?, start?, end?, description?, emoji?, color?, agendaId? }
- */
+
+// Met à jour un événement existant
+// PUT /api/events/:id
+// Body: { title?, start?, end?, description?, emoji?, color?, agendaId? }
+
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
   const { title, start, end, description, color, emoji, agendaId } = req.body;
@@ -231,7 +225,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'event not found' });
     }
     
-    // Vérification erreur horaire pour la mise à jour
+    // Vérifie l'erreur horaire pour la mise à jour
     const newStart = start ? new Date(start) : ev.start;
     const newEnd = end ? new Date(end) : ev.end;
     
@@ -241,7 +235,7 @@ router.put('/:id', async (req, res) => {
       });
     }
     
-    // Mettre à jour les champs fournis
+    // Met à jour les champs fournis
     if (title) ev.title = title;
     if (start) ev.start = newStart;
     if (end) ev.end = newEnd;
@@ -268,10 +262,9 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-/**
- * Supprime un événement
- * DELETE /api/events/:id
- */
+// Supprime un événement
+// DELETE /api/events/:id
+
 router.delete('/:id', async (req, res) => {
   const id = req.params.id;
   
@@ -281,10 +274,10 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'event not found' });
     }
     
-    // Retirer l'événement de tous les agendas
+    // Retire l'événement de tous les agendas
     await Agenda.updateMany({ events: id }, { $pull: { events: id } });
     
-    // Supprimer l'événement
+    // Supprime l'événement
     await ev.deleteOne();
     
     return res.json({ message: 'deleted' });

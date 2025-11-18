@@ -1,30 +1,23 @@
-/**
- * ============================================
- * GESTIONNAIRE D'INTERFACE UTILISATEUR
- * ============================================
- * 
- * Ce fichier contient toutes les méthodes d'initialisation des événements UI
- * et la configuration des callbacks pour App.js.
- * 
- * Responsabilités :
- * - Initialisation des événements des boutons et formulaires
- * - Configuration des callbacks du calendrier
- * - Gestion du menu de superposition des agendas
- * - Gestion du filtrage des événements
- */
+// Gestionnaire d'interface utilisateur
+// Ce fichier contient toutes les méthodes d'initialisation des événements UI
+// et la configuration des callbacks pour App.js.
+// Responsabilités :
+// - Initialisation des événements des boutons et formulaires
+// - Configuration des callbacks du calendrier
+// - Gestion du menu de superposition des agendas
+// - Gestion du filtrage des événements
+
 
 class AppUIManager {
-    /**
-     * Initialise le gestionnaire UI avec l'instance de l'app
-     * @param {App} app - Instance de l'application principale
-     */
+    // Initialise le gestionnaire UI avec l'instance de l'app
+    // prend en paramettre app - Instance de l'application principale
+    
     constructor(app) {
         this.app = app;
     }
 
-    /**
-     * Initialise tous les gestionnaires d'événements (boutons, callbacks)
-     */
+    // Initialise tous les gestionnaires d'événements (boutons, callbacks)
+     
     initEvents() {
         this.initAuthEvents();
         this.initAgendaEvents();
@@ -34,9 +27,8 @@ class AppUIManager {
         this.initGlobalEvents();
     }
 
-    /**
-     * Initialise les événements d'authentification
-     */
+    // Initialise les événements d'authentification
+     
     initAuthEvents() {
         this.app.loginView.onLoginClick((username, password) => {
             this.app.handleLogin(username, password);
@@ -61,9 +53,8 @@ class AppUIManager {
         }
     }
 
-    /**
-     * Initialise les événements de gestion des agendas
-     */
+    // Initialise les événements de gestion des agendas
+     
     initAgendaEvents() {
         this.app.headerView.onAgendaChange = (agenda) => {
             this.app.agendaController.switchAgenda(agenda);
@@ -81,9 +72,8 @@ class AppUIManager {
         });
     }
 
-    /**
-     * Initialise les événements du calendrier (modale)
-     */
+    // Initialise les événements du calendrier (modale)
+     
     initCalendarEvents() {
         this.app.modalView.onSaveClick(() => {
             this.app.handleSaveEvent();
@@ -101,9 +91,8 @@ class AppUIManager {
         });
     }
 
-    /**
-     * Initialise le menu de superposition des agendas
-     */
+    // Initialise le menu de superposition des agendas
+     
     initOverlayMenu() {
         const overlayBtn = document.getElementById('agenda-overlay-btn');
         const overlayMenu = document.getElementById('agenda-overlay-menu');
@@ -118,13 +107,13 @@ class AppUIManager {
                 overlayMenu.classList.toggle('hidden');
                 overlayBtn.classList.toggle('active');
                 
-                // Mettre à jour le menu quand on l'ouvre
+                // Met à jour le menu quand on l'ouvre
                 if (wasHidden) {
                     this.app.agendaController.updateOverlayMenu();
                 }
             });
 
-            // Fermer le menu si clic à l'extérieur
+            // Ferme le menu si clic à l'extérieur
             document.addEventListener('click', (e) => {
                 if (!overlayBtn.contains(e.target) && !overlayMenu.contains(e.target)) {
                     overlayMenu.classList.add('hidden');
@@ -143,9 +132,8 @@ class AppUIManager {
         }
     }
 
-    /**
-     * Initialise les événements du filtre
-     */
+    // Initialise les événements du filtre
+     
     initFilterEvents() {
         const btnFilter = document.getElementById('btn-filter');
         const btnClearFilter = document.getElementById('btn-clear-filter');
@@ -172,21 +160,19 @@ class AppUIManager {
         });
     }
 
-    /**
-     * Initialise les événements globaux
-     */
+    // Initialise les événements globaux
+     
     initGlobalEvents() {
-        // Écouter les changements d'overlay
+        // Écoute les changements d'overlay
         document.addEventListener('agendaOverlayChanged', () => {
             this.app.reloadAllEvents();
         });
     }
 
-    /**
-     * Configure les callbacks du calendrier FullCalendar
-     */
+    // Configure les callbacks du calendrier FullCalendar
+     
     setupCalendarCallbacks() {
-        // Clic sur une date : ouvrir la modale de création
+        // Clic sur une date : ouvre la modale de création
         this.app.calendarManager.setOnDateClick((dateStr) => {
             const currentAgenda = this.app.agendaController.getCurrentAgenda();
             if (!currentAgenda) {
@@ -196,7 +182,7 @@ class AppUIManager {
 
             this.app.eventController.setEditingEvent(null);
             
-            // Remplir le sélecteur d'agendas
+            // Remplit le sélecteur d'agendas
             this.app.modalView.populateAgendaSelector(
                 this.app.agendaController.getAllAgendas(),
                 currentAgenda.id
@@ -205,11 +191,11 @@ class AppUIManager {
             this.app.modalView.openForAdd(dateStr);
         });
 
-        // Clic sur un événement : ouvrir la modale d'édition
+        // Clic sur un événement : ouvre la modale d'édition
         this.app.calendarManager.setOnEventClick((event) => {
             const eventAgendaId = event.extendedProps.agendaId || this.app.agendaController.getCurrentAgenda()?.id;
             
-            // Préparer les données pour la modale
+            // Prépare les données pour la modale
             const eventData = {
                 title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
                 start: formatDateTimeLocal(new Date(event.start)),
@@ -219,15 +205,15 @@ class AppUIManager {
                 agendaId: eventAgendaId
             };
 
-            // Stocker l'ID complet (agendaId-eventId) pour le calendrier
-            // mais extraire juste l'eventId pour l'API
+            // Stocke l'ID complet (agendaId-eventId) pour le calendrier
+            // mais extrait juste l'eventId pour l'API
             this.app.eventController.setEditingEvent(event.id);
             this.app.modalView.openForEdit(eventData, this.app.agendaController.getAllAgendas());
         });
 
         // Déplacement d'événement (drag & drop) et redimensionnement
         const handleEventChange = async (event) => {
-            // Extraire l'eventId réel (format FullCalendar: "agendaId-eventId")
+            // Extrait l'eventId réel (format FullCalendar: "agendaId-eventId")
             const realEventId = event.id.includes('-') 
                 ? event.id.split('-')[1] 
                 : event.id;
@@ -243,7 +229,7 @@ class AppUIManager {
             });
         };
 
-        // Assigner le callback pour drag & drop et resize
+        // Assigne le callback pour drag & drop et resize
         this.app.calendarManager.onEventChangeCallback = handleEventChange;
 
         // Changement de vue ou de date

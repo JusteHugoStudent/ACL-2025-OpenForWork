@@ -1,12 +1,8 @@
-/**
- * ============================================
- * MODÈLE EVENT - ÉVÉNEMENT MONGODB
- * ============================================
- * 
- * Définit le schéma MongoDB pour les événements du calendrier.
- * Chaque événement a un titre, des dates de début/fin,
- * une description optionnelle, et un emoji pour la catégorisation.
- */
+// Modele event / evenement MongoDB
+// Définit le schéma MongoDB pour les événements du calendrier
+// Chaque événement a un titre, des dates de début/fin,
+// une description optionnelle, et un emoji pour la catégorisation
+ 
 
 const mongoose = require('mongoose');
 

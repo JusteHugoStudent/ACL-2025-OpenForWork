@@ -1,18 +1,15 @@
-/**
- * Utilitaires de validation
- * Fonctions simples pour valider les données utilisateur
- */
+// Utilitaires de validation
+// Fonctions simples pour valider les données utilisateur
 
-/**
- * Vérifie qu'une valeur n'est pas vide
- */
+
+// Vérifie qu'une valeur n'est pas vide
+ 
 function isNotEmpty(value) {
     return value !== null && value !== undefined && String(value).trim().length > 0;
 }
 
-/**
- * Valide les données d'un événement
- */
+// Valide les données d'un événement
+ 
 function validateEventData(eventData) {
     const errors = [];
     

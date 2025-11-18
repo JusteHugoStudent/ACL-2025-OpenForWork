@@ -1,41 +1,38 @@
-/**
- * FilterController.js
- * Contrôleur responsable de la gestion du filtrage et de l'export des événements
- * Gère le formulaire de filtre, la génération de listes et l'export PDF
- */
+// Contrôleur responsable de la gestion du filtrage et de l'export des événements
+// Gère le formulaire de filtre, la génération de listes et l'export PDF
 
 class FilterController {
-    /**
-     * Constructeur du contrôleur de filtrage
-     * @param {EventControllerFront} eventController - Contrôleur d'événements pour charger les données
-     */
+    
+    // Constructeur du contrôleur de filtrage
+    // prend en paramettre eventController - Contrôleur d'événements pour charger les données
+    
     constructor(eventController) {
         this.eventController = eventController;
     }
 
-    /**
-     * Gère la soumission du formulaire de filtre
-     * Valide les dates et affiche la liste filtrée
-     * @param {string} startDateStr - Date de début au format string
-     * @param {string} endDateStr - Date de fin au format string
-     * @param {Array<string>} agendaIds - IDs des agendas à inclure
-     * @param {Array} allAgendas - Liste de tous les agendas
-     * @param {string} keywords - Mots-clés pour la recherche
-     * @param {Array<string>} emojis - Emojis sélectionnés pour filtrer
-     * @returns {Promise<void>}
-     */
+    
+    // Gère la soumission du formulaire de filtre
+    // Valide les dates et affiche la liste filtrée
+    // prend en paramettre startDateStr - Date de début au format string
+    // prend en paramettre endDateStr - Date de fin au format string
+    // prend en paramettre agendaIds - IDs des agendas à inclure
+    // prend en paramettre allAgendas - Liste de tous les agendas
+    // prend en paramettre keywords - Mots-clés pour la recherche
+    // prend en paramettre emojis - Emojis sélectionnés pour filtrer
+    
+     
     async handleFilterSubmit(startDateStr, endDateStr, agendaIds, allAgendas, keywords = '', emojis = []) {
-        // Valider que les champs de date ne sont pas vides
+        // Valide que les champs de date ne sont pas vides
         if (!isNotEmpty(startDateStr) || !isNotEmpty(endDateStr)) {
             alert(ERROR_MESSAGES.FILTER.MISSING_DATES);
             return;
         }
 
-        // Convertir les dates
+        // Convertit les dates
         const startDate = new Date(startDateStr);
         const endDate = new Date(endDateStr);
 
-        // Valider les dates avec dateUtils
+        // Valide les dates avec dateUtils
         if (!isValidDateRange(startDate, endDate)) {
             alert(ERROR_MESSAGES.EVENT.INVALID_DATE);
             return;
@@ -45,7 +42,7 @@ class FilterController {
         if (!token) return;
 
         try {
-            // Récupérer les événements filtrés via le contrôleur d'événements
+            // Récupére les événements filtrés via le contrôleur d'événements
             let filtered = await this.eventController.filterEvents(
                 startDate,
                 endDate,
@@ -53,7 +50,7 @@ class FilterController {
                 allAgendas
             );
 
-            // Appliquer le filtre par mots-clés
+            // Applique le filtre par mots-clés
             if (keywords) {
                 const keywordsLower = keywords.toLowerCase();
                 filtered = filtered.filter(event => {
@@ -63,14 +60,14 @@ class FilterController {
                 });
             }
 
-            // Appliquer le filtre par emojis
+            // Applique le filtre par emojis
             if (emojis.length > 0) {
                 filtered = filtered.filter(event => {
                     return event.emoji && emojis.includes(event.emoji);
                 });
             }
 
-            // Générer et afficher la liste filtrée
+            // Génére et affiche la liste filtrée
             this.generateFilteredList(filtered);
 
         } catch (err) {
@@ -78,10 +75,10 @@ class FilterController {
         }
     }
 
-    /**
-     * Génère l'affichage HTML de la liste d'événements filtrés
-     * @param {Array} events - Liste des événements filtrés
-     */
+    
+    // Génère l'affichage HTML de la liste d'événements filtrés
+    // prend en paramettre events - Liste des événements filtrés
+    
     generateFilteredList(events) {
         const resultDiv = document.getElementById('filter-results');
         
@@ -89,7 +86,7 @@ class FilterController {
             return;
         }
 
-        // Afficher la div des résultats
+        // Affiche la div des résultats
         resultDiv.style.display = 'block';
 
         if (events.length === 0) {
@@ -97,7 +94,7 @@ class FilterController {
             return;
         }
 
-        // Créer le HTML de la liste avec le titre
+        // Crée le HTML de la liste avec le titre
         let html = '<h4>📋 Résultats</h4><ul style="list-style: none; padding: 0;">';
         
         events.forEach(ev => {
@@ -119,7 +116,7 @@ class FilterController {
         
         html += '</ul>';
         
-        // Ajouter un bouton d'export PDF
+        // Ajoute un bouton d'export PDF
         html += `
             <div style="padding: 10px; text-align: center;">
                 <button id="export-pdf-btn" style="
@@ -138,7 +135,7 @@ class FilterController {
         
         resultDiv.innerHTML = html;
 
-        // Attacher le gestionnaire d'événement au bouton d'export
+        // Attache le gestionnaire d'événement au bouton d'export
         const exportBtn = document.getElementById('export-pdf-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
@@ -147,11 +144,11 @@ class FilterController {
         }
     }
 
-    /**
-     * Exporte les événements filtrés en PDF
-     * Utilise jsPDF pour générer le document
-     * @param {Array} events - Liste des événements à exporter
-     */
+    
+    // Exporte les événements filtrés en PDF
+    // Utilise jsPDF pour générer le document
+    // prend en paramettre events - Liste des événements à exporter
+     
     exportFilteredEvents(events) {
         if (!window.jspdf) {
             alert('La bibliothèque jsPDF n\'est pas chargée. Impossible d\'exporter en PDF.');
@@ -159,7 +156,7 @@ class FilterController {
         }
 
         try {
-            // Créer un nouveau document PDF
+            // Crée un nouveau document PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -167,7 +164,7 @@ class FilterController {
             doc.setFontSize(18);
             doc.text('Liste des événements filtrés', 20, 20);
 
-            // Ajouter la date de génération
+            // Ajoute la date de génération
             doc.setFontSize(10);
             doc.text(`Généré le ${formatDateFrench(new Date())}`, 20, 30);
 
@@ -175,26 +172,26 @@ class FilterController {
             const pageHeight = doc.internal.pageSize.height;
             const marginBottom = 20;
 
-            // Ajouter chaque événement
+            // Ajoute chaque événement
             events.forEach((ev, index) => {
-                // Vérifier s'il faut ajouter une nouvelle page
+                // Vérifie s'il faut ajouter une nouvelle page
                 if (yPosition > pageHeight - marginBottom) {
                     doc.addPage();
                     yPosition = 20;
                 }
 
-                // Formater les données
+                // Formate les données
                 const eventDate = new Date(ev.start);
                 const formattedDate = formatDateFrench(eventDate);
                 const eventTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
 
-                // Ajouter le titre de l'événement
+                // Ajoute le titre de l'événement
                 doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
                 doc.text(eventTitle, 20, yPosition);
                 yPosition += 7;
 
-                // Ajouter les détails
+                // Ajoute les détails
                 doc.setFontSize(10);
                 doc.setFont(undefined, 'normal');
                 doc.text(`Date: ${formattedDate}`, 25, yPosition);
@@ -202,7 +199,7 @@ class FilterController {
                 doc.text(`Agenda: ${ev._agendaName || 'Agenda'}`, 25, yPosition);
                 yPosition += 6;
 
-                // Ajouter la description si présente
+                // Ajoute la description si présente
                 if (ev.description) {
                     const descLines = doc.splitTextToSize(`Description: ${ev.description}`, 170);
                     descLines.forEach(line => {
@@ -215,14 +212,14 @@ class FilterController {
                     });
                 }
 
-                // Ajouter un séparateur
+                // Ajoute un séparateur
                 yPosition += 5;
                 doc.setDrawColor(200, 200, 200);
                 doc.line(20, yPosition, 190, yPosition);
                 yPosition += 10;
             });
 
-            // Télécharger le PDF
+            // Télécharge le PDF
             const filename = `evenements_${new Date().getTime()}.pdf`;
             doc.save(filename);
 
@@ -234,16 +231,16 @@ class FilterController {
         }
     }
 
-    /**
-     * Réinitialise le formulaire de filtre et les résultats
-     */
+    
+    // Réinitialise le formulaire de filtre et les résultats
+     
     resetFilter() {
-        // Réinitialiser les champs de date
+        // Réinitialise les champs de date
         document.getElementById('filter-start').value = '';
         document.getElementById('filter-end').value = '';
         document.getElementById('filter-keywords').value = '';
         
-        // Désélectionner tous les boutons emoji
+        // Désélectionne tous les boutons emoji
         document.querySelectorAll('.emoji-btn.selected').forEach(btn => {
             btn.classList.remove('selected');
         });

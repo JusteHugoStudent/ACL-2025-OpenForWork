@@ -1,20 +1,15 @@
-/**
- * domUtils.js
- * Utilitaires pour manipuler le DOM et générer des éléments dynamiquement
- */
+// Utilitaires pour manipuler le DOM et générer des éléments dynamiquement
+// Génère les boutons emoji pour les filtres
+// Utilise EMOJI_OPTIONS de constants.js
 
-/**
- * Génère les boutons emoji pour les filtres
- * Utilise EMOJI_OPTIONS de constants.js
- */
 function generateEmojiFilterButtons() {
     const container = document.getElementById('filter-emoji-buttons');
     if (!container) return;
 
-    // Vider le contenu existant
+    // Vide le contenu existant
     container.innerHTML = '';
 
-    // Générer un bouton pour chaque emoji
+    // Génére un bouton pour chaque emoji
     EMOJI_OPTIONS.forEach(option => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -26,18 +21,17 @@ function generateEmojiFilterButtons() {
     });
 }
 
-/**
- * Génère les options emoji pour le select de la modale
- * Utilise EMOJI_OPTIONS de constants.js
- */
+// Génère les options emoji pour le select de la modale
+// Utilise EMOJI_OPTIONS de constants.js
+
 function generateEmojiSelectOptions() {
     const select = document.getElementById('input-color');
     if (!select) return;
 
-    // Vider le contenu existant
+    // Vide le contenu existant
     select.innerHTML = '';
 
-    // Générer une option pour chaque emoji
+    // Génére une option pour chaque emoji
     EMOJI_OPTIONS.forEach(option => {
         const optionElement = document.createElement('option');
         optionElement.value = option.value;
@@ -46,10 +40,9 @@ function generateEmojiSelectOptions() {
     });
 }
 
-/**
- * Initialise tous les éléments dynamiques du DOM au chargement
- * À appeler au démarrage de l'application
- */
+// Initialise tous les éléments dynamiques du DOM au chargement
+// À appeler au démarrage de l'application
+
 function initializeDynamicDOM() {
     generateEmojiFilterButtons();
     generateEmojiSelectOptions();
