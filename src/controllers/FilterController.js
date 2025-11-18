@@ -10,6 +10,13 @@ class FilterController {
         this.eventController = eventController;
     }
 
+    // Obtient le label textuel d'un emoji pour l'export PDF
+    getEmojiLabel(emoji) {
+        if (!emoji) return '';
+        const emojiOption = EMOJI_OPTIONS.find(opt => opt.value === emoji);
+        return emojiOption ? `[${emojiOption.label}]` : '';
+    }
+
     
     // Gère la soumission du formulaire de filtre
     // Valide les dates et affiche la liste filtrée
@@ -194,7 +201,9 @@ class FilterController {
                 // Formate les données
                 const eventDate = new Date(ev.start);
                 const formattedDate = formatDateFrench(eventDate);
-                const eventTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
+                // Remplace l'emoji par son label textuel pour éviter les problèmes d'encodage PDF
+                const emojiLabel = this.getEmojiLabel(ev.emoji);
+                const eventTitle = emojiLabel ? `${emojiLabel} ${ev.title}` : ev.title;
 
                 // Ajoute le titre de l'événement
                 doc.setFontSize(12);
