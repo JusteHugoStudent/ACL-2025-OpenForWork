@@ -1,6 +1,6 @@
 | Fonctionnalités                               | Sprint 3  |
 |----------------------------------------------|-----------|
-| Ajouter des evenements récurrent              | En cours      |
-| Créer des rappels                             | En cours      | 
-| Voir plusieurs agendas en même temps                            | En cours      | 
-| Import/Export d'un agenda                           | En cours      |
+| Ajouter des evenements récurrent              | Terminé      |
+| Créer des rappels                             | Terminé      | 
+| Voir plusieurs agendas en même temps                            | Terminé      | 
+| Import/Export d'un agenda                           | Terminé      |

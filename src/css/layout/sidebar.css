@@ -182,17 +182,6 @@
     overflow: hidden;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .agenda-overlay-header {
     display: flex;
     justify-content: space-between;
@@ -270,33 +259,4 @@
     height: 20px;
     border-radius: 4px;
     border: 2px solid var(--border);
-}
-
-.main-container-modern {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 16px;
-    height: calc(100vh - 80px);
-    overflow: hidden;
-    padding: 16px;
-}
-
-.sidebar-agendas {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px 16px;
-    box-shadow: var(--shadow-md);
-    overflow-y: auto;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.sidebar-agendas:hover {
-    box-shadow: var(--shadow-glow);
-    border-color: var(--border-light);
 }
