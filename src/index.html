@@ -364,6 +364,26 @@
         </div>
     </div>
 
+    <!-- Modale Création d'agenda -->
+    <div id="agenda-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Créer un nouvel agenda</h3>
+
+            <div class="modal-body">
+                <label for="agenda-name-input">Nom de l'agenda :</label>
+                <input type="text" id="agenda-name-input" placeholder="Mon agenda" maxlength="15">
+
+                <label for="agenda-color-input">Couleur :</label>
+                <input type="color" id="agenda-color-input" value="#3498db">
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-create-agenda">Créer</button>
+                <button id="btn-cancel-agenda">Annuler</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <!-- 1. Bibliothèques externes -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>

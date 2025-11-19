@@ -49,10 +49,11 @@ class AgendaControllerFront {
     
     // Crée un nouvel agenda avec validation
     // prend en paramettre le nom de l'agenda à créer
+    // prend en paramettre color (optionnel) - Couleur hex de l'agenda
     // options: { setCurrent: true } - si false, ne remplace pas this.currentAgenda (utile pour import)
     // retourne L'agenda créé ou null en cas d'erreur
      
-    async createAgenda(name, { setCurrent = true } = {}) {
+    async createAgenda(name, color = '#3498db', { setCurrent = true } = {}) {
         // Validation avec validationUtils
         if (!isNotEmpty(name)) {
             alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
@@ -65,8 +66,8 @@ class AgendaControllerFront {
         }
 
         try {
-            // Créer l'agenda via le service (passer juste le nom, pas un objet)
-            const created = await this.agendaService.create(name);
+            // Créer l'agenda via le service avec le nom et la couleur
+            const created = await this.agendaService.create(name, color);
 
             // Recharger tous les agendas
             await this.loadAgendas();

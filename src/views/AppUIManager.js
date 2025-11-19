@@ -62,14 +62,8 @@ class AppUIManager {
             this.app.reloadAllEvents();
         };
 
-        this.app.headerView.onAddAgendaClick(async () => {
-            const name = prompt('Nom du nouvel agenda (max 15 caractères) :');
-            if (!name) return;
-
-            const created = await this.app.agendaController.createAgenda(name.trim());
-            if (created) {
-                this.app.reloadAllEvents();
-            }
+        this.app.headerView.onAddAgendaClick(() => {
+            this.openAgendaModal();
         });
 
         // Callback pour l'export : déclenche l'export de l'agenda courant
@@ -478,5 +472,59 @@ class AppUIManager {
         this.app.calendarManager.onVisiblePeriodChange = () => {
             this.app.reloadAllEvents();
         };
+    }
+
+    // Ouvre la modale de création d'agenda
+    openAgendaModal() {
+        const modal = document.getElementById('agenda-modal');
+        const nameInput = document.getElementById('agenda-name-input');
+        const colorInput = document.getElementById('agenda-color-input');
+        const btnCreate = document.getElementById('btn-create-agenda');
+        const btnCancel = document.getElementById('btn-cancel-agenda');
+
+        // Réinitialise les champs
+        nameInput.value = '';
+        colorInput.value = '#3498db';
+
+        // Affiche la modale
+        modal.classList.remove('hidden');
+        nameInput.focus();
+
+        // Ferme la modale et nettoie les listeners
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            btnCreate.removeEventListener('click', handleCreate);
+            btnCancel.removeEventListener('click', handleCancel);
+            modal.removeEventListener('click', handleClickOutside);
+        };
+
+        // Gère la création
+        const handleCreate = async () => {
+            const name = nameInput.value.trim();
+            const color = colorInput.value;
+
+            if (!name) {
+                alert('Veuillez saisir un nom pour l\'agenda.');
+                return;
+            }
+
+            const created = await this.app.agendaController.createAgenda(name, color);
+            if (created) {
+                closeModal();
+                this.app.reloadAllEvents();
+            }
+        };
+
+        // Gère le clic en dehors
+        const handleClickOutside = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+
+        // Attache les listeners
+        btnCreate.addEventListener('click', handleCreate);
+        btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', handleClickOutside);
     }
 }

@@ -77,10 +77,9 @@ const THEME_COLORS = {
     GRIS: '#4a4a4a',
     GRIS_CLAIR: '#6a6a6a',
     
-    // Couleurs spécifiques pour les agendas
-    AGENDA_PRINCIPAL: '#3498db',      // Bleu
-    AGENDA_SECONDAIRE: 'rgba(102, 126, 234, 0.6)', // Bleu translucide
-    JOURS_FERIES: '#dc3545'           // Rouge
+    // Couleurs par défaut pour les agendas
+    DEFAULT_AGENDA: '#3498db',        // Bleu par défaut
+    JOURS_FERIES: '#dc3545'           // Rouge pour jours fériés
 };
 
 

@@ -31,6 +31,7 @@ router.get('/', async (req, res) => {
     const agendas = user.agendas.map(ag => ({
       id: ag._id,
       name: ag.name,
+      color: ag.color || '#3498db',
       events: ag.events.map(ev => ({
         id: ev._id,
         title: ev.title,
@@ -55,7 +56,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, color } = req.body;
     
     if (!name) {
       return res.status(400).json({ error: 'missing name' });
@@ -66,8 +67,12 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: 'user not found' });
     }
 
-    // Crée le nouvel agenda
-    const agenda = new Agenda({ name, events: [] });
+    // Crée le nouvel agenda avec couleur personnalisée
+    const agenda = new Agenda({ 
+      name, 
+      color: color || '#3498db', 
+      events: [] 
+    });
     await agenda.save();
 
     // Ajoute l'agenda à l'utilisateur
@@ -76,7 +81,8 @@ router.post('/', async (req, res) => {
 
     return res.status(201).json({ 
       id: agenda._id, 
-      name: agenda.name, 
+      name: agenda.name,
+      color: agenda.color,
       events: [] 
     });
   } catch (err) {

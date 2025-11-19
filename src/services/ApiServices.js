@@ -24,9 +24,10 @@ class AgendaService {
     
     // Crée un nouvel agenda
     // prend en paramettre name - Nom de l'agenda
+    // prend en paramettre color - Couleur de l'agenda (hex)
     // retourne un Agenda créé ou null si erreur
      
-    async create(name) {
+    async create(name, color = '#3498db') {
         try {
             const token = getToken();
             if (!token) throw new Error('Non authentifié');
@@ -37,7 +38,7 @@ class AgendaService {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name, color })
             });
             
             if (!response.ok) throw new Error('Erreur création agenda');

@@ -84,21 +84,12 @@ class HeaderView {
 
         // Met à jour les options
         this.agendaSelect.innerHTML = agendas.map(a => 
-            `<option value="${a.id}" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`
-        ).join('');
-
-        // Gestion du changement
-        this.agendaSelect.onchange = e => {
-            const selected = agendas.find(a => String(a.id) === e.target.value);
-            if (this.onAgendaChange) this.onAgendaChange(selected);
-        };
-    }
+         ii}
+ .nd
+;
 
     // Attache un callback au bouton "Nouvel agenda"
-    // prend en paramettre un callback - Fonction appelée lors du clic sur le bouton
-    
-    onAddAgendaClick(callback) {
-        this.newAgendaBtn.addEventListener('click', callback);
+    // prend en paramettre un callback - Fonction appelée lors du clic sur le bonewAgendaBtn.addEventListener('click', callback);
     }
 
     // Attache un callback au bouton d'export

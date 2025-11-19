@@ -143,28 +143,18 @@ class EventControllerFront {
             });
             const events = await res.json();
             
-            console.log(`📥 Chargement agenda ${agendaId}:`, events.length, 'événements');
-            
-            // Debug: vérifier le format du premier événement
-            if (events.length > 0) {
-                console.log('🔍 Format événement:', events[0]);
-            }
-            
-            // Récupére le nom de l'agenda pour l'affichage
+            // Récupére le nom et la couleur de l'agenda
             const agenda = allAgendas.find(a => a.id === agendaId);
             const agendaName = agenda ? agenda.name : 'Agenda';
             
             const isHolidaysAgenda = agendaName === HOLIDAYS_AGENDA_NAME;
-            const isMainAgenda = currentAgendaId && agendaId === currentAgendaId;
             
-            // Définit la couleur selon le type d'agenda
+            // Utilise la couleur personnalisée de l'agenda
             let backgroundColor;
             if (isHolidaysAgenda) {
                 backgroundColor = THEME_COLORS.JOURS_FERIES; // Rouge pour les jours fériés
-            } else if (isMainAgenda) {
-                backgroundColor = THEME_COLORS.AGENDA_PRINCIPAL; // Bleu pour l'agenda principal
             } else {
-                backgroundColor = THEME_COLORS.AGENDA_SECONDAIRE; // Bleu translucide pour les autres
+                backgroundColor = agenda?.color || THEME_COLORS.DEFAULT_AGENDA; // Couleur de l'agenda ou bleu par défaut
             }
 
             // Ajoute chaque événement au calendrier

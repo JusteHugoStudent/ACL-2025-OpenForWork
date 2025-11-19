@@ -70,8 +70,6 @@ router.post('/register', async (req, res) => {
 // Response: { token: string, username: string }
 
 router.post('/login', async (req, res) => {
-  console.log(`🔍 DEBUG: Connexion demandée pour utilisateur "${req.body.username}"`);
-  
   const { username, password } = req.body;
   
   if (!username || !password) {
@@ -98,7 +96,6 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    console.log(`✅ DEBUG: Connexion réussie pour utilisateur "${user.username}"`);
     return res.json({ token, username: user.username });
   } catch (err) {
     console.error('❌ Erreur connexion:', err);
