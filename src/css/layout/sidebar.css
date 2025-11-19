@@ -220,6 +220,7 @@
     overflow-x: hidden;
     max-height: 400px;
     flex: 1;
+    padding-bottom: 20px;
 }
 
 .agenda-overlay-item {
@@ -437,6 +438,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 16px;
+    padding-bottom: 20px;
     box-shadow: var(--shadow-lg);
     z-index: 1000;
     animation: slideDown 0.3s ease;
