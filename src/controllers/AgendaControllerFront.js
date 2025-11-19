@@ -68,18 +68,24 @@ class AgendaControllerFront {
         try {
             // Créer l'agenda via le service avec le nom et la couleur
             const created = await this.agendaService.create(name, color);
+            console.log('📝 Agenda créé:', created);
 
             // Recharger tous les agendas
             await this.loadAgendas();
+            console.log('📚 Agendas rechargés:', this.agendas);
 
-            // Définir le nouvel agenda comme courant
+            // Définir le nouvel agenda comme courant (récupère depuis la liste rechargée)
             if (setCurrent) {
-                this.currentAgenda = created;
+                const newAgenda = this.agendas.find(a => a.id === created.id);
+                console.log('🔍 Nouvel agenda trouvé:', newAgenda);
+                if (newAgenda) {
+                    this.currentAgenda = newAgenda;
+                    this.selectedAgendas = this.selectedAgendas.filter(id => id !== newAgenda.id);
+                    console.log('✅ CurrentAgenda mis à jour:', this.currentAgenda);
+                    this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+                    this.updateOverlayMenu();
+                }
             }
-
-            // Mettre à jour l'affichage
-            this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
-            this.updateOverlayMenu();
 
             return created;
         } catch (error) {

@@ -476,14 +476,6 @@ class AppUIManager {
         modal.classList.remove('hidden');
         nameInput.focus();
 
-        // Ferme la modale et nettoie les listeners
-        const closeModal = () => {
-            modal.classList.add('hidden');
-            btnCreate.removeEventListener('click', handleCreate);
-            btnCancel.removeEventListener('click', handleCancel);
-            modal.removeEventListener('click', handleClickOutside);
-        };
-
         // Gère la création
         const handleCreate = async () => {
             const name = nameInput.value.trim();
@@ -506,6 +498,14 @@ class AppUIManager {
             if (e.target === modal) {
                 closeModal();
             }
+        };
+
+        // Ferme la modale et nettoie les listeners
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            btnCreate.removeEventListener('click', handleCreate);
+            btnCancel.removeEventListener('click', closeModal);
+            modal.removeEventListener('click', handleClickOutside);
         };
 
         // Attache les listeners
