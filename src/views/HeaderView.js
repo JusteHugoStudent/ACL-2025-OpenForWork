@@ -82,11 +82,13 @@ class HeaderView {
     updateAgendaSelector(agendas, activeAgenda) {
         if (!this.agendaSelect) return;
 
-        // Met à jour les options avec couleur
-        this.agendaSelect.innerHTML = agendas.map(a => {
-            const color = a.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (a.color || THEME_COLORS.DEFAULT_AGENDA);
-            return `<option value="${a.id}" style="color: ${color};" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`;
-        }).join('');
+        // Met à jour les options avec couleur (exclut les jours fériés)
+        this.agendaSelect.innerHTML = agendas
+            .filter(a => a.name !== HOLIDAYS_AGENDA_NAME)
+            .map(a => {
+                const color = a.color || THEME_COLORS.DEFAULT_AGENDA;
+                return `<option value="${a.id}" style="color: ${color};" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`;
+            }).join('');
 
         // Applique la couleur au select lui-même
         if (activeAgenda) {
