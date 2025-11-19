@@ -405,6 +405,12 @@ class AppUIManager {
         this.app.calendarManager.setOnEventClick((event) => {
             const eventAgendaId = event.extendedProps.agendaId || this.app.agendaController.getCurrentAgenda()?.id;
             
+            // Bloque l'édition des événements de l'agenda "Jours fériés"
+            const agenda = this.app.agendaController.agendas.find(a => a.id === eventAgendaId);
+            if (agenda && agenda.name === HOLIDAYS_AGENDA_NAME) {
+                return; // Ne rien faire pour les jours fériés
+            }
+            
             // Pour événement récurrent, utiliser l'ID original et les dates originales
             const eventIdToEdit = event.extendedProps.isRecurring 
                 ? event.extendedProps.originalEventId 
