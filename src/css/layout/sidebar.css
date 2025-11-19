@@ -218,6 +218,8 @@
 .agenda-overlay-list {
     overflow-y: auto;
     overflow-x: hidden;
+    max-height: 400px;
+    flex: 1;
 }
 
 .agenda-overlay-item {
@@ -475,11 +477,6 @@
 .btn-small:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
-}
-
-.agenda-overlay-list {
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .agenda-overlay-item {
