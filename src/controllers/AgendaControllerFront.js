@@ -524,8 +524,10 @@ class AgendaControllerFront {
             // Si l'agenda supprimé était l'agenda courant, sélectionner et charger le premier disponible
             if (this.currentAgenda && this.currentAgenda.id === agendaId) {
                 if (this.agendas.length > 0) {
+                    // Trouve le premier agenda qui n'est pas "Jours fériés"
+                    const nextAgenda = this.agendas.find(a => a.name !== HOLIDAYS_AGENDA_NAME) || this.agendas[0];
                     // Utilise switchAgenda pour gérer correctement le changement
-                    this.switchAgenda(this.agendas[0]);
+                    this.switchAgenda(nextAgenda);
                 } else {
                     this.currentAgenda = null;
                 }
