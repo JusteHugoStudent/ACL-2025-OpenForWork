@@ -250,9 +250,13 @@ class EventControllerFront {
                 const events = await res.json();
                 const agenda = allAgendas.find(a => a.id === agendaId);
                 const agendaName = agenda ? agenda.name : 'Agenda';
+                const agendaColor = agenda?.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (agenda?.color || THEME_COLORS.DEFAULT_AGENDA);
                 
                 // Ajoute une référence à l'agenda pour l'affichage
-                events.forEach(ev => ev._agendaName = agendaName);
+                events.forEach(ev => {
+                    ev._agendaName = agendaName;
+                    ev._agendaColor = agendaColor;
+                });
                 allEvents.push(...events);
             }
 

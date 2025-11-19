@@ -109,13 +109,14 @@ class FilterController {
             const eventDate = new Date(ev.start);
             const formattedDate = formatDateFrench(eventDate);
             const eventTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
+            const agendaColor = ev._agendaColor || THEME_COLORS.DEFAULT_AGENDA;
             
             html += `
-                <div class="search-result-item">
+                <div class="search-result-item" style="border-left-color: ${agendaColor};">
                     <div class="result-title">${eventTitle}</div>
                     <div class="result-info">
-                        <span><i class="uil uil-calendar-alt"></i> ${formattedDate}</span>
-                        <span><i class="uil uil-folder"></i> ${ev._agendaName || 'Agenda'}</span>
+                        <span><i class="uil uil-calendar-alt" style="color: ${agendaColor};"></i> ${formattedDate}</span>
+                        <span><i class="uil uil-folder" style="color: ${agendaColor};"></i> ${ev._agendaName || 'Agenda'}</span>
                     </div>
                     ${ev.description ? `<div class="result-description">${ev.description}</div>` : ''}
                 </div>
