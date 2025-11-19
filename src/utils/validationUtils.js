@@ -30,6 +30,16 @@ function validateEventData(eventData) {
         }
     }
     
+    // Validation de la date de fin de récurrence
+    if (eventData.recurrence && eventData.recurrence.type !== 'none' && eventData.recurrence.endDate) {
+        const startDate = new Date(eventData.start);
+        const recurrenceEndDate = new Date(eventData.recurrence.endDate);
+        
+        if (recurrenceEndDate < startDate) {
+            errors.push('La date de fin de récurrence ne peut pas être antérieure à la date de début de l\'événement');
+        }
+    }
+    
     return {
         valid: errors.length === 0,
         errors: errors

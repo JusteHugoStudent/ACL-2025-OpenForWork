@@ -195,21 +195,6 @@ class ModalView {
         return data;
     }
 
-    // Vérifie si le formulaire est valide (titre et date de début obligatoires)
-    // retourne un bool true si valide, false sinon
-     
-    isValid() {
-        const data = this.getFormData();
-        return data.title !== '' && data.start !== '';
-    }
-
-    // Affiche un message d'erreur à l'utilisateur 
-    // prend en paramettre message - Message d'erreur à afficher
-    
-    showError(message) {
-        alert(message);
-    }
-
     // Demande une confirmation de suppression à l'utilisateur 
     // retourne un bool true si l'utilisateur confirme, false sinon
     
