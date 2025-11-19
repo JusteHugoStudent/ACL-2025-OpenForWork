@@ -78,6 +78,13 @@ class CalendarManager {
                 if (this.onVisiblePeriodChange) {
                     this.onVisiblePeriodChange(info.start, info.end, info.view.type);
                 }
+            },
+            eventDidMount: (info) => {
+                // Force le style du contour avec la couleur de l'événement
+                const borderColor = info.event.borderColor || info.event.backgroundColor;
+                info.el.style.borderColor = borderColor;
+                info.el.style.borderWidth = '2px';
+                info.el.style.borderStyle = 'solid';
             }
         });
 
