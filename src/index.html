@@ -159,6 +159,32 @@
                             </div>
                         </div>
                     </div>
+<<<<<<< Updated upstream
+=======
+                    
+                    <!-- Boutons Import / Export agenda -->
+                    <div class="agenda-overlay-section">
+                        <button id="btn-export" type="button" class="btn-overlay">
+                            <i class="uil uil-download-alt"></i>
+                            Exporter agenda
+                        </button>
+                    </div>
+                    <div class="agenda-overlay-section">
+                        <button id="btn-import" type="button" class="btn-overlay">
+                            <i class="uil uil-upload-alt"></i>
+                            Importer agenda
+                        </button>
+                        <!-- input file caché pour l'import ; HeaderView lira cet élément si présent -->
+                        <input id="agendaImportInput" type="file" accept=".json,application/json" style="display:none" />
+                    </div>
+                        <div class="agenda-overlay-section">
+                        <button id="btn-contact-admin" type="button" class="btn-overlay">
+                            <i class="uil uil-envelope-alt"></i>
+                            Contacter Admin
+                        </button>
+                    </div>
+                    
+>>>>>>> Stashed changes
                 </div>
             </aside>
 
@@ -316,6 +342,28 @@
                 <button id="btn-save">Enregistrer</button>
                 <button id="btn-delete" class="hidden">Supprimer</button>
                 <button id="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-contact" class="modal hidden">
+        <div class="modal-content">
+            <h3>Contacter l'Administrateur</h3>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                    Une question ? Un bug ? Envoyez un message directement à l'admin.
+                </p>
+
+                <label for="contact-subject">Sujet :</label>
+                <input type="text" id="contact-subject" class="form-style" placeholder="Ex: Problème de synchronisation">
+
+                <label for="contact-message" style="margin-top: 10px;">Message :</label>
+                <textarea id="contact-message" class="form-style" rows="4" placeholder="Décrivez votre demande..."></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-send-contact">Envoyer</button>
+                <button id="btn-cancel-contact" style="background: var(--error);">Annuler</button>
             </div>
         </div>
     </div>
