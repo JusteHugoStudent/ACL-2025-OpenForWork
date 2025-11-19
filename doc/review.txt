@@ -9,3 +9,9 @@ Sprint 1 :
 * Ajouter des tags/emojis pour différenciers les types d'événements et non des couleurs
 * Il nous manque le 5ème membre de l'equipe
 * NB : jours fériés = nouvel agenda
+
+Sprint 2 : 
+Pb de developpment lors de la reccurance. 
+
+Sprint 3 :
+Aucun problèmes a signalé ce Sprint. 

@@ -28,3 +28,9 @@ La façon d'écrire les Backlogs, review, retrospéctive a était changée.
 La prise en charge de plusieurs agendas et les jours fériés ont étaient implementés.
 La conversion des couleurs des rendez-vous par des émojis a été implémentée.
 Les recherches d'un rendez-vous par critères (ici les émojis) ont été implémentées.
+
+Sprint 3 : 
+La recurrence a ete implementés et les autres fonctionnalités du sprint tels que 
+l'import/export des agendas ont ete fait, le systeme de filtrage a ete mis a jours, le front a ete 
+redesigné puis un modale pour le support a ete ajouter pour le prochain sprint.
+
