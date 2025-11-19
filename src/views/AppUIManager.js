@@ -25,6 +25,7 @@ class AppUIManager {
         this.initOverlayMenu();
         this.initFilterEvents();
         this.initGlobalEvents();
+        this.initContactEvents();
     }
 
     // Initialise les événements d'authentification
@@ -275,6 +276,84 @@ class AppUIManager {
                 emojiPanel?.classList.add('hidden');
             }
         });
+    }
+
+    // Initialise les événements de contact de l'admin
+    initContactEvents() {
+        const btnContact = document.getElementById('btn-contact-admin');
+        const modalContact = document.getElementById('modal-contact');
+        const btnSend = document.getElementById('btn-send-contact');
+        const btnCancel = document.getElementById('btn-cancel-contact');
+        const inputSubject = document.getElementById('contact-subject');
+        const inputMessage = document.getElementById('contact-message');
+
+        // Ouvrir la modale
+        if (btnContact) {
+            btnContact.addEventListener('click', () => {
+                modalContact.classList.remove('hidden');
+                inputSubject.focus();
+            });
+        }
+
+        // Fermer la modale (Annuler)
+        if (btnCancel) {
+            btnCancel.addEventListener('click', () => {
+                modalContact.classList.add('hidden');
+                // Vider les champs si on annule
+                inputSubject.value = '';
+                inputMessage.value = '';
+            });
+        }
+
+        // Envoyer le message
+        if (btnSend) {
+            btnSend.addEventListener('click', async () => {
+                const subject = inputSubject.value.trim();
+                const message = inputMessage.value.trim();
+
+                if (!subject || !message) {
+                    alert("Veuillez remplir le sujet et le message.");
+                    return;
+                }
+
+                // faudra implementer la logique
+                // Pour l'instant, on simule l'envoi dans le terminal
+                
+                const btnOriginalText = btnSend.innerText;
+                btnSend.innerText = "Envoi en cours...";
+                btnSend.disabled = true;
+
+                try {
+                    console.log(`📨 Envoi message à l'admin :\nSujet: ${subject}\nMessage: ${message}`);
+                    
+                    // Simulation d'attente réseau (1 seconde)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    alert("✅ Message envoyé à l'administrateur !");
+                    
+                    // Fermer et nettoyer
+                    modalContact.classList.add('hidden');
+                    inputSubject.value = '';
+                    inputMessage.value = '';
+
+                } catch (error) {
+                    alert("Erreur lors de l'envoi.");
+                    console.error(error);
+                } finally {
+                    btnSend.innerText = btnOriginalText;
+                    btnSend.disabled = false;
+                }
+            });
+        }
+        
+        // Fermer si on clique en dehors de la modale (sur le fond gris)
+        if (modalContact) {
+            modalContact.addEventListener('click', (e) => {
+                if (e.target === modalContact) {
+                    modalContact.classList.add('hidden');
+                }
+            });
+        }
     }
     
     // Initialise la grille d'emojis
