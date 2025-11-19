@@ -397,21 +397,29 @@ class AppUIManager {
         this.app.calendarManager.setOnEventClick((event) => {
             const eventAgendaId = event.extendedProps.agendaId || this.app.agendaController.getCurrentAgenda()?.id;
             
+            // Pour événement récurrent, utiliser l'ID original et les dates originales
+            const eventIdToEdit = event.extendedProps.isRecurring 
+                ? event.extendedProps.originalEventId 
+                : (event.id.includes('-') ? event.id.split('-')[1] : event.id);
+
+            const eventStart = event.extendedProps.isRecurring && event.extendedProps.originalStart 
+                ? new Date(event.extendedProps.originalStart) 
+                : event.start;
+            
+            const eventEnd = event.extendedProps.isRecurring && event.extendedProps.originalEnd
+                ? new Date(event.extendedProps.originalEnd)
+                : event.end;
+            
             // Prépare les données pour la modale
             const eventData = {
                 title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
-                start: formatDateTimeLocal(new Date(event.start)),
-                end: event.end ? formatDateTimeLocal(new Date(event.end)) : '',
+                start: formatDateTimeLocal(new Date(eventStart)),
+                end: eventEnd ? formatDateTimeLocal(new Date(eventEnd)) : '',
                 description: event.extendedProps.description || '',
                 emoji: event.extendedProps.emoji || '📅',
                 agendaId: eventAgendaId,
                 recurrence: event.extendedProps.recurrence || { type: 'none' }
             };
-
-            // Pour événement récurrent, utiliser l'ID original
-            const eventIdToEdit = event.extendedProps.isRecurring 
-                ? event.extendedProps.originalEventId 
-                : (event.id.includes('-') ? event.id.split('-')[1] : event.id);
 
             // Stocke l'ID réel pour l'API (sans agendaId ni occurrenceIndex)
             this.app.eventController.setEditingEvent(eventIdToEdit);

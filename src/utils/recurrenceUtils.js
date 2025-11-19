@@ -63,7 +63,9 @@ function createOccurrence(event, startDate, duration, index) {
         end: endDate.toISOString(),
         isRecurring: true,
         occurrenceIndex: index,
-        originalEventId: event.id || event._id
+        originalEventId: event.id || event._id,
+        originalStart: event.start,  // Conserve les dates originales de l'événement source
+        originalEnd: event.end
     };
 }
 

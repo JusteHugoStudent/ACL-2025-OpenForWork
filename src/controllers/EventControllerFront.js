@@ -207,6 +207,8 @@ class EventControllerFront {
                 emoji: ev.emoji || '📅',
                 isRecurring: ev.isRecurring || false,
                 originalEventId: eventId,
+                originalStart: ev.originalStart,
+                originalEnd: ev.originalEnd,
                 recurrence: ev.recurrence
             }
         });
