@@ -50,6 +50,36 @@ class AgendaService {
         }
     }
     
+    /**
+     * Modifie un agenda existant
+     * @param {string} agendaId - ID de l'agenda à modifier
+     * @param {string} name - Nouveau nom
+     * @param {string} color - Nouvelle couleur
+     * @returns {Promise<Object|null>} L'agenda modifié ou null
+     */
+    async update(agendaId, name, color) {
+        try {
+            const token = getToken();
+            if (!token) throw new Error('Non authentifié');
+            
+            const response = await fetch(`/api/agendas/${agendaId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, color })
+            });
+            
+            if (!response.ok) throw new Error('Erreur modification agenda');
+            return await response.json();
+            
+        } catch (error) {
+            console.error('Erreur update agenda:', error);
+            return null;
+        }
+    }
+
     // Supprime un agenda
     // prend en paramettre agendaId - ID de l'agenda à supprimer
     // retourne true si succès, false sinon

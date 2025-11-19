@@ -107,7 +107,10 @@ class AgendaControllerFront {
         // Retire le nouvel agenda des sélections si présent
         this.selectedAgendas = this.selectedAgendas.filter(id => id !== agenda.id);
         
-        // Mett à jour le menu overlay
+        // Met à jour le sélecteur dans le header
+        this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+        
+        // Met à jour le menu overlay
         this.updateOverlayMenu();
     }
 
@@ -440,5 +443,108 @@ class AgendaControllerFront {
             };
             reader.readAsText(file, 'utf-8');
         });
+    }
+
+    /**
+     * Modifie un agenda existant
+     * @param {string} agendaId - ID de l'agenda à modifier
+     * @param {string} name - Nouveau nom
+     * @param {string} color - Nouvelle couleur
+     * @returns {Promise<Object|null>} L'agenda modifié ou null
+     */
+    async updateAgenda(agendaId, name, color) {
+        // Validation
+        if (!isNotEmpty(name)) {
+            alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
+            return null;
+        }
+
+        if (name.length > 15) {
+            alert("Le nom de l'agenda ne peut pas dépasser 15 caractères !");
+            return null;
+        }
+
+        try {
+            // Appel API pour mettre à jour l'agenda
+            const updated = await this.agendaService.update(agendaId, name, color);
+
+            // Recharger tous les agendas
+            await this.loadAgendas();
+
+            // Mettre à jour l'agenda courant si c'est celui-ci qui a été modifié
+            if (this.currentAgenda && this.currentAgenda.id === agendaId) {
+                this.currentAgenda = this.agendas.find(a => a.id === agendaId);
+                // Met à jour le sélecteur pour refléter le nouveau nom/couleur
+                this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+            }
+
+            // Notifier le changement pour recharger les événements
+            const event = new CustomEvent('agendaUpdated', {
+                detail: { agendaId, name, color }
+            });
+            document.dispatchEvent(event);
+
+            return updated;
+        } catch (error) {
+            console.error('Erreur modification agenda:', error);
+            alert('Impossible de modifier l\'agenda.');
+            return null;
+        }
+    }
+
+    /**
+     * Supprime un agenda
+     * @param {string} agendaId - ID de l'agenda à supprimer
+     * @returns {Promise<boolean>} true si succès
+     */
+    async deleteAgenda(agendaId) {
+        // Vérification : doit avoir au moins 2 agendas
+        if (this.agendas.length <= 2) {
+            alert('Impossible de supprimer le dernier agenda.\n\nVous devez avoir au moins un agenda actif.');
+            return false;
+        }
+
+        // Confirmation
+        const agenda = this.agendas.find(a => a.id === agendaId);
+        if (!agenda) {
+            alert('Agenda introuvable.');
+            return false;
+        }
+
+        const confirmed = confirm(`Voulez-vous vraiment supprimer l'agenda "${agenda.name}" ?\n\nTous les événements associés seront également supprimés.`);
+        if (!confirmed) return false;
+
+        try {
+            // Appel API pour supprimer
+            await this.agendaService.delete(agendaId);
+
+            // Recharger les agendas
+            await this.loadAgendas();
+
+            // Si l'agenda supprimé était l'agenda courant, sélectionner et charger le premier disponible
+            if (this.currentAgenda && this.currentAgenda.id === agendaId) {
+                if (this.agendas.length > 0) {
+                    // Utilise switchAgenda pour gérer correctement le changement
+                    this.switchAgenda(this.agendas[0]);
+                } else {
+                    this.currentAgenda = null;
+                }
+            }
+
+            // Retirer des agendas superposés
+            this.selectedAgendas = this.selectedAgendas.filter(id => id !== agendaId);
+
+            // Notifier la suppression
+            const event = new CustomEvent('agendaDeleted', {
+                detail: { agendaId }
+            });
+            document.dispatchEvent(event);
+
+            return true;
+        } catch (error) {
+            console.error('Erreur suppression agenda:', error);
+            alert('Impossible de supprimer l\'agenda.');
+            return false;
+        }
     }
 }

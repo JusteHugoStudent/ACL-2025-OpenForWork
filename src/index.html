@@ -142,7 +142,12 @@
                     </button>
                     <div class="agenda-selector">
                         <label>Agenda actuel</label>
-                        <select id="agendaSelect"></select>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <select id="agendaSelect" style="flex: 1;"></select>
+                            <button id="btn-edit-agenda" class="btn-icon" title="Modifier l'agenda">
+                                <i class="uil uil-edit"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="agenda-overlay-section">
                         <button id="agenda-overlay-btn" class="btn-overlay">
@@ -380,6 +385,35 @@
             <div class="modal-buttons">
                 <button id="btn-create-agenda">Créer</button>
                 <button id="btn-cancel-agenda">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Modification d'agenda -->
+    <div id="edit-agenda-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3><i class="uil uil-edit"></i> Modifier l'agenda</h3>
+
+            <div class="modal-body">
+                <label for="edit-agenda-name-input">Nom de l'agenda :</label>
+                <input type="text" id="edit-agenda-name-input" placeholder="Mon agenda" maxlength="15">
+
+                <label for="edit-agenda-color-input">Couleur :</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="edit-agenda-color-input" value="#3498db">
+                    <div class="color-preview" id="edit-color-preview"></div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-apply-edit-agenda">
+                    <i class="uil uil-check"></i>
+                    Appliquer
+                </button>
+                <button id="btn-delete-agenda" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="uil uil-trash-alt"></i>
+                    Supprimer
+                </button>
             </div>
         </div>
     </div>

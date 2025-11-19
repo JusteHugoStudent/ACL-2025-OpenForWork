@@ -66,6 +66,14 @@ class AppUIManager {
             this.openAgendaModal();
         });
 
+        // Bouton pour modifier l'agenda courant
+        const btnEditAgenda = document.getElementById('btn-edit-agenda');
+        if (btnEditAgenda) {
+            btnEditAgenda.addEventListener('click', () => {
+                this.openEditAgendaModal();
+            });
+        }
+
         // Callback pour l'export : déclenche l'export de l'agenda courant
         this.app.headerView.onExportClick(() => {
             this.app.agendaController.exportCurrentAgendaToFile().catch(err => {
@@ -511,6 +519,98 @@ class AppUIManager {
         // Attache les listeners
         btnCreate.addEventListener('click', handleCreate);
         btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', handleClickOutside);
+    }
+
+    /**
+     * Ouvre la modale de modification d'agenda
+     */
+    openEditAgendaModal() {
+        const modal = document.getElementById('edit-agenda-modal');
+        const nameInput = document.getElementById('edit-agenda-name-input');
+        const colorInput = document.getElementById('edit-agenda-color-input');
+        const colorPreview = document.getElementById('edit-color-preview');
+        const btnApply = document.getElementById('btn-apply-edit-agenda');
+        const btnDelete = document.getElementById('btn-delete-agenda');
+
+        if (!modal || !nameInput || !colorInput || !btnApply || !btnDelete) {
+            console.error('Éléments de la modale de modification introuvables');
+            return;
+        }
+
+        // Récupère l'agenda courant
+        const currentAgenda = this.app.agendaController.currentAgenda;
+        if (!currentAgenda) {
+            alert('Aucun agenda sélectionné.');
+            return;
+        }
+
+        // Pré-remplit les champs
+        nameInput.value = currentAgenda.name;
+        colorInput.value = currentAgenda.color || THEME_COLORS.DEFAULT_AGENDA;
+        if (colorPreview) {
+            colorPreview.style.backgroundColor = currentAgenda.color || THEME_COLORS.DEFAULT_AGENDA;
+        }
+
+        // Met à jour la prévisualisation en temps réel
+        colorInput.addEventListener('input', (e) => {
+            if (colorPreview) {
+                colorPreview.style.backgroundColor = e.target.value;
+            }
+        });
+
+        // Affiche la modale
+        modal.classList.remove('hidden');
+
+        // Handler pour appliquer les modifications
+        const handleApply = async () => {
+            const name = nameInput.value.trim();
+            const color = colorInput.value;
+
+            if (!name) {
+                alert('Veuillez saisir un nom pour l\'agenda.');
+                return;
+            }
+
+            const updated = await this.app.agendaController.updateAgenda(
+                currentAgenda.id,
+                name,
+                color
+            );
+
+            if (updated) {
+                closeModal();
+                this.app.reloadAllEvents();
+            }
+        };
+
+        // Handler pour supprimer l'agenda
+        const handleDelete = async () => {
+            const deleted = await this.app.agendaController.deleteAgenda(currentAgenda.id);
+            if (deleted) {
+                closeModal();
+                this.app.reloadAllEvents();
+            }
+        };
+
+        // Gère le clic en dehors
+        const handleClickOutside = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+
+        // Ferme la modale et nettoie les listeners
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            btnApply.removeEventListener('click', handleApply);
+            btnDelete.removeEventListener('click', handleDelete);
+            modal.removeEventListener('click', handleClickOutside);
+        };
+
+        // Attache les listeners
+        btnApply.addEventListener('click', handleApply);
+        btnDelete.addEventListener('click', handleDelete);
         modal.addEventListener('click', handleClickOutside);
     }
 }

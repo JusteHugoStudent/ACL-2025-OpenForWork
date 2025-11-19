@@ -10,6 +10,8 @@
 // - POST /api/login - Connexion utilisateur
 // - GET /api/agendas - Liste des agendas
 // - POST /api/agendas - Créer un agenda
+// - PUT /api/agendas/:id - Modifier un agenda
+// - DELETE /api/agendas/:id - Supprimer un agenda
 // - GET /api/events - Récupérer les événements
 // - POST /api/events - Créer un événement
 // - PUT /api/events/:id - Modifier un événement
