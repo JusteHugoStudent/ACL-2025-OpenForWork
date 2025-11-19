@@ -82,9 +82,7 @@ router.get('/', async (req, res) => {
             start: e.start,
             end: e.end,
             extendedProps: { description: e.description },
-            emoji: e.emoji,
-            color: e.color,
-            backgroundColor: e.color
+            emoji: e.emoji
           }));
         } else {
           eventsByAgenda[id] = [];
@@ -111,8 +109,6 @@ router.get('/', async (req, res) => {
         end: e.end,
         extendedProps: { description: e.description },
         emoji: e.emoji,
-        color: e.color,
-        backgroundColor: e.color,
         recurrence: e.recurrence || { type: 'none' }
       }))
     );
@@ -125,10 +121,10 @@ router.get('/', async (req, res) => {
 
 // Crée un nouvel événement
 // POST /api/events
-// Body: { title, start, end?, description?, emoji?, color?, agendaId? }
+// Body: { title, start, end?, description?, emoji?, agendaId? }
 
 router.post('/', async (req, res) => {
-  const { title, start, end, description, color, emoji, agendaId, recurrence } = req.body;
+  const { title, start, end, description, emoji, agendaId, recurrence } = req.body;
   
   if (!title || !start) {
     return res.status(400).json({ error: 'title and start required' });
@@ -157,7 +153,6 @@ router.post('/', async (req, res) => {
         end: endDate,
         description: description || '',
         emoji: emoji || '📅',
-        color: color || '#ffd700',
         recurrence: recurrence || { type: 'none' }
       });
       createdEvent = await ev.save({ session });
@@ -200,7 +195,6 @@ router.post('/', async (req, res) => {
       end: createdEvent.end,
       description: createdEvent.description,
       emoji: createdEvent.emoji,
-      color: createdEvent.color,
       recurrence: createdEvent.recurrence,
       agendaId
     });
@@ -216,11 +210,11 @@ router.post('/', async (req, res) => {
 
 // Met à jour un événement existant
 // PUT /api/events/:id
-// Body: { title?, start?, end?, description?, emoji?, color?, agendaId? }
+// Body: { title?, start?, end?, description?, emoji?, agendaId? }
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, color, emoji, agendaId, recurrence } = req.body;
+  const { title, start, end, description, emoji, agendaId, recurrence } = req.body;
   
   try {
     const ev = await Event.findById(id);
@@ -276,8 +270,6 @@ router.put('/:id', async (req, res) => {
     if (end) ev.end = newEnd;
     if (description !== undefined) ev.description = description;
     if (emoji) ev.emoji = emoji;
-    if (color) ev.color = color;
-    if (agendaId) ev.agendaId = agendaId;
     if (recurrence !== undefined) ev.recurrence = recurrence;
     
     await ev.save();
@@ -289,9 +281,7 @@ router.put('/:id', async (req, res) => {
       end: ev.end,
       description: ev.description,
       emoji: ev.emoji,
-      color: ev.color,
-      recurrence: ev.recurrence,
-      agendaId: ev.agendaId
+      recurrence: ev.recurrence
     });
   } catch (err) {
     console.error('❌ Erreur PUT event:', err);

@@ -53,7 +53,7 @@ class AgendaControllerFront {
     // options: { setCurrent: true } - si false, ne remplace pas this.currentAgenda (utile pour import)
     // retourne L'agenda créé ou null en cas d'erreur
      
-    async createAgenda(name, color = '#3498db', { setCurrent = true } = {}) {
+    async createAgenda(name, color = THEME_COLORS.DEFAULT_AGENDA, { setCurrent = true } = {}) {
         // Validation avec validationUtils
         if (!isNotEmpty(name)) {
             alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
@@ -332,9 +332,12 @@ class AgendaControllerFront {
                          : [];
 
             if (createNew && this.agendaService && typeof this.agendaService.create === 'function') {
+                // Récupère la couleur de l'agenda exporté, ou utilise la couleur par défaut
+                const agendaColor = data?.agenda?.color || THEME_COLORS.DEFAULT_AGENDA;
+                
                 // Utilise la fonction createAgenda locale pour créer l'agenda,
                 // sans remplacer l'agenda courant (setCurrent: false)
-                const created = await this.createAgenda(name, { setCurrent: false });
+                const created = await this.createAgenda(name, agendaColor, { setCurrent: false });
 
                 // assure un id pour created (si backend ne renvoie pas d'id)
                 let createdId = created && created.id ? created.id : null;
@@ -361,7 +364,6 @@ class AgendaControllerFront {
                             end: ev.end || ev.endDate || ev.finish || null,
                             description: ev.description ?? ev.extendedProps?.description ?? ev.desc ?? '',
                             emoji: ev.emoji ?? ev.icon ?? null,
-                            color: ev.color ?? ev.backgroundColor ?? ev.colour ?? null,
                             recurrence: ev.recurrence ?? { type: 'none' },
                             allDay: ev.allDay ?? ev.all_day ?? undefined,
                             location: ev.location ?? ev.place ?? undefined

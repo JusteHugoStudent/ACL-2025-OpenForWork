@@ -27,7 +27,7 @@ class AgendaService {
     // prend en paramettre color - Couleur de l'agenda (hex)
     // retourne un Agenda créé ou null si erreur
      
-    async create(name, color = '#3498db') {
+    async create(name, color = THEME_COLORS.DEFAULT_AGENDA) {
         try {
             const token = getToken();
             if (!token) throw new Error('Non authentifié');

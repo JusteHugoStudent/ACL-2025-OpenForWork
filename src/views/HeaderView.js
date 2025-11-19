@@ -80,16 +80,35 @@ class HeaderView {
     // prend en paramettre activeAgenda - Agenda actuellement sélectionné
     
     updateAgendaSelector(agendas, activeAgenda) {
-        if (!this.agendaSelect) return; // sécurité
+        if (!this.agendaSelect) return;
 
-        // Met à jour les options
-        this.agendaSelect.innerHTML = agendas.map(a => 
-         ii}
- .nd
-;
+        // Met à jour les options avec couleur
+        this.agendaSelect.innerHTML = agendas.map(a => {
+            const color = a.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (a.color || THEME_COLORS.DEFAULT_AGENDA);
+            return `<option value="${a.id}" style="color: ${color};" ${a.id === activeAgenda?.id ? 'selected' : ''}>${a.name}</option>`;
+        }).join('');
+
+        // Applique la couleur au select lui-même
+        if (activeAgenda) {
+            const selectColor = activeAgenda.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (activeAgenda.color || THEME_COLORS.DEFAULT_AGENDA);
+            this.agendaSelect.style.color = selectColor;
+        }
+
+        // Gère le changement d'agenda
+        this.agendaSelect.onchange = (e) => {
+            const selectedAgenda = agendas.find(a => a.id === e.target.value);
+            if (selectedAgenda && this.onAgendaChange) {
+                const selectColor = selectedAgenda.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (selectedAgenda.color || THEME_COLORS.DEFAULT_AGENDA);
+                this.agendaSelect.style.color = selectColor;
+                this.onAgendaChange(selectedAgenda);
+            }
+        };
+    }
 
     // Attache un callback au bouton "Nouvel agenda"
-    // prend en paramettre un callback - Fonction appelée lors du clic sur le bonewAgendaBtn.addEventListener('click', callback);
+    // prend en paramettre un callback - Fonction appelée lors du clic sur le bouton
+    onAddAgendaClick(callback) {
+        this.newAgendaBtn.addEventListener('click', callback);
     }
 
     // Attache un callback au bouton d'export

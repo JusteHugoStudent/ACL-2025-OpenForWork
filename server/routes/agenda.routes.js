@@ -6,6 +6,7 @@ const express = require('express');
 const User = require('../../src/models/userModel');
 const Agenda = require('../../src/models/agendaModel');
 const authMiddleware = require('../middleware/auth');
+const { THEME_COLORS } = require('../../src/config/constants');
 
 const router = express.Router();
 
@@ -31,14 +32,13 @@ router.get('/', async (req, res) => {
     const agendas = user.agendas.map(ag => ({
       id: ag._id,
       name: ag.name,
-      color: ag.color || '#3498db',
+      color: ag.color || THEME_COLORS.DEFAULT_AGENDA,
       events: ag.events.map(ev => ({
         id: ev._id,
         title: ev.title,
         start: ev.start,
         end: ev.end,
-        description: ev.description,
-        color: ev.color
+        description: ev.description
       }))
     }));
 
@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
     // Crée le nouvel agenda avec couleur personnalisée
     const agenda = new Agenda({ 
       name, 
-      color: color || '#3498db', 
+      color: color || THEME_COLORS.DEFAULT_AGENDA, 
       events: [] 
     });
     await agenda.save();

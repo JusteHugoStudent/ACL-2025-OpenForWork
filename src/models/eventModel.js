@@ -27,7 +27,6 @@ const eventSchema = new mongoose.Schema({
   start: Date,              // Date/heure de début
   end: Date,                // Date/heure de fin
   description: String,      // Description optionnelle
-  color: String,            // Couleur (legacy, remplacé par emoji)
   emoji: String,            // Emoji pour catégoriser l'événement
   
   // Configuration de récurrence

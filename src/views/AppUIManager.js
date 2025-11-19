@@ -169,18 +169,10 @@ class AppUIManager {
         const datePanel = document.getElementById('date-filter-panel');
         const emojiPanel = document.getElementById('emoji-filter-panel');
         
-        console.log('🔍 Init filter events:', {
-            filterChips: filterChips.length,
-            datePanel: !!datePanel,
-            emojiPanel: !!emojiPanel,
-            btnSearch: !!btnSearch
-        });
-        
         filterChips.forEach(chip => {
             chip.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const filterType = chip.dataset.filter;
-                console.log('✨ Chip clicked:', filterType);
                 
                 // Toggle du chip actif
                 const wasActive = chip.classList.contains('active');
@@ -195,16 +187,12 @@ class AppUIManager {
                     chip.classList.add('active');
                     
                     if (filterType === 'date' && datePanel) {
-                        console.log('📅 Opening date panel');
                         // Positionner le panneau sous le chip
                         const rect = chip.getBoundingClientRect();
                         datePanel.style.top = `${rect.bottom + 8}px`;
                         datePanel.style.left = `${rect.left}px`;
                         datePanel.classList.remove('hidden');
                     } else if (filterType === 'emoji' && emojiPanel) {
-                        console.log('😀 Opening emoji panel');
-                        const existingButtons = document.querySelectorAll('.emoji-btn');
-                        console.log('🔍 Existing emoji buttons:', existingButtons.length);
                         // Positionner le panneau sous le chip
                         const rect = chip.getBoundingClientRect();
                         emojiPanel.style.top = `${rect.bottom + 8}px`;
@@ -218,7 +206,6 @@ class AppUIManager {
         // Bouton Rechercher principal - Lance la recherche/filtrage
         if (btnSearch) {
             btnSearch.addEventListener('click', () => {
-                console.log('🔎 Searching...');
                 this.app.handleFilterEvents();
             });
         }
@@ -226,7 +213,6 @@ class AppUIManager {
         // Boutons Appliquer des panneaux - Ferment juste les panneaux
         if (btnFilter) {
             btnFilter.addEventListener('click', () => {
-                console.log('✅ Date filter applied');
                 datePanel?.classList.add('hidden');
                 document.querySelector('[data-filter="date"]')?.classList.remove('active');
             });
@@ -243,7 +229,6 @@ class AppUIManager {
         
         if (btnEmojiFilter) {
             btnEmojiFilter.addEventListener('click', () => {
-                console.log('✅ Emoji filter applied');
                 emojiPanel?.classList.add('hidden');
                 document.querySelector('[data-filter="emoji"]')?.classList.remove('active');
             });
@@ -357,31 +342,24 @@ class AppUIManager {
         if (!container) return;
         
         // Ne recrée pas si déjà créé
-        if (container.children.length > 0) {
-            console.log('✅ Emoji grid already exists');
-            return;
-        }
+        if (container.children.length > 0) return;
         
         const emojis = ['📅', '🎉', '💼', '🎓', '🏥', '🍕', '🏋️', '✈️', '🎵', '📚', '🎮', '🎨'];
         
-        console.log('🎨 Creating emoji grid');
         container.innerHTML = '';
         emojis.forEach(emoji => {
             const btn = document.createElement('button');
             btn.className = 'emoji-btn';
-            btn.type = 'button'; // Important pour éviter la soumission de formulaire
+            btn.type = 'button';
             btn.textContent = emoji;
             btn.dataset.emoji = emoji;
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 btn.classList.toggle('selected');
-                console.log('🎯 Emoji clicked:', emoji, 'Selected:', btn.classList.contains('selected'));
             });
             container.appendChild(btn);
         });
-        
-        console.log('✅ Emoji grid created with', emojis.length, 'emojis');
     }
 
     // Initialise les événements globaux
@@ -484,7 +462,7 @@ class AppUIManager {
 
         // Réinitialise les champs
         nameInput.value = '';
-        colorInput.value = '#3498db';
+        colorInput.value = THEME_COLORS.DEFAULT_AGENDA;
 
         // Affiche la modale
         modal.classList.remove('hidden');
