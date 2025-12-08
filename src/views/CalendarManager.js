@@ -66,7 +66,9 @@ class CalendarManager {
                 if (this.onEventClickCallback) this.onEventClickCallback(info.event);
             },
             dateClick: (info) => {
-                if (this.onDateClickCallback) this.onDateClickCallback(info.dateStr);
+                if (this.onDateClickCallback) {
+                    this.onDateClickCallback(info.dateStr, info.date);
+                }
             },
             eventDrop: (info) => {
                 if (this.onEventChangeCallback) this.onEventChangeCallback(info.event);

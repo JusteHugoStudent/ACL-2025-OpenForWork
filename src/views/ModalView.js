@@ -37,6 +37,9 @@ class ModalView {
         // Initialise l'événement de fermeture en cliquant à l'extérieur
         this.initCloseOnClickOutside();
         
+        // Initialise la fermeture avec la touche Échap
+        this.initEscapeKeyHandler();
+        
         // Gère l'affichage des options de récurrence
         this.initRecurrenceHandlers();
     }
@@ -47,6 +50,15 @@ class ModalView {
     initCloseOnClickOutside() {
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
+                this.close();
+            }
+        });
+    }
+    
+    // Touche Echap pour quitter ajout Event
+    initEscapeKeyHandler() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
                 this.close();
             }
         });
@@ -75,9 +87,10 @@ class ModalView {
 
     // Ouvre la modale en mode AJOUT d'un nouvel événement
     // Réinitialise tous les champs et cache le bouton Supprimer 
-    // prend en paramettre dateStr - Date au format YYYY-MM-DD (optionnel) pour pré-remplir les dates
+    // prend en paramettre dateStr - Date au format YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss (optionnel) pour pré-remplir les dates
+    // prend en paramettre dateObj - Objet Date JavaScript (optionnel) pour les vues avec heure
     
-    openForAdd(dateStr = '') {
+    openForAdd(dateStr = '', dateObj = null) {
         this.modalTitle.textContent = 'Ajouter un événement';
         this.btnDelete.classList.add('hidden');
         
@@ -95,8 +108,18 @@ class ModalView {
         
         // Preremplit les dates si fourni
         if (dateStr) {
-            this.inputStart.value = dateStr + 'T09:00';
-            this.inputEnd.value = dateStr + 'T10:00';
+            // Si dateStr contient déjà l'heure (format complet), l'utiliser directement
+            if (dateStr.includes('T')) {
+                const startDate = new Date(dateStr);
+                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 heure
+                
+                this.inputStart.value = this.formatDateTimeLocal(startDate);
+                this.inputEnd.value = this.formatDateTimeLocal(endDate);
+            } else {
+                // Sinon, ajouter une heure par défaut (vue mensuelle)
+                this.inputStart.value = dateStr + 'T09:00';
+                this.inputEnd.value = dateStr + 'T10:00';
+            }
         } 
         else {
             this.inputStart.value = '';
@@ -104,6 +127,16 @@ class ModalView {
         }
         
         this.modal.classList.remove('hidden');
+    }
+    
+    // Formate un objet Date en chaîne compatible datetime-local (YYYY-MM-DDTHH:mm)
+    formatDateTimeLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
     // Ouvre la modale en mode ÉDITION d'un événement existant

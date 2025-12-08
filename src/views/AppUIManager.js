@@ -383,7 +383,7 @@ class AppUIManager {
      
     setupCalendarCallbacks() {
         // Clic sur une date : ouvre la modale de création
-        this.app.calendarManager.setOnDateClick((dateStr) => {
+        this.app.calendarManager.setOnDateClick((dateStr, dateObj) => {
             const currentAgenda = this.app.agendaController.getCurrentAgenda();
             if (!currentAgenda) {
                 alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
@@ -398,7 +398,7 @@ class AppUIManager {
                 currentAgenda.id
             );
             
-            this.app.modalView.openForAdd(dateStr);
+            this.app.modalView.openForAdd(dateStr, dateObj);
         });
 
         // Clic sur un événement : ouvre la modale d'édition
