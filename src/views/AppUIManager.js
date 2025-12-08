@@ -265,75 +265,85 @@ class AppUIManager {
         });
     }
 
-    // Initialise les événements de contact de l'admin
+    // Gestion du formulaire de contact admin
     initContactEvents() {
         const btnContact = document.getElementById('btn-contact-admin');
         const modalContact = document.getElementById('modal-contact');
         const btnSend = document.getElementById('btn-send-contact');
         const btnCancel = document.getElementById('btn-cancel-contact');
+
+        // Récuperation des champs du formulaire
+        const inputEmail = document.getElementById('contact-email');
         const inputSubject = document.getElementById('contact-subject');
         const inputMessage = document.getElementById('contact-message');
 
-        // Ouvrir la modale
+        // Affiche la modale au clic sur le bouton du menu
         if (btnContact) {
             btnContact.addEventListener('click', () => {
                 modalContact.classList.remove('hidden');
-                inputSubject.focus();
+                inputEmail.focus(); // On met le focus direct sur l'email
             });
         }
 
-        // Fermer la modale (Annuler)
+        // Bouton Annuler, on cache juste la modale
         if (btnCancel) {
             btnCancel.addEventListener('click', () => {
                 modalContact.classList.add('hidden');
-                // Vider les champs si on annule
-                inputSubject.value = '';
-                inputMessage.value = '';
             });
         }
 
-        // Envoyer le message
+        // Bouton Envoyer, gestion de l'envoi via EmailJS
         if (btnSend) {
-            btnSend.addEventListener('click', async () => {
+            btnSend.addEventListener('click', () => {
+                const email = inputEmail.value.trim();
                 const subject = inputSubject.value.trim();
                 const message = inputMessage.value.trim();
 
-                if (!subject || !message) {
-                    alert("Veuillez remplir le sujet et le message.");
+                // On vérifie que tout est rempli sinon on bloque
+                if (!email || !subject || !message) {
+                    alert("Faut tout remplir pour envoyer le message !");
                     return;
                 }
 
-                // faudra implementer la logique
-                // Pour l'instant, on simule l'envoi dans le terminal
-                
-                const btnOriginalText = btnSend.innerText;
-                btnSend.innerText = "Envoi en cours...";
+                // Petit effet visuel pour dire que ça charge
+                const oldText = btnSend.innerText;
+                btnSend.innerText = "Envoi...";
                 btnSend.disabled = true;
 
-                try {
-                    console.log(`📨 Envoi message à l'admin :\nSujet: ${subject}\nMessage: ${message}`);
-                    
-                    // Simulation d'attente réseau (1 seconde)
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                // Parametres à envoyer au template EmailJS
+                // les noms (from_name, etc) doivent correspondre à ceux dans le template sur le site
+                const params = {
+                    from_name: email,
+                    to_email: "admulacl8@outlook.com", // Mail de l'admin
+                    subject: subject,
+                    message: message
+                };
 
-                    alert("✅ Message envoyé à l'administrateur !");
-                    
-                    // Fermer et nettoyer
-                    modalContact.classList.add('hidden');
-                    inputSubject.value = '';
-                    inputMessage.value = '';
-
-                } catch (error) {
-                    alert("Erreur lors de l'envoi.");
-                    console.error(error);
-                } finally {
-                    btnSend.innerText = btnOriginalText;
-                    btnSend.disabled = false;
-                }
+                // Envoi via le service
+                // Remplacer les ID par ceux du dashboard EmailJS
+                emailjs.send('service_nemf0u3', 'template_xmze3ks', params)
+                    .then(() => {
+                        alert("C'est envoyé ! L'admin a reçu le mail.");
+                        modalContact.classList.add('hidden');
+                        
+                        // On vide les champs pour la prochaine fois
+                        inputEmail.value = '';
+                        inputSubject.value = '';
+                        inputMessage.value = '';
+                    })
+                    .catch((err) => {
+                        console.error('Erreur envoi mail:', err);
+                        alert("Oups, erreur lors de l'envoi...");
+                    })
+                    .finally(() => {
+                        // on remet toujoursn le bouton comme avant
+                        btnSend.innerText = oldText;
+                        btnSend.disabled = false;
+                    });
             });
         }
-        
-        // Fermer si on clique en dehors de la modale (sur le fond gris)
+
+        // Fermeture si on clique sur le fond gris
         if (modalContact) {
             modalContact.addEventListener('click', (e) => {
                 if (e.target === modalContact) {

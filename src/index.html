@@ -349,17 +349,19 @@
 
     <div id="modal-contact" class="modal hidden">
         <div class="modal-content">
-            <h3>Contacter l'Administrateur</h3>
-            <div class="modal-body">
+            <h3>Contacter l'Admin</h3> <div class="modal-body">
                 <p style="color: var(--text-secondary); margin-bottom: 15px;">
-                    Une question ? Un bug ? Envoyez un message directement à l'admin
+                    Un souci ? Laisse ton mail et ton message, on te recontactera.
                 </p>
 
-                <label for="contact-subject">Sujet :</label>
-                <input type="text" id="contact-subject" class="form-style" placeholder="Ex: Problème de synchronisation">
+                <label for="contact-email">Ton email :</label>
+                <input type="email" id="contact-email" class="form-style" placeholder="email@exemple.com">
+
+                <label for="contact-subject" style="margin-top: 10px;">Sujet :</label>
+                <input type="text" id="contact-subject" class="form-style" placeholder="Ex: Bug affichage">
 
                 <label for="contact-message" style="margin-top: 10px;">Message :</label>
-                <textarea id="contact-message" class="form-style" rows="4" placeholder="Décrivez votre demande..."></textarea>
+                <textarea id="contact-message" class="form-style" rows="4" placeholder="Ton message..."></textarea>
             </div>
 
             <div class="modal-buttons">
@@ -423,6 +425,14 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // initialisation avec la clé publique (on la recupere sur le site EmailJS)
+          emailjs.init("bV7OebRLiRnrrhm8a");
+       })();
+    </script>
+
     <!-- 2. Configuration (constantes) -->
     <script src="config/constants.js"></script>
     
