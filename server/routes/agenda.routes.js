@@ -3,10 +3,11 @@
 // Toutes les routes nécessitent une authentification (authMiddleware).
 
 const express = require('express');
-const User = require('../../src/models/userModel');
-const Agenda = require('../../src/models/agendaModel');
+const User = require('../models/userModel');
+const Agenda = require('../models/agendaModel');
 const authMiddleware = require('../middleware/auth');
-const { THEME_COLORS } = require('../../src/config/constants');
+const { THEME_COLORS } = require('../config/constants');
+const { validateAgendaMiddleware } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -50,17 +51,13 @@ router.get('/', async (req, res) => {
 });
 
 // Crée un nouvel agenda pour l'utilisateur
-// POST /api/agendas
+// POST /api/agendas (avec validation)
 // Headers: Authorization: Bearer <token>
 // Body: { name: string }
 
-router.post('/', async (req, res) => {
+router.post('/', validateAgendaMiddleware, async (req, res) => {
   try {
     const { name, color } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ error: 'missing name' });
-    }
 
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -68,10 +65,10 @@ router.post('/', async (req, res) => {
     }
 
     // Crée le nouvel agenda avec couleur personnalisée
-    const agenda = new Agenda({ 
-      name, 
-      color: color || THEME_COLORS.DEFAULT_AGENDA, 
-      events: [] 
+    const agenda = new Agenda({
+      name,
+      color: color || THEME_COLORS.DEFAULT_AGENDA,
+      events: []
     });
     await agenda.save();
 
@@ -79,11 +76,11 @@ router.post('/', async (req, res) => {
     user.agendas.push(agenda._id);
     await user.save();
 
-    return res.status(201).json({ 
-      id: agenda._id, 
+    return res.status(201).json({
+      id: agenda._id,
       name: agenda.name,
       color: agenda.color,
-      events: [] 
+      events: []
     });
   } catch (err) {
     console.error('❌ Erreur POST agenda:', err);
@@ -150,7 +147,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     // Supprime tous les événements de cet agenda
-    const Event = require('../../src/models/eventModel');
+    const Event = require('../models/eventModel');
     await Event.deleteMany({ _id: { $in: agenda.events } });
 
     // Retire l'agenda de l'utilisateur

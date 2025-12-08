@@ -5,10 +5,21 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../../src/models/userModel');
-const Agenda = require('../../src/models/agendaModel');
+const User = require('../models/userModel');
+const Agenda = require('../models/agendaModel');
+const { authLimiter } = require('../middleware/rateLimit');
+const { validateCredentialsMiddleware } = require('../middleware/validation');
 
 const router = express.Router();
+
+// Vérification que JWT_SECRET est défini
+if (!process.env.JWT_SECRET) {
+  console.error('❌ ERREUR CRITIQUE: JWT_SECRET non défini dans les variables d\'environnement');
+  console.error('   Créez un fichier .env avec: JWT_SECRET=votre-secret-256-bits');
+  process.exit(1);
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Route de santé - Vérifie que le serveur fonctionne
 // GET /api/health
@@ -18,15 +29,11 @@ router.get('/health', (req, res) => {
 });
 
 // Route d'inscription - Crée un nouvel utilisateur
-// POST /api/register
+// POST /api/register (protégé par rate limiting + validation)
 // Body: { username: string, password: string }
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, validateCredentialsMiddleware, async (req, res) => {
   const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(400).json({ error: 'username and password required' });
-  }
 
   try {
     // Vérifie si l'utilisateur existe déjà
@@ -65,16 +72,12 @@ router.post('/register', async (req, res) => {
 
 
 // Route de connexion - Authentifie un utilisateur existant
-// POST /api/login
+// POST /api/login (protégé par rate limiting + validation)
 // Body: { username: string, password: string }
 // Response: { token: string, username: string }
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, validateCredentialsMiddleware, async (req, res) => {
   const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(400).json({ error: 'username and password required' });
-  }
 
   try {
     // Trouve l'utilisateur
@@ -92,7 +95,7 @@ router.post('/login', async (req, res) => {
     // Génére le token JWT
     const token = jwt.sign(
       { id: user._id, username: user.username },
-      process.env.JWT_SECRET || 'dev-secret',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 

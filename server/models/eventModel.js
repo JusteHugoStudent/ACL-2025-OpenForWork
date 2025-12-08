@@ -2,7 +2,7 @@
 // Définit le schéma MongoDB pour les événements du calendrier
 // Chaque événement a un titre, des dates de début/fin,
 // une description optionnelle, et un emoji pour la catégorisation
- 
+
 
 const mongoose = require('mongoose');
 
@@ -32,13 +32,19 @@ const eventSchema = new mongoose.Schema({
   },
   description: String,      // Description optionnelle
   emoji: String,            // Emoji pour catégoriser l'événement
-  
+
   // Configuration de récurrence
   recurrence: recurrenceSchema
-}, { 
-  strict: false,
-  minimize: false 
+}, {
+  strict: true,             // SÉCURITÉ: rejeter les champs non définis
+  minimize: false
 });
+
+// Index pour optimiser les requêtes temporelles (filtrage par dates)
+eventSchema.index({ start: 1, end: 1 });
+// Index pour la recherche textuelle sur le titre
+eventSchema.index({ title: 'text' });
 
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 module.exports = Event;
+

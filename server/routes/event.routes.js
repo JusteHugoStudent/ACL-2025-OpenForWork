@@ -4,10 +4,11 @@
 
 const express = require('express');
 const mongoose = require('mongoose');
-const User = require('../../src/models/userModel');
-const Agenda = require('../../src/models/agendaModel');
-const Event = require('../../src/models/eventModel');
+const User = require('../models/userModel');
+const Agenda = require('../models/agendaModel');
+const Event = require('../models/eventModel');
 const authMiddleware = require('../middleware/auth');
+const { validateEventMiddleware } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -44,7 +45,7 @@ router.get('/', async (req, res) => {
       const now = new Date();
       const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
       const twoMonthsLater = new Date(now.getFullYear(), now.getMonth() + 3, 0);
-      
+
       dateFilter = {
         $or: [
           { start: { $gte: twoMonthsAgo, $lte: twoMonthsLater } },
@@ -69,19 +70,19 @@ router.get('/', async (req, res) => {
 
     // Gestion des agendas multiples (mix)
     const normalizedAgendaIds = agendaIds ? (Array.isArray(agendaIds) ? agendaIds : [agendaIds]) : null;
-    
+
     if (normalizedAgendaIds && normalizedAgendaIds.length > 0) {
       const eventsByAgenda = {};
-      
+
       normalizedAgendaIds.forEach(id => {
         const agenda = user.agendas.find(a => String(a._id) === id);
         if (agenda && agenda.events && Array.isArray(agenda.events)) {
           eventsByAgenda[id] = agenda.events.map(e => {
             const isAllDay = e.allDay || false;
-            
+
             // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
             let startValue, endValue;
-            
+
             if (isAllDay) {
               const startDate = new Date(e.start);
               const endDate = new Date(e.end);
@@ -91,7 +92,7 @@ router.get('/', async (req, res) => {
               startValue = e.start;
               endValue = e.end;
             }
-            
+
             return {
               id: e._id,
               title: e.title,
@@ -122,11 +123,11 @@ router.get('/', async (req, res) => {
     return res.json(
       events.map(e => {
         const isAllDay = e.allDay || false;
-        
+
         // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
         // Pour les événements avec heures, retourner l'ISO complet
         let startValue, endValue;
-        
+
         if (isAllDay) {
           const startDate = new Date(e.start);
           const endDate = new Date(e.end);
@@ -136,7 +137,7 @@ router.get('/', async (req, res) => {
           startValue = e.start;
           endValue = e.end;
         }
-        
+
         return {
           id: e._id,
           title: e.title,
@@ -157,19 +158,15 @@ router.get('/', async (req, res) => {
 });
 
 // Crée un nouvel événement
-// POST /api/events
+// POST /api/events (avec validation)
 // Body: { title, start, end?, description?, emoji?, agendaId?, allDay? }
 
-router.post('/', async (req, res) => {
+router.post('/', validateEventMiddleware, async (req, res) => {
   const { title, start, end, description, emoji, agendaId, recurrence, allDay } = req.body;
-  
-  if (!title || !start) {
-    return res.status(400).json({ error: 'title and start required' });
-  }
 
   // Gestion des dates selon le mode (journée entière ou avec heures)
   let startDate, endDate;
-  
+
   if (allDay) {
     // Pour journée entière, utiliser midi UTC pour éviter les décalages de timezone
     startDate = new Date(start + 'T12:00:00.000Z');
@@ -178,10 +175,10 @@ router.post('/', async (req, res) => {
     startDate = new Date(start);
     endDate = end ? new Date(end) : new Date(start);
   }
-  
+
   if (endDate < startDate) {
-    return res.status(400).json({ 
-      error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' 
+    return res.status(400).json({
+      error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début'
     });
   }
 
@@ -237,7 +234,7 @@ router.post('/', async (req, res) => {
     // Formater les dates pour la réponse
     const isAllDay = createdEvent.allDay || false;
     let startValue, endValue;
-    
+
     if (isAllDay) {
       const startDate = new Date(createdEvent.start);
       const endDate = new Date(createdEvent.end);
@@ -276,16 +273,30 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
   const { title, start, end, description, emoji, agendaId, recurrence, allDay } = req.body;
-  
+
   try {
     const ev = await Event.findById(id);
     if (!ev) {
       return res.status(404).json({ error: 'event not found' });
     }
-    
+
+    // SÉCURITÉ: Vérifier que l'événement appartient à un agenda de l'utilisateur
+    const user = await User.findById(req.user.id).populate('agendas');
+    if (!user) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    const ownerAgenda = user.agendas.find(agenda =>
+      agenda.events.some(eventId => eventId.toString() === id)
+    );
+
+    if (!ownerAgenda) {
+      return res.status(403).json({ error: 'unauthorized: you do not own this event' });
+    }
+
     // Gestion des dates selon le mode (journée entière ou avec heures)
     let newStart, newEnd;
-    
+
     if (allDay !== undefined && allDay) {
       // Pour journée entière, utiliser midi UTC pour éviter les décalages de timezone
       newStart = start ? new Date(start + 'T12:00:00.000Z') : ev.start;
@@ -304,37 +315,37 @@ router.put('/:id', async (req, res) => {
         newEnd = end ? new Date(end) : ev.end;
       }
     }
-    
+
     if (newEnd < newStart) {
-      return res.status(400).json({ 
-        error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début' 
+      return res.status(400).json({
+        error: 'Erreur horaire : la date de fin ne peut pas être antérieure à la date de début'
       });
     }
-    
+
     // Si changement d'agenda, gérer le transfert
     if (agendaId) {
       // Trouver l'agenda actuel de l'événement
       const currentAgenda = await Agenda.findOne({ events: ev._id });
       const currentAgendaId = currentAgenda ? String(currentAgenda._id) : null;
-      
+
       if (agendaId !== currentAgendaId) {
         // Vérifier que le nouvel agenda existe et appartient à l'utilisateur
         const newAgenda = await Agenda.findById(agendaId);
         if (!newAgenda) {
           return res.status(404).json({ error: 'new agenda not found' });
         }
-        
+
         const user = await User.findById(req.user.id);
         if (!user || !user.agendas.includes(newAgenda._id)) {
           return res.status(403).json({ error: 'unauthorized access to this agenda' });
         }
-        
+
         // Retirer l'événement de TOUS les agendas qui le contiennent
         await Agenda.updateMany(
           { events: ev._id },
           { $pull: { events: ev._id } }
         );
-        
+
         // Ajouter l'événement au nouvel agenda (si pas déjà présent)
         if (!newAgenda.events.includes(ev._id)) {
           newAgenda.events.push(ev._id);
@@ -342,7 +353,7 @@ router.put('/:id', async (req, res) => {
         }
       }
     }
-    
+
     // Mettre à jour les champs fournis
     if (title) ev.title = title;
     if (start) ev.start = newStart;
@@ -351,13 +362,13 @@ router.put('/:id', async (req, res) => {
     if (description !== undefined) ev.description = description;
     if (emoji) ev.emoji = emoji;
     if (recurrence !== undefined) ev.recurrence = recurrence;
-    
+
     await ev.save();
-    
+
     // Formater les dates pour la réponse
     const isAllDay = ev.allDay || false;
     let startValue, endValue;
-    
+
     if (isAllDay) {
       const startDate = new Date(ev.start);
       const endDate = new Date(ev.end);
@@ -367,7 +378,7 @@ router.put('/:id', async (req, res) => {
       startValue = ev.start;
       endValue = ev.end;
     }
-    
+
     return res.json({
       id: ev._id,
       title: ev.title,
@@ -389,19 +400,33 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const id = req.params.id;
-  
+
   try {
     const ev = await Event.findById(id);
     if (!ev) {
       return res.status(404).json({ error: 'event not found' });
     }
-    
+
+    // SÉCURITÉ: Vérifier que l'événement appartient à un agenda de l'utilisateur
+    const user = await User.findById(req.user.id).populate('agendas');
+    if (!user) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    const ownerAgenda = user.agendas.find(agenda =>
+      agenda.events.some(eventId => eventId.toString() === id)
+    );
+
+    if (!ownerAgenda) {
+      return res.status(403).json({ error: 'unauthorized: you do not own this event' });
+    }
+
     // Retire l'événement de tous les agendas
     await Agenda.updateMany({ events: id }, { $pull: { events: id } });
-    
+
     // Supprime l'événement
     await ev.deleteOne();
-    
+
     return res.json({ message: 'deleted' });
   } catch (err) {
     console.error('❌ Erreur DELETE event:', err);
