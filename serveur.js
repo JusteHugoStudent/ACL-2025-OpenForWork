@@ -4,7 +4,7 @@
 // - Configuration séparée dans server/config/
 // - Middleware d'authentification dans server/middleware/
 // - Routes organisées par domaine dans server/routes/
- 
+
 // Routes disponibles :
 // - POST /api/register - Inscription utilisateur
 // - POST /api/login - Connexion utilisateur
@@ -31,7 +31,7 @@ const eventRoutes = require('./server/routes/event.routes');
 
 // Initialisation Express
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // Middlewares globaux
 app.use(express.json());
