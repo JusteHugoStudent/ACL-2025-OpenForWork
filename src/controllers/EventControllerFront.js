@@ -19,7 +19,7 @@ class EventControllerFront {
 
     
     // Crée un nouvel événement sur le serveur et l'ajoute au calendrier
-    // prend en paramettre eventData - Données de l'événement { title, start, end, description, emoji, agendaId }
+    // prend en paramettre eventData - Données de l'événement { title, start, end, description, emoji, agendaId, allDay }
     // retourne l'événement créé ou null en cas d'erreur
     
     async createEvent(eventData) {
@@ -34,8 +34,9 @@ class EventControllerFront {
         try {
             const body = {
                 title: eventData.title,
-                start: eventData.start ? (eventData.start instanceof Date ? eventData.start.toISOString() : new Date(eventData.start).toISOString()) : undefined,
-                end: eventData.end ? (eventData.end instanceof Date ? eventData.end.toISOString() : new Date(eventData.end).toISOString()) : undefined,
+                start: eventData.start,
+                end: eventData.end || eventData.start,
+                allDay: eventData.allDay || false,
                 description: eventData.description,
                 emoji: eventData.emoji,
                 agendaId: eventData.agendaId,
@@ -54,7 +55,7 @@ class EventControllerFront {
 
     /**
     // Met à jour un événement existant sur le serveur
-    // prend en paramettre eventData - Données de l'événement { id, title, start, end, description, emoji }
+    // prend en paramettre eventData - Données de l'événement { id, title, start, end, description, emoji, allDay }
     // retourne true si la mise à jour a réussi
      */
     async updateEvent(eventData) {
@@ -63,22 +64,21 @@ class EventControllerFront {
         
         try {
             const id = eventData.id;
+            
             const body = {
                 title: eventData.title,
-                start: eventData.start ? (eventData.start instanceof Date ? eventData.start.toISOString() : new Date(eventData.start).toISOString()) : undefined,
-                end: eventData.end ? (eventData.end instanceof Date ? eventData.end.toISOString() : new Date(eventData.end).toISOString()) : undefined,
+                start: eventData.start,
+                end: eventData.end || eventData.start,
+                allDay: eventData.allDay !== undefined ? eventData.allDay : false,
                 description: eventData.description,
                 emoji: eventData.emoji,
-                agendaId: eventData.agendaId, // Inclue l'agenda pour permettre le changement d'agenda
+                agendaId: eventData.agendaId,
                 recurrence: eventData.recurrence || { type: 'none' }
             };
-            
-            console.log(`🔄 Mise à jour événement ${id}:`, body);
             
             // Utilise EventService pour mettre à jour l'événement
             await this.eventService.update(id, body);
             
-            console.log(`✅ Événement ${id} mis à jour avec succès`);
             return true;
         } catch (err) {
             console.error('Update event failed:', err);
@@ -192,11 +192,15 @@ class EventControllerFront {
             ? `${agendaId}-${eventId}-${occurrenceIndex}`
             : `${agendaId}-${eventId}`;
         
+        // Détecte si c'est un événement journée entière
+        const isAllDay = ev.allDay || false;
+        
         this.calendarManager.addEvent({
             id: compositeId,
             title: fullTitle,
             start: ev.start,
             end: ev.end,
+            allDay: isAllDay,  // Propriété FullCalendar pour afficher en haut du jour
             backgroundColor: backgroundColor,
             borderColor: backgroundColor,
             extendedProps: {
@@ -205,6 +209,7 @@ class EventControllerFront {
                 originalTitle: ev.title,
                 description: ev.description || ev.extendedProps?.description || '',
                 emoji: ev.emoji || '📅',
+                allDay: isAllDay,
                 isRecurring: ev.isRecurring || false,
                 originalEventId: eventId,
                 originalStart: ev.originalStart,
@@ -254,12 +259,23 @@ class EventControllerFront {
                 const agendaName = agenda ? agenda.name : 'Agenda';
                 const agendaColor = agenda?.name === HOLIDAYS_AGENDA_NAME ? THEME_COLORS.JOURS_FERIES : (agenda?.color || THEME_COLORS.DEFAULT_AGENDA);
                 
-                // Ajoute une référence à l'agenda pour l'affichage
+                // Traite chaque événement et génère les occurrences si récurrent
                 events.forEach(ev => {
                     ev._agendaName = agendaName;
                     ev._agendaColor = agendaColor;
+                    
+                    // Génère les occurrences pour les événements récurrents
+                    if (ev.recurrence && ev.recurrence.type !== 'none') {
+                        const occurrences = generateRecurringOccurrences(ev, startDate, endDate);
+                        occurrences.forEach(occ => {
+                            occ._agendaName = agendaName;
+                            occ._agendaColor = agendaColor;
+                        });
+                        allEvents.push(...occurrences);
+                    } else {
+                        allEvents.push(ev);
+                    }
                 });
-                allEvents.push(...events);
             }
 
             // Filtre par dates

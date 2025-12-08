@@ -435,10 +435,37 @@ class AppUIManager {
                 : event.end;
             
             // Prépare les données pour la modale
+            const isAllDay = event.allDay || event.extendedProps.allDay || false;
+            
+            let startValue, endValue;
+            
+            if (isAllDay) {
+                // Pour les événements all-day, extraire la date LOCALE (pas UTC!)
+                // Car FullCalendar renvoie la date en heure locale (ex: Mon Dec 08 2025 00:00:00 GMT+0100)
+                const startDate = typeof eventStart === 'string' ? new Date(eventStart) : eventStart;
+                const endDate = eventEnd ? (typeof eventEnd === 'string' ? new Date(eventEnd) : eventEnd) : startDate;
+                
+                // Extraire année/mois/jour en heure LOCALE
+                const startYear = startDate.getFullYear();
+                const startMonth = String(startDate.getMonth() + 1).padStart(2, '0');
+                const startDay = String(startDate.getDate()).padStart(2, '0');
+                startValue = `${startYear}-${startMonth}-${startDay}`;
+                
+                const endYear = endDate.getFullYear();
+                const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+                const endDay = String(endDate.getDate()).padStart(2, '0');
+                endValue = `${endYear}-${endMonth}-${endDay}`;
+            } else {
+                // Pour les événements avec heures, utiliser le format datetime-local
+                startValue = formatDateTimeLocal(new Date(eventStart));
+                endValue = eventEnd ? formatDateTimeLocal(new Date(eventEnd)) : '';
+            }
+            
             const eventData = {
                 title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
-                start: formatDateTimeLocal(new Date(eventStart)),
-                end: eventEnd ? formatDateTimeLocal(new Date(eventEnd)) : '',
+                start: startValue,
+                end: endValue,
+                allDay: isAllDay,
                 description: event.extendedProps.description || '',
                 emoji: event.extendedProps.emoji || '📅',
                 agendaId: eventAgendaId,
@@ -469,6 +496,7 @@ class AppUIManager {
                 title: event.extendedProps.originalTitle || event.title,
                 start: event.start,
                 end: event.end,
+                allDay: event.allDay || event.extendedProps.allDay || false,
                 description: event.extendedProps.description,
                 emoji: event.extendedProps.emoji,
                 agendaId: event.extendedProps.agendaId
@@ -489,12 +517,24 @@ class AppUIManager {
         const modal = document.getElementById('agenda-modal');
         const nameInput = document.getElementById('agenda-name-input');
         const colorInput = document.getElementById('agenda-color-input');
+        const colorPreview = document.getElementById('create-color-preview');
         const btnCreate = document.getElementById('btn-create-agenda');
         const btnCancel = document.getElementById('btn-cancel-agenda');
 
         // Réinitialise les champs
         nameInput.value = '';
         colorInput.value = THEME_COLORS.DEFAULT_AGENDA;
+        if (colorPreview) {
+            colorPreview.style.backgroundColor = THEME_COLORS.DEFAULT_AGENDA;
+        }
+
+        // Met à jour la prévisualisation en temps réel
+        const handleColorChange = (e) => {
+            if (colorPreview) {
+                colorPreview.style.backgroundColor = e.target.value;
+            }
+        };
+        colorInput.addEventListener('input', handleColorChange);
 
         // Affiche la modale
         modal.classList.remove('hidden');
@@ -530,6 +570,7 @@ class AppUIManager {
             btnCreate.removeEventListener('click', handleCreate);
             btnCancel.removeEventListener('click', closeModal);
             modal.removeEventListener('click', handleClickOutside);
+            colorInput.removeEventListener('input', handleColorChange);
         };
 
         // Attache les listeners

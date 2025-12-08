@@ -17,8 +17,13 @@ class ModalView {
         
         // Champs du formulaire
         this.inputTitle = document.getElementById('input-title');
+        this.inputAllDay = document.getElementById('input-allday');
         this.inputStart = document.getElementById('input-start');
         this.inputEnd = document.getElementById('input-end');
+        this.inputStartDate = document.getElementById('input-start-date');
+        this.inputEndDate = document.getElementById('input-end-date');
+        this.timeInputs = document.getElementById('time-inputs');
+        this.dateOnlyInputs = document.getElementById('date-only-inputs');
         this.inputDescription = document.getElementById('input-description');
         this.inputAgenda = document.getElementById('input-agenda');
         this.inputColor = document.getElementById('input-color');
@@ -42,6 +47,43 @@ class ModalView {
         
         // Gère l'affichage des options de récurrence
         this.initRecurrenceHandlers();
+        
+        // Gère le toggle journée entière
+        this.initAllDayHandler();
+    }
+
+    // Gère le changement de la checkbox "Journée entière"
+    initAllDayHandler() {
+        this.inputAllDay.addEventListener('change', () => {
+            this.toggleAllDayMode(this.inputAllDay.checked);
+        });
+    }
+
+    // Bascule entre le mode journée entière et le mode avec heures
+    toggleAllDayMode(isAllDay) {
+        if (isAllDay) {
+            this.timeInputs.classList.add('hidden');
+            this.dateOnlyInputs.classList.remove('hidden');
+            
+            // Copie les dates si elles existent (sans les heures)
+            if (this.inputStart.value) {
+                this.inputStartDate.value = this.inputStart.value.split('T')[0];
+            }
+            if (this.inputEnd.value) {
+                this.inputEndDate.value = this.inputEnd.value.split('T')[0];
+            }
+        } else {
+            this.timeInputs.classList.remove('hidden');
+            this.dateOnlyInputs.classList.add('hidden');
+            
+            // Copie les dates avec heures par défaut
+            if (this.inputStartDate.value) {
+                this.inputStart.value = this.inputStartDate.value + 'T09:00';
+            }
+            if (this.inputEndDate.value) {
+                this.inputEnd.value = this.inputEndDate.value + 'T10:00';
+            }
+        }
     }
 
     // Permet de fermer la modale en cliquant à l'extérieur (sur le fond sombre)
@@ -99,6 +141,10 @@ class ModalView {
         this.inputDescription.value = '';
         this.inputColor.value = '📅';
         
+        // Réinitialise la checkbox journée entière
+        this.inputAllDay.checked = false;
+        this.toggleAllDayMode(false);
+        
         // Réinitialise la récurrence
         this.inputRecurrence.value = 'none';
         this.inputRecurrenceEnd.value = '';
@@ -115,15 +161,21 @@ class ModalView {
                 
                 this.inputStart.value = this.formatDateTimeLocal(startDate);
                 this.inputEnd.value = this.formatDateTimeLocal(endDate);
+                this.inputStartDate.value = dateStr.split('T')[0];
+                this.inputEndDate.value = dateStr.split('T')[0];
             } else {
                 // Sinon, ajouter une heure par défaut (vue mensuelle)
                 this.inputStart.value = dateStr + 'T09:00';
                 this.inputEnd.value = dateStr + 'T10:00';
+                this.inputStartDate.value = dateStr;
+                this.inputEndDate.value = dateStr;
             }
         } 
         else {
             this.inputStart.value = '';
             this.inputEnd.value = '';
+            this.inputStartDate.value = '';
+            this.inputEndDate.value = '';
         }
         
         this.modal.classList.remove('hidden');
@@ -150,10 +202,33 @@ class ModalView {
         
         // Remplit les champs
         this.inputTitle.value = eventData.title;
-        this.inputStart.value = eventData.start;
-        this.inputEnd.value = eventData.end;
         this.inputDescription.value = eventData.description || '';
         this.inputColor.value = eventData.emoji || '📅';
+        
+        // Gère le mode journée entière
+        const isAllDay = eventData.allDay || false;
+        this.inputAllDay.checked = isAllDay;
+        this.toggleAllDayMode(isAllDay);
+        
+        if (isAllDay) {
+            // Pour les événements journée entière, les dates sont au format YYYY-MM-DD
+            // Extraire la partie date (avant le T s'il y a, sinon prendre tel quel)
+            const startDateOnly = eventData.start.includes('T') ? eventData.start.split('T')[0] : eventData.start;
+            const endDateOnly = eventData.end ? (eventData.end.includes('T') ? eventData.end.split('T')[0] : eventData.end) : startDateOnly;
+            
+            this.inputStartDate.value = startDateOnly;
+            this.inputEndDate.value = endDateOnly;
+            
+            // Remplir aussi les champs datetime pour la cohérence (ajouter une heure par défaut)
+            this.inputStart.value = startDateOnly + 'T09:00';
+            this.inputEnd.value = endDateOnly + 'T10:00';
+        } else {
+            this.inputStart.value = eventData.start;
+            this.inputEnd.value = eventData.end;
+            // Remplir aussi les champs date-only
+            this.inputStartDate.value = eventData.start.split('T')[0];
+            this.inputEndDate.value = eventData.end ? eventData.end.split('T')[0] : '';
+        }
         
         // Remplit les champs de récurrence
         if (eventData.recurrence) {
@@ -195,15 +270,50 @@ class ModalView {
     }
 
     // Récupère toutes les données saisies dans le formulaire 
-    // retourne un objet contenant {title, start, end, description, agendaId, emoji, recurrence}
+    // retourne un objet contenant {title, start, end, description, agendaId, emoji, allDay, recurrence}
      
+    // Convertit une date datetime-local en ISO string avec timezone local
+    formatDateTimeLocalToISO(datetimeLocal) {
+        const date = new Date(datetimeLocal);
+        
+        // Obtenir l'offset timezone en minutes
+        const offset = date.getTimezoneOffset();
+        const offsetHours = Math.abs(Math.floor(offset / 60));
+        const offsetMinutes = Math.abs(offset % 60);
+        const offsetSign = offset <= 0 ? '+' : '-';
+        
+        // Construire l'ISO string avec timezone
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = '00';
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+    }
+    
     getFormData() {
         const recurrenceType = this.inputRecurrence.value;
+        const isAllDay = this.inputAllDay.checked;
+        
+        let startValue, endValue;
+        
+        if (isAllDay) {
+            // Pour journée entière, envoyer seulement la date (YYYY-MM-DD)
+            startValue = this.inputStartDate.value;
+            endValue = this.inputEndDate.value || this.inputStartDate.value;
+        } else {
+            // Pour les événements avec heures, envoyer ISO avec timezone
+            startValue = this.formatDateTimeLocalToISO(this.inputStart.value);
+            endValue = this.formatDateTimeLocalToISO(this.inputEnd.value);
+        }
         
         const data = {
             title: this.inputTitle.value.trim(),
-            start: this.inputStart.value,
-            end: this.inputEnd.value,
+            start: startValue,
+            end: endValue,
+            allDay: isAllDay,
             description: this.inputDescription.value.trim(),
             agendaId: this.inputAgenda.value,
             emoji: this.inputColor.value

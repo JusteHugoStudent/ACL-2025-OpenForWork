@@ -299,3 +299,92 @@
 .fc-daygrid-event-dot {
     display: none !important;
 }
+
+/* ========================================
+   ALL-DAY EVENTS (ÉVÉNEMENTS JOURNÉE ENTIÈRE)
+   ======================================== */
+
+/* Zone all-day dans les vues semaine et jour */
+.fc .fc-timegrid-slot-label.fc-scrollgrid-shrink {
+    background: var(--bg-card) !important;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    border-color: var(--border) !important;
+}
+
+.fc .fc-timegrid-divider {
+    background: var(--border) !important;
+}
+
+.fc .fc-timegrid-axis {
+    background: var(--bg-card) !important;
+}
+
+/* Ligne all-day en haut des vues semaine/jour */
+.fc .fc-timegrid-body .fc-timegrid-slots {
+    background: var(--bg-dark) !important;
+}
+
+.fc .fc-col-header {
+    background: var(--bg-card) !important;
+}
+
+/* Événements all-day dans la grille mensuelle */
+.fc-daygrid-event.fc-daygrid-block-event {
+    background: rgba(255, 255, 255, 0.1) !important;
+    margin: 2px 4px !important;
+    padding: 4px 8px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+}
+
+.fc-daygrid-event.fc-daygrid-block-event:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-1px);
+}
+
+/* Événements all-day dans les vues semaine/jour */
+.fc-timegrid-event.fc-v-event.fc-event-start.fc-event-end {
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+}
+
+/* Plus d'événements link */
+.fc-daygrid-more-link {
+    color: var(--primary) !important;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 2px 4px;
+    background: rgba(6, 182, 212, 0.1);
+    border-radius: 4px;
+    margin: 2px;
+}
+
+.fc-daygrid-more-link:hover {
+    background: rgba(6, 182, 212, 0.2);
+    text-decoration: none;
+}
+
+/* Popover pour les événements cachés */
+.fc-popover {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.fc-popover-header {
+    background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--border) !important;
+    font-weight: 600;
+    padding: 8px 12px !important;
+}
+
+.fc-popover-body {
+    padding: 8px !important;
+}
+

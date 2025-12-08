@@ -21,7 +21,14 @@ function generateRecurringOccurrences(event, rangeStart, rangeEnd) {
     const duration = eventEnd - eventStart; // Durée de l'événement en ms
     
     const recurrence = event.recurrence;
-    const recurrenceEnd = recurrence.endDate ? new Date(recurrence.endDate) : rangeEnd;
+    // Inclure toute la journée de fin de récurrence (23:59:59)
+    let recurrenceEnd;
+    if (recurrence.endDate) {
+        recurrenceEnd = new Date(recurrence.endDate);
+        recurrenceEnd.setHours(23, 59, 59, 999);
+    } else {
+        recurrenceEnd = rangeEnd;
+    }
     const interval = recurrence.interval || 1;
     
     let currentDate = new Date(eventStart);

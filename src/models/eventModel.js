@@ -26,6 +26,10 @@ const eventSchema = new mongoose.Schema({
   title: String,            // Titre de l'événement
   start: Date,              // Date/heure de début
   end: Date,                // Date/heure de fin
+  allDay: {                 // Événement sur toute la journée
+    type: Boolean,
+    default: false
+  },
   description: String,      // Description optionnelle
   emoji: String,            // Emoji pour catégoriser l'événement
   

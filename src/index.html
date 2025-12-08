@@ -291,11 +291,30 @@
                 <label for="input-title">Titre :</label>
                 <input type="text" id="input-title" placeholder="Titre de l'événement">
 
-                <label for="input-start">Date début :</label>
-                <input type="datetime-local" id="input-start">
+                <!-- Checkbox journée entière -->
+                <div class="allday-checkbox-container">
+                    <label class="allday-label">
+                        <input type="checkbox" id="input-allday">
+                        <span class="allday-checkmark"></span>
+                        Journée entière
+                    </label>
+                </div>
 
-                <label for="input-end">Date fin :</label>
-                <input type="datetime-local" id="input-end">
+                <div id="time-inputs">
+                    <label for="input-start">Date début :</label>
+                    <input type="datetime-local" id="input-start">
+
+                    <label for="input-end">Date fin :</label>
+                    <input type="datetime-local" id="input-end">
+                </div>
+
+                <div id="date-only-inputs" class="hidden">
+                    <label for="input-start-date">Date début :</label>
+                    <input type="date" id="input-start-date">
+
+                    <label for="input-end-date">Date fin :</label>
+                    <input type="date" id="input-end-date">
+                </div>
 
                 <label for="input-description">Description :</label>
                 <textarea id="input-description" rows="3" placeholder="Description"></textarea>
@@ -381,7 +400,10 @@
                 <input type="text" id="agenda-name-input" placeholder="Mon agenda" maxlength="15">
 
                 <label for="agenda-color-input">Couleur :</label>
-                <input type="color" id="agenda-color-input" value="#3498db">
+                <div class="color-picker-wrapper">
+                    <input type="color" id="agenda-color-input" value="#3498db">
+                    <div class="color-preview" id="create-color-preview"></div>
+                </div>
             </div>
 
             <div class="modal-buttons">

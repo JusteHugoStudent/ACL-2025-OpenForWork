@@ -60,6 +60,26 @@ class CalendarManager {
             slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             slotDuration: '00:30:00',
+            
+            // Configuration pour les événements "journée entière"
+            dayMaxEvents: true, // Permet d'afficher "+X more" si trop d'événements
+            displayEventTime: true, // Affiche l'heure pour les événements avec heures
+            displayEventEnd: false, // Ne pas afficher l'heure de fin dans la grille mensuelle
+            
+            // Vue mois : affiche les événements allDay en haut de la cellule
+            views: {
+                dayGridMonth: {
+                    dayMaxEvents: 3, // Maximum 3 événements visibles avant "+X more"
+                },
+                timeGridWeek: {
+                    allDaySlot: true, // Active la zone "all-day" en haut dans la vue semaine
+                    allDayText: 'Journée entière',
+                },
+                timeGridDay: {
+                    allDaySlot: true, // Active la zone "all-day" en haut dans la vue jour
+                    allDayText: 'Journée entière',
+                }
+            },
 
             // Callbacks FullCalendar
             eventClick: (info) => {

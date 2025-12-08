@@ -38,6 +38,8 @@ class FilterController {
         // Convertit les dates
         const startDate = new Date(startDateStr);
         const endDate = new Date(endDateStr);
+        // Inclure toute la journée de fin (23:59:59)
+        endDate.setHours(23, 59, 59, 999);
 
         // Valide les dates avec dateUtils
         if (!isValidDateRange(startDate, endDate)) {
@@ -96,6 +98,9 @@ class FilterController {
 
         // Affiche la modale
         modal.classList.remove('hidden');
+        
+        // Attache les gestionnaires de fermeture (avant le contenu pour éviter les bugs)
+        this.attachCloseHandlers(modal, events);
 
         if (events.length === 0) {
             resultDiv.innerHTML = '<div class="no-results"><i class="uil uil-info-circle"></i><p>Aucun événement trouvé pour cette période.</p></div>';
@@ -126,7 +131,10 @@ class FilterController {
         html += '</div>';
         
         resultDiv.innerHTML = html;
-
+    }
+    
+    // Attache les gestionnaires de fermeture de la modale de recherche
+    attachCloseHandlers(modal, events) {
         // Attache le gestionnaire d'export PDF
         const exportBtn = document.getElementById('export-pdf-btn');
         if (exportBtn) {
@@ -146,7 +154,6 @@ class FilterController {
             newCloseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🔴 Closing search modal');
                 modal.classList.add('hidden');
             });
         }
@@ -157,7 +164,6 @@ class FilterController {
             const newOverlay = overlay.cloneNode(true);
             overlay.parentNode.replaceChild(newOverlay, overlay);
             newOverlay.addEventListener('click', () => {
-                console.log('🔴 Closing via overlay');
                 modal.classList.add('hidden');
             });
         }

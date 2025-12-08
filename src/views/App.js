@@ -61,10 +61,42 @@ class App {
         // Charge les événements visibles
         await this.reloadAllEvents();
         
+        // Initialise les dates de recherche à la semaine courante
+        this.initSearchDates();
+        
         // Démarre le système de notifications (une seule fois)
         if (!this.notificationController.pollingInterval) {
             this.notificationController.startPolling();
         }
+    }
+    
+    // Initialise les champs de date de recherche à la semaine courante
+    initSearchDates() {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 = dimanche, 1 = lundi, ...
+        
+        // Calcule le lundi de la semaine courante
+        const monday = new Date(now);
+        const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        monday.setDate(now.getDate() + diffToMonday);
+        
+        // Calcule le dimanche de la semaine courante
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        
+        // Formate en YYYY-MM-DD
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        const filterStart = document.getElementById('filter-start');
+        const filterEnd = document.getElementById('filter-end');
+        
+        if (filterStart) filterStart.value = formatDate(monday);
+        if (filterEnd) filterEnd.value = formatDate(sunday);
     }
 
 // GESTIONNAIRES D'ÉVÉNEMENTS UI

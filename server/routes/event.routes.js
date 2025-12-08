@@ -76,14 +76,32 @@ router.get('/', async (req, res) => {
       normalizedAgendaIds.forEach(id => {
         const agenda = user.agendas.find(a => String(a._id) === id);
         if (agenda && agenda.events && Array.isArray(agenda.events)) {
-          eventsByAgenda[id] = agenda.events.map(e => ({
-            id: e._id,
-            title: e.title,
-            start: e.start,
-            end: e.end,
-            extendedProps: { description: e.description },
-            emoji: e.emoji
-          }));
+          eventsByAgenda[id] = agenda.events.map(e => {
+            const isAllDay = e.allDay || false;
+            
+            // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
+            let startValue, endValue;
+            
+            if (isAllDay) {
+              const startDate = new Date(e.start);
+              const endDate = new Date(e.end);
+              startValue = startDate.toISOString().split('T')[0];
+              endValue = endDate.toISOString().split('T')[0];
+            } else {
+              startValue = e.start;
+              endValue = e.end;
+            }
+            
+            return {
+              id: e._id,
+              title: e.title,
+              start: startValue,
+              end: endValue,
+              allDay: isAllDay,
+              extendedProps: { description: e.description },
+              emoji: e.emoji
+            };
+          });
         } else {
           eventsByAgenda[id] = [];
         }
@@ -102,15 +120,34 @@ router.get('/', async (req, res) => {
     }
 
     return res.json(
-      events.map(e => ({
-        id: e._id,
-        title: e.title,
-        start: e.start,
-        end: e.end,
-        extendedProps: { description: e.description },
-        emoji: e.emoji,
-        recurrence: e.recurrence || { type: 'none' }
-      }))
+      events.map(e => {
+        const isAllDay = e.allDay || false;
+        
+        // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
+        // Pour les événements avec heures, retourner l'ISO complet
+        let startValue, endValue;
+        
+        if (isAllDay) {
+          const startDate = new Date(e.start);
+          const endDate = new Date(e.end);
+          startValue = startDate.toISOString().split('T')[0];
+          endValue = endDate.toISOString().split('T')[0];
+        } else {
+          startValue = e.start;
+          endValue = e.end;
+        }
+        
+        return {
+          id: e._id,
+          title: e.title,
+          start: startValue,
+          end: endValue,
+          allDay: isAllDay,
+          extendedProps: { description: e.description },
+          emoji: e.emoji,
+          recurrence: e.recurrence || { type: 'none' }
+        };
+      })
     );
 
   } catch (err) {
@@ -121,18 +158,26 @@ router.get('/', async (req, res) => {
 
 // Crée un nouvel événement
 // POST /api/events
-// Body: { title, start, end?, description?, emoji?, agendaId? }
+// Body: { title, start, end?, description?, emoji?, agendaId?, allDay? }
 
 router.post('/', async (req, res) => {
-  const { title, start, end, description, emoji, agendaId, recurrence } = req.body;
+  const { title, start, end, description, emoji, agendaId, recurrence, allDay } = req.body;
   
   if (!title || !start) {
     return res.status(400).json({ error: 'title and start required' });
   }
 
-  // Vérifie que la fin ne peut pas être avant le début
-  const startDate = new Date(start);
-  const endDate = end ? new Date(end) : new Date(start);
+  // Gestion des dates selon le mode (journée entière ou avec heures)
+  let startDate, endDate;
+  
+  if (allDay) {
+    // Pour journée entière, utiliser midi UTC pour éviter les décalages de timezone
+    startDate = new Date(start + 'T12:00:00.000Z');
+    endDate = end ? new Date(end + 'T12:00:00.000Z') : new Date(start + 'T12:00:00.000Z');
+  } else {
+    startDate = new Date(start);
+    endDate = end ? new Date(end) : new Date(start);
+  }
   
   if (endDate < startDate) {
     return res.status(400).json({ 
@@ -151,6 +196,7 @@ router.post('/', async (req, res) => {
         title,
         start: startDate,
         end: endDate,
+        allDay: allDay || false,
         description: description || '',
         emoji: emoji || '📅',
         recurrence: recurrence || { type: 'none' }
@@ -188,11 +234,26 @@ router.post('/', async (req, res) => {
 
     session.endSession();
 
+    // Formater les dates pour la réponse
+    const isAllDay = createdEvent.allDay || false;
+    let startValue, endValue;
+    
+    if (isAllDay) {
+      const startDate = new Date(createdEvent.start);
+      const endDate = new Date(createdEvent.end);
+      startValue = startDate.toISOString().split('T')[0];
+      endValue = endDate.toISOString().split('T')[0];
+    } else {
+      startValue = createdEvent.start;
+      endValue = createdEvent.end;
+    }
+
     return res.status(201).json({
       id: createdEvent._id,
       title: createdEvent.title,
-      start: createdEvent.start,
-      end: createdEvent.end,
+      start: startValue,
+      end: endValue,
+      allDay: isAllDay,
       description: createdEvent.description,
       emoji: createdEvent.emoji,
       recurrence: createdEvent.recurrence,
@@ -210,11 +271,11 @@ router.post('/', async (req, res) => {
 
 // Met à jour un événement existant
 // PUT /api/events/:id
-// Body: { title?, start?, end?, description?, emoji?, agendaId? }
+// Body: { title?, start?, end?, description?, emoji?, agendaId?, allDay? }
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const { title, start, end, description, emoji, agendaId, recurrence } = req.body;
+  const { title, start, end, description, emoji, agendaId, recurrence, allDay } = req.body;
   
   try {
     const ev = await Event.findById(id);
@@ -222,9 +283,27 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'event not found' });
     }
     
-    // Vérification erreur horaire pour la mise à jour
-    const newStart = start ? new Date(start) : ev.start;
-    const newEnd = end ? new Date(end) : ev.end;
+    // Gestion des dates selon le mode (journée entière ou avec heures)
+    let newStart, newEnd;
+    
+    if (allDay !== undefined && allDay) {
+      // Pour journée entière, utiliser midi UTC pour éviter les décalages de timezone
+      newStart = start ? new Date(start + 'T12:00:00.000Z') : ev.start;
+      newEnd = end ? new Date(end + 'T12:00:00.000Z') : (start ? new Date(start + 'T12:00:00.000Z') : ev.end);
+    } else if (allDay !== undefined && !allDay) {
+      // Pour événement avec heures
+      newStart = start ? new Date(start) : ev.start;
+      newEnd = end ? new Date(end) : ev.end;
+    } else {
+      // Pas de changement de mode, déterminer selon l'état actuel
+      if (ev.allDay) {
+        newStart = start ? new Date(start + 'T12:00:00.000Z') : ev.start;
+        newEnd = end ? new Date(end + 'T12:00:00.000Z') : ev.end;
+      } else {
+        newStart = start ? new Date(start) : ev.start;
+        newEnd = end ? new Date(end) : ev.end;
+      }
+    }
     
     if (newEnd < newStart) {
       return res.status(400).json({ 
@@ -268,17 +347,33 @@ router.put('/:id', async (req, res) => {
     if (title) ev.title = title;
     if (start) ev.start = newStart;
     if (end) ev.end = newEnd;
+    if (allDay !== undefined) ev.allDay = allDay;
     if (description !== undefined) ev.description = description;
     if (emoji) ev.emoji = emoji;
     if (recurrence !== undefined) ev.recurrence = recurrence;
     
     await ev.save();
     
+    // Formater les dates pour la réponse
+    const isAllDay = ev.allDay || false;
+    let startValue, endValue;
+    
+    if (isAllDay) {
+      const startDate = new Date(ev.start);
+      const endDate = new Date(ev.end);
+      startValue = startDate.toISOString().split('T')[0];
+      endValue = endDate.toISOString().split('T')[0];
+    } else {
+      startValue = ev.start;
+      endValue = ev.end;
+    }
+    
     return res.json({
       id: ev._id,
       title: ev.title,
-      start: ev.start,
-      end: ev.end,
+      start: startValue,
+      end: endValue,
+      allDay: isAllDay,
       description: ev.description,
       emoji: ev.emoji,
       recurrence: ev.recurrence
