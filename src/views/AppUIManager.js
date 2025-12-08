@@ -49,7 +49,7 @@ class AppUIManager {
             btnClearCache.addEventListener('click', () => {
                 this.app.notificationController.clearAll();
                 this.app.notificationController.checkNotifications();
-                alert('✅ Cache des notifications vidé et vérification forcée !');
+                alert('Affichage des notifications à venir');
             });
         }
     }
