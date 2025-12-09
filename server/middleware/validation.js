@@ -56,6 +56,61 @@ function validateEvent(body) {
 }
 
 /**
+ * Valide les données d'un événement pour une mise à jour partielle
+ * Tous les champs sont optionnels mais validés si présents
+ * @param {Object} body - Corps de la requête
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateEventUpdate(body) {
+    const errors = [];
+
+    // Titre optionnel mais validé si présent
+    if (body.title !== undefined) {
+        if (typeof body.title !== 'string' || body.title.trim().length === 0) {
+            errors.push('Le titre ne peut pas être vide');
+        } else if (body.title.length > 200) {
+            errors.push('Le titre ne peut pas dépasser 200 caractères');
+        }
+    }
+
+    // Date de début optionnelle mais validée si présente
+    if (body.start !== undefined) {
+        const startDate = new Date(body.start);
+        if (isNaN(startDate.getTime())) {
+            errors.push('La date de début est invalide');
+        }
+    }
+
+    // Date de fin optionnelle mais validée si présente
+    if (body.end !== undefined) {
+        const endDate = new Date(body.end);
+        if (isNaN(endDate.getTime())) {
+            errors.push('La date de fin est invalide');
+        }
+    }
+
+    // Emoji optionnel mais validé
+    if (body.emoji !== undefined && body.emoji !== null && typeof body.emoji !== 'string') {
+        errors.push('L\'emoji doit être une chaîne de caractères');
+    }
+
+    // Description optionnelle, limitée à 1000 caractères
+    if (body.description !== undefined && body.description !== null && body.description.length > 1000) {
+        errors.push('La description ne peut pas dépasser 1000 caractères');
+    }
+
+    // Récurrence validée
+    if (body.recurrence !== undefined && body.recurrence !== null) {
+        const validTypes = ['none', 'daily', 'weekly', 'monthly', 'yearly'];
+        if (body.recurrence.type && !validTypes.includes(body.recurrence.type)) {
+            errors.push('Type de récurrence invalide');
+        }
+    }
+
+    return { valid: errors.length === 0, errors };
+}
+
+/**
  * Valide les données d'un agenda
  * @param {Object} body - Corps de la requête
  * @returns {{ valid: boolean, errors: string[] }}
@@ -71,6 +126,35 @@ function validateAgenda(body) {
 
     // Couleur optionnelle mais validée (format hex)
     if (body.color) {
+        const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+        if (!hexColorRegex.test(body.color)) {
+            errors.push('La couleur doit être au format hexadécimal (#RGB ou #RRGGBB)');
+        }
+    }
+
+    return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Valide les données d'un agenda pour une mise à jour partielle
+ * Tous les champs sont optionnels mais validés si présents
+ * @param {Object} body - Corps de la requête
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateAgendaUpdate(body) {
+    const errors = [];
+
+    // Nom optionnel mais validé si présent
+    if (body.name !== undefined) {
+        if (typeof body.name !== 'string' || body.name.trim().length === 0) {
+            errors.push('Le nom de l\'agenda ne peut pas être vide');
+        } else if (body.name.length > 50) {
+            errors.push('Le nom de l\'agenda ne peut pas dépasser 50 caractères');
+        }
+    }
+
+    // Couleur optionnelle mais validée (format hex)
+    if (body.color !== undefined && body.color !== null) {
         const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
         if (!hexColorRegex.test(body.color)) {
             errors.push('La couleur doit être au format hexadécimal (#RGB ou #RRGGBB)');
@@ -117,10 +201,32 @@ function validateEventMiddleware(req, res, next) {
 }
 
 /**
+ * Middleware Express pour valider les mises à jour d'événements (PUT)
+ */
+function validateEventUpdateMiddleware(req, res, next) {
+    const result = validateEventUpdate(req.body);
+    if (!result.valid) {
+        return res.status(400).json({ error: result.errors.join(', ') });
+    }
+    next();
+}
+
+/**
  * Middleware Express pour valider les agendas
  */
 function validateAgendaMiddleware(req, res, next) {
     const result = validateAgenda(req.body);
+    if (!result.valid) {
+        return res.status(400).json({ error: result.errors.join(', ') });
+    }
+    next();
+}
+
+/**
+ * Middleware Express pour valider les mises à jour d'agendas (PUT)
+ */
+function validateAgendaUpdateMiddleware(req, res, next) {
+    const result = validateAgendaUpdate(req.body);
     if (!result.valid) {
         return res.status(400).json({ error: result.errors.join(', ') });
     }
@@ -140,9 +246,13 @@ function validateCredentialsMiddleware(req, res, next) {
 
 module.exports = {
     validateEvent,
+    validateEventUpdate,
     validateAgenda,
+    validateAgendaUpdate,
     validateCredentials,
     validateEventMiddleware,
+    validateEventUpdateMiddleware,
     validateAgendaMiddleware,
+    validateAgendaUpdateMiddleware,
     validateCredentialsMiddleware
 };

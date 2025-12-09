@@ -49,7 +49,7 @@ class AppUIManager {
             btnClearCache.addEventListener('click', () => {
                 this.app.notificationController.clearAll();
                 this.app.notificationController.checkNotifications();
-                alert('Affichage des notifications à venir');
+                Toast.info('Affichage des notifications à venir');
             });
         }
     }
@@ -163,7 +163,7 @@ class AppUIManager {
                 // Valide le nom
                 const customName = nameInput.value.trim();
                 if (!customName) {
-                    alert('Veuillez saisir un nom pour l\'agenda.');
+                    Toast.warning('Veuillez saisir un nom pour l\'agenda.');
                     return;
                 }
             }
@@ -187,7 +187,7 @@ class AppUIManager {
                     );
                     if (created) {
                         await this.app.reloadAllEvents();
-                        alert(`Nouvel agenda créé : ${created.name}`);
+                        Toast.success(`Nouvel agenda créé : ${created.name}`);
                     }
                 } else {
                     // Fusionne avec l'agenda sélectionné
@@ -204,12 +204,12 @@ class AppUIManager {
                         const message = result.failedCount > 0
                             ? `${result.addedCount} événement(s) ajouté(s) à "${targetAgenda.name}". ${result.failedCount} échec(s).`
                             : `${result.addedCount} événement(s) ajouté(s) à "${targetAgenda.name}".`;
-                        alert(message);
+                        Toast.success(message);
                     }
                 }
             } catch (err) {
                 console.error('Import failed:', err);
-                alert('Erreur lors de l\'import.');
+                Toast.error('Erreur lors de l\'import.');
             }
         };
 
@@ -298,7 +298,7 @@ class AppUIManager {
             const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
 
             if (selectedIds.length === 0) {
-                alert('Veuillez sélectionner au moins un agenda.');
+                Toast.warning('Veuillez sélectionner au moins un agenda.');
                 return;
             }
 
@@ -310,7 +310,7 @@ class AppUIManager {
                     for (const agendaId of selectedIds) {
                         await this.app.agendaController.exportAgendaById(agendaId);
                     }
-                    alert(`${selectedIds.length} agenda(s) exporté(s) avec succès.`);
+                    Toast.success(`${selectedIds.length} agenda(s) exporté(s) avec succès.`);
                 } else {
                     // Export fusionné : tous les événements dans un fichier
                     const mergedName = mergedNameInput.value.trim() || 'Agenda combiné';
@@ -321,11 +321,11 @@ class AppUIManager {
                         mergedName,
                         mergedColor
                     );
-                    alert('Agenda fusionné exporté avec succès.');
+                    Toast.success('Agenda fusionné exporté avec succès.');
                 }
             } catch (err) {
                 console.error('Export failed:', err);
-                alert('Erreur lors de l\'export.');
+                Toast.error('Erreur lors de l\'export.');
             }
         };
 
@@ -547,7 +547,7 @@ class AppUIManager {
 
                 // On vérifie que tout est rempli sinon on bloque
                 if (!email || !subject || !message) {
-                    alert("Faut tout remplir pour envoyer le message !");
+                    Toast.warning("Faut tout remplir pour envoyer le message !");
                     return;
                 }
 
@@ -569,7 +569,7 @@ class AppUIManager {
                 // Remplacer les ID par ceux du dashboard EmailJS
                 emailjs.send('service_nemf0u3', 'template_xmze3ks', params)
                     .then(() => {
-                        alert("C'est envoyé ! L'admin a reçu le mail.");
+                        Toast.success("C'est envoyé ! L'admin a reçu le mail.");
                         modalContact.classList.add('hidden');
 
                         // On vide les champs pour la prochaine fois
@@ -579,7 +579,7 @@ class AppUIManager {
                     })
                     .catch((err) => {
                         console.error('Erreur envoi mail:', err);
-                        alert("Oups, erreur lors de l'envoi...");
+                        Toast.error("Oups, erreur lors de l'envoi...");
                     })
                     .finally(() => {
                         // on remet toujoursn le bouton comme avant
@@ -642,7 +642,7 @@ class AppUIManager {
         this.app.calendarManager.setOnDateClick((dateStr, dateObj) => {
             const currentAgenda = this.app.agendaController.getCurrentAgenda();
             if (!currentAgenda) {
-                alert(ERROR_MESSAGES.AGENDA.MISSING_NAME);
+                Toast.warning(ERROR_MESSAGES.AGENDA.MISSING_NAME);
                 return;
             }
 
@@ -727,7 +727,7 @@ class AppUIManager {
         const handleEventChange = async (event) => {
             // Bloquer le déplacement des événements récurrents
             if (event.extendedProps.isRecurring) {
-                alert('Les événements récurrents ne peuvent pas être déplacés. Modifiez l\'événement pour changer sa récurrence.');
+                Toast.warning('Les événements récurrents ne peuvent pas être déplacés. Modifiez l\'événement pour changer sa récurrence.');
                 this.app.reloadAllEvents();
                 return;
             }
@@ -792,7 +792,7 @@ class AppUIManager {
             const color = colorInput.value;
 
             if (!name) {
-                alert('Veuillez saisir un nom pour l\'agenda.');
+                Toast.warning('Veuillez saisir un nom pour l\'agenda.');
                 return;
             }
 
@@ -844,7 +844,7 @@ class AppUIManager {
         // Récupère l'agenda courant
         const currentAgenda = this.app.agendaController.currentAgenda;
         if (!currentAgenda) {
-            alert('Aucun agenda sélectionné.');
+            Toast.warning('Aucun agenda sélectionné.');
             return;
         }
 
@@ -871,7 +871,7 @@ class AppUIManager {
             const color = colorInput.value;
 
             if (!name) {
-                alert('Veuillez saisir un nom pour l\'agenda.');
+                Toast.warning('Veuillez saisir un nom pour l\'agenda.');
                 return;
             }
 

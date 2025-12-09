@@ -8,7 +8,8 @@ const User = require('../models/userModel');
 const Agenda = require('../models/agendaModel');
 const Event = require('../models/eventModel');
 const authMiddleware = require('../middleware/auth');
-const { validateEventMiddleware } = require('../middleware/validation');
+const { validateEventMiddleware, validateEventUpdateMiddleware } = require('../middleware/validation');
+const { formatEventForCalendar, formatEventResponse } = require('../utils/eventFormatter');
 
 const router = express.Router();
 
@@ -77,32 +78,7 @@ router.get('/', async (req, res) => {
       normalizedAgendaIds.forEach(id => {
         const agenda = user.agendas.find(a => String(a._id) === id);
         if (agenda && agenda.events && Array.isArray(agenda.events)) {
-          eventsByAgenda[id] = agenda.events.map(e => {
-            const isAllDay = e.allDay || false;
-
-            // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
-            let startValue, endValue;
-
-            if (isAllDay) {
-              const startDate = new Date(e.start);
-              const endDate = new Date(e.end);
-              startValue = startDate.toISOString().split('T')[0];
-              endValue = endDate.toISOString().split('T')[0];
-            } else {
-              startValue = e.start;
-              endValue = e.end;
-            }
-
-            return {
-              id: e._id,
-              title: e.title,
-              start: startValue,
-              end: endValue,
-              allDay: isAllDay,
-              extendedProps: { description: e.description },
-              emoji: e.emoji
-            };
-          });
+          eventsByAgenda[id] = agenda.events.map(e => formatEventForCalendar(e));
         } else {
           eventsByAgenda[id] = [];
         }
@@ -120,36 +96,7 @@ router.get('/', async (req, res) => {
       user.agendas.forEach(a => events.push(...a.events));
     }
 
-    return res.json(
-      events.map(e => {
-        const isAllDay = e.allDay || false;
-
-        // Pour les événements all-day, retourner juste la date (YYYY-MM-DD)
-        // Pour les événements avec heures, retourner l'ISO complet
-        let startValue, endValue;
-
-        if (isAllDay) {
-          const startDate = new Date(e.start);
-          const endDate = new Date(e.end);
-          startValue = startDate.toISOString().split('T')[0];
-          endValue = endDate.toISOString().split('T')[0];
-        } else {
-          startValue = e.start;
-          endValue = e.end;
-        }
-
-        return {
-          id: e._id,
-          title: e.title,
-          start: startValue,
-          end: endValue,
-          allDay: isAllDay,
-          extendedProps: { description: e.description },
-          emoji: e.emoji,
-          recurrence: e.recurrence || { type: 'none' }
-        };
-      })
-    );
+    return res.json(events.map(e => formatEventForCalendar(e)));
 
   } catch (err) {
     console.error('❌ Erreur GET events:', err);
@@ -231,31 +178,8 @@ router.post('/', validateEventMiddleware, async (req, res) => {
 
     session.endSession();
 
-    // Formater les dates pour la réponse
-    const isAllDay = createdEvent.allDay || false;
-    let startValue, endValue;
-
-    if (isAllDay) {
-      const startDate = new Date(createdEvent.start);
-      const endDate = new Date(createdEvent.end);
-      startValue = startDate.toISOString().split('T')[0];
-      endValue = endDate.toISOString().split('T')[0];
-    } else {
-      startValue = createdEvent.start;
-      endValue = createdEvent.end;
-    }
-
-    return res.status(201).json({
-      id: createdEvent._id,
-      title: createdEvent.title,
-      start: startValue,
-      end: endValue,
-      allDay: isAllDay,
-      description: createdEvent.description,
-      emoji: createdEvent.emoji,
-      recurrence: createdEvent.recurrence,
-      agendaId
-    });
+    // Utilise eventFormatter pour formater la réponse
+    return res.status(201).json(formatEventResponse(createdEvent, agendaId));
   } catch (err) {
     if (session) {
       session.endSession();
@@ -270,7 +194,7 @@ router.post('/', validateEventMiddleware, async (req, res) => {
 // PUT /api/events/:id
 // Body: { title?, start?, end?, description?, emoji?, agendaId?, allDay? }
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateEventUpdateMiddleware, async (req, res) => {
   const id = req.params.id;
   const { title, start, end, description, emoji, agendaId, recurrence, allDay } = req.body;
 
@@ -365,30 +289,8 @@ router.put('/:id', async (req, res) => {
 
     await ev.save();
 
-    // Formater les dates pour la réponse
-    const isAllDay = ev.allDay || false;
-    let startValue, endValue;
-
-    if (isAllDay) {
-      const startDate = new Date(ev.start);
-      const endDate = new Date(ev.end);
-      startValue = startDate.toISOString().split('T')[0];
-      endValue = endDate.toISOString().split('T')[0];
-    } else {
-      startValue = ev.start;
-      endValue = ev.end;
-    }
-
-    return res.json({
-      id: ev._id,
-      title: ev.title,
-      start: startValue,
-      end: endValue,
-      allDay: isAllDay,
-      description: ev.description,
-      emoji: ev.emoji,
-      recurrence: ev.recurrence
-    });
+    // Utilise eventFormatter pour formater la réponse
+    return res.json(formatEventResponse(ev));
   } catch (err) {
     console.error('❌ Erreur PUT event:', err);
     return res.status(500).json({ error: 'internal error' });

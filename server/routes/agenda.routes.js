@@ -7,7 +7,7 @@ const User = require('../models/userModel');
 const Agenda = require('../models/agendaModel');
 const authMiddleware = require('../middleware/auth');
 const { THEME_COLORS } = require('../config/constants');
-const { validateAgendaMiddleware } = require('../middleware/validation');
+const { validateAgendaMiddleware, validateAgendaUpdateMiddleware } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -93,7 +93,7 @@ router.post('/', validateAgendaMiddleware, async (req, res) => {
 // Headers: Authorization: Bearer <token>
 // Body: { name?: string, color?: string }
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateAgendaUpdateMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, color } = req.body;

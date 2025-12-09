@@ -22,6 +22,8 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const helmet = require('helmet');
+const cors = require('cors');
 
 // Configuration et middlewares
 const connectDatabase = require('./server/config/database');
@@ -33,15 +35,38 @@ const eventRoutes = require('./server/routes/event.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Sécurité : Helmet pour les en-têtes HTTP sécurisés
+// Configuration adaptée pour permettre les scripts inline et les ressources locales
+app.use(helmet({
+  contentSecurityPolicy: false, // Désactivé temporairement pour debug
+  crossOriginEmbedderPolicy: false // Désactivé pour compatibilité avec les CDN
+}));
+
+// CORS : Configuration pour autoriser les requêtes depuis l'origine locale
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.ALLOWED_ORIGINS?.split(',') || false
+    : true, // En développement, autorise toutes les origines
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400 // Cache preflight pour 24h
+};
+app.use(cors(corsOptions));
+
 // Middlewares globaux
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Limite la taille des requêtes JSON
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Fichiers statiques
 app.use(express.static(path.join(__dirname, 'src')));
 
 // Connexion BDD
 connectDatabase();
+
+// Sanitization des entrées utilisateur (protection XSS)
+const { sanitizeInputMiddleware } = require('./server/middleware/sanitize');
+app.use('/api', sanitizeInputMiddleware);
 
 // Routes API
 app.use('/api', authRoutes);        // /api/register, /api/login, /api/health

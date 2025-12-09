@@ -2,10 +2,10 @@
 // Gère le formulaire de filtre, la génération de listes et l'export PDF
 
 class FilterController {
-    
+
     // Constructeur du contrôleur de filtrage
     // prend en paramettre eventController - Contrôleur d'événements pour charger les données
-    
+
     constructor(eventController) {
         this.eventController = eventController;
     }
@@ -17,7 +17,7 @@ class FilterController {
         return emojiOption ? `[${emojiOption.label}]` : '';
     }
 
-    
+
     // Gère la soumission du formulaire de filtre
     // Valide les dates et affiche la liste filtrée
     // prend en paramettre startDateStr - Date de début au format string
@@ -26,12 +26,12 @@ class FilterController {
     // prend en paramettre allAgendas - Liste de tous les agendas
     // prend en paramettre keywords - Mots-clés pour la recherche
     // prend en paramettre emojis - Emojis sélectionnés pour filtrer
-    
-     
+
+
     async handleFilterSubmit(startDateStr, endDateStr, agendaIds, allAgendas, keywords = '', emojis = []) {
         // Valide que les champs de date ne sont pas vides
         if (!isNotEmpty(startDateStr) || !isNotEmpty(endDateStr)) {
-            alert(ERROR_MESSAGES.FILTER.MISSING_DATES);
+            Toast.warning(ERROR_MESSAGES.FILTER.MISSING_DATES);
             return;
         }
 
@@ -43,7 +43,7 @@ class FilterController {
 
         // Valide les dates avec dateUtils
         if (!isValidDateRange(startDate, endDate)) {
-            alert(ERROR_MESSAGES.EVENT.INVALID_DATE);
+            Toast.error(ERROR_MESSAGES.EVENT.INVALID_DATE);
             return;
         }
 
@@ -84,21 +84,21 @@ class FilterController {
         }
     }
 
-    
+
     // Génère l'affichage HTML de la liste d'événements filtrés
     // prend en paramettre events - Liste des événements filtrés
-    
+
     generateFilteredList(events) {
         const modal = document.getElementById('search-results-modal');
         const resultDiv = document.getElementById('filter-results-list');
-        
+
         if (!modal || !resultDiv) {
             return;
         }
 
         // Affiche la modale
         modal.classList.remove('hidden');
-        
+
         // Attache les gestionnaires de fermeture (avant le contenu pour éviter les bugs)
         this.attachCloseHandlers(modal, events);
 
@@ -109,13 +109,13 @@ class FilterController {
 
         // Crée le HTML de la liste
         let html = '<div class="search-results-list">';
-        
+
         events.forEach(ev => {
             const eventDate = new Date(ev.start);
             const formattedDate = formatDateFrench(eventDate);
             const eventTitle = ev.emoji ? `${ev.emoji} ${ev.title}` : ev.title;
             const agendaColor = ev._agendaColor || THEME_COLORS.DEFAULT_AGENDA;
-            
+
             html += `
                 <div class="search-result-item" style="border-left-color: ${agendaColor};">
                     <div class="result-title">${eventTitle}</div>
@@ -127,12 +127,12 @@ class FilterController {
                 </div>
             `;
         });
-        
+
         html += '</div>';
-        
+
         resultDiv.innerHTML = html;
     }
-    
+
     // Attache les gestionnaires de fermeture de la modale de recherche
     attachCloseHandlers(modal, events) {
         // Attache le gestionnaire d'export PDF
@@ -145,7 +145,7 @@ class FilterController {
                 this.exportFilteredEvents(events);
             });
         }
-        
+
         // Bouton fermer
         const closeBtn = document.getElementById('close-search-results');
         if (closeBtn) {
@@ -157,7 +157,7 @@ class FilterController {
                 modal.classList.add('hidden');
             });
         }
-        
+
         // Fermer en cliquant sur l'overlay
         const overlay = modal.querySelector('.search-modal-overlay');
         if (overlay) {
@@ -169,14 +169,14 @@ class FilterController {
         }
     }
 
-    
+
     // Exporte les événements filtrés en PDF
     // Utilise jsPDF pour générer le document
     // prend en paramettre events - Liste des événements à exporter
-     
+
     exportFilteredEvents(events) {
         if (!window.jspdf) {
-            alert('La bibliothèque jsPDF n\'est pas chargée. Impossible d\'exporter en PDF.');
+            Toast.error('La bibliothèque jsPDF n\'est pas chargée. Impossible d\'exporter en PDF.');
             return;
         }
 
@@ -254,19 +254,19 @@ class FilterController {
 
         } catch (err) {
             console.error('Erreur lors de l\'export PDF:', err);
-            alert('Erreur lors de l\'export PDF: ' + err.message);
+            Toast.error('Erreur lors de l\'export PDF: ' + err.message);
         }
     }
 
-    
+
     // Réinitialise le formulaire de filtre et les résultats
-     
+
     resetFilter() {
         // Réinitialise les champs de date
         document.getElementById('filter-start').value = '';
         document.getElementById('filter-end').value = '';
         document.getElementById('filter-keywords').value = '';
-        
+
         // Désélectionne tous les boutons emoji
         document.querySelectorAll('.emoji-btn.selected').forEach(btn => {
             btn.classList.remove('selected');

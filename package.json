@@ -25,10 +25,13 @@
   "homepage": "https://github.com/JusteHugoStudent/ACL-2025-OpenForWork#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "date-holidays": "^3.26.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^8.19.1"
