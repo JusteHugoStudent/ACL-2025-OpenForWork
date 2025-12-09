@@ -1,74 +1,516 @@
 /* ========================================
-   RESPONSIVE - Bootstrap compatible
+   RESPONSIVE - Version Minimaliste Mobile
+   ======================================== */
+
+/* ========================================
+   CORRECTIONS CRITIQUES MOBILE
+   ======================================== */
+
+/* Éviter zoom accidentel sur iOS lors du focus sur input */
+html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+/* Permettre le scroll global */
+body {
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Inputs : taille minimum 16px pour éviter zoom iOS */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+}
+
+/* ========================================
+   TABLETTES (max 1200px)
    ======================================== */
 @media (max-width: 1200px) {
     .main-container-modern {
         grid-template-columns: 200px 1fr;
     }
-    
+
     .search-box {
         max-width: 300px;
     }
-    
+
     .filter-chips {
         display: none;
     }
 }
 
+/* ========================================
+   PETITS ÉCRANS (max 900px)
+   ======================================== */
 @media (max-width: 900px) {
     .main-container-modern {
         grid-template-columns: 1fr;
         height: auto;
+        min-height: 100vh;
+        overflow: visible;
     }
-    
+
     .sidebar-agendas {
-        max-height: 300px;
+        max-height: 200px;
+        height: auto;
     }
-    
+
     .calendar-main {
-        min-height: 600px;
+        min-height: 500px;
+    }
+
+    .calendar-container-modern {
+        overflow: visible;
     }
 }
 
+/* ========================================
+   MOBILE (max 768px)
+   ======================================== */
 @media (max-width: 768px) {
     body {
-        padding: 12px;
+        padding: 8px;
     }
-    
+
+    /* Header compact */
     .header {
-        padding: 12px 16px;
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 12px;
+        padding: 10px 14px;
+        margin: 8px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
-    
+
     .header h1 {
-        font-size: 18px;
+        font-size: 16px;
     }
-    
+
     .header-actions {
         width: 100%;
         flex-wrap: wrap;
+        gap: 6px;
     }
-    
+
     .header-actions button,
     .header-actions select {
         flex: 1;
-        min-width: 120px;
+        min-width: 100px;
+        padding: 10px 12px;
+        font-size: 14px;
     }
-    
+
+    /* Container principal : Layout vertical mobile (Spécificité accrue) */
+    html body .main-container-modern {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 8px;
+        gap: 12px;
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+
+    /* Sidebar : Liste agendas complète (hauteur naturelle) */
+    html body .main-container-modern .sidebar-agendas {
+        width: 100%;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 100px;
+        overflow: visible !important;
+        padding: 12px;
+        flex-shrink: 0;
+        border-bottom: 4px solid var(--border);
+        /* Séparation plus marquée */
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Calendrier : Hauteur garantie (Spécificité accrue) */
+    html body .main-container-modern .calendar-container-modern {
+        padding: 4px;
+        height: 75vh !important;
+        overflow: visible !important;
+    }
+
+    .calendar-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: none;
+        width: 100%;
+    }
+
+    /* Zone de notification */
     .notification-area {
-        left: 12px;
-        right: 12px;
+        left: 8px;
+        right: 8px;
         max-width: none;
     }
-    
+
+    /* Modales plein écran */
     .modal-content {
-        padding: 20px;
+        width: 95%;
+        max-width: none;
+        max-height: 85vh;
+        margin: 10px;
+        padding: 16px;
     }
-    
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-content input,
+    .modal-content textarea,
+    .modal-content select {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-buttons button {
+        width: 100%;
+        padding: 14px;
+    }
+
+    /* Login card */
     .card-3d-wrap {
         width: 100%;
-        padding: 0 10px;
+        padding: 0 8px;
+        height: auto !important;
+        perspective: none !important;
     }
+
+    .card-3d-wrapper {
+        transform-style: flat !important;
+        transform: none !important;
+        height: auto !important;
+    }
+
+    .card-front,
+    .card-back {
+        position: relative !important;
+        transform: none !important;
+        backface-visibility: visible !important;
+        height: auto !important;
+        min-height: 450px;
+        margin-bottom: 16px;
+        z-index: 10 !important;
+        pointer-events: auto !important;
+    }
+
+    /* Masquer le formulaire inactif au lieu du flip 3D */
+    .card-front {
+        display: block;
+    }
+
+    .card-back {
+        display: none;
+    }
+
+    .center-wrap {
+        padding: 20px 16px;
+        position: relative;
+        transform: none;
+        top: auto;
+        z-index: 20 !important;
+    }
+
+    /* Important pour les inputs */
+    .form-style {
+        font-size: 16px !important;
+        padding: 16px 20px 16px 48px;
+        pointer-events: auto !important;
+        z-index: 20 !important;
+        position: relative;
+    }
+
+    .btn {
+        pointer-events: auto !important;
+        z-index: 20 !important;
+    }
+
+    /* Titre login */
+    .dynamic-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    /* Tabs login/register */
+    .auth-tabs {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .auth-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+
+    .auth-tab i {
+        font-size: 16px;
+    }
+
+    /* FullCalendar adaptations */
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .fc .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .fc .fc-button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .fc-daygrid-day-number {
+        font-size: 12px;
+        padding: 4px;
+    }
+}
+
+/* ========================================
+   TRÈS PETITS ÉCRANS (max 480px)
+   ======================================== */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 14px;
+    }
+
+    .header-logo i {
+        font-size: 22px;
+    }
+
+    .sidebar-agendas {
+        max-height: 150px;
+    }
+
+    .fc .fc-button {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+
+    .fc-toolbar-title {
+        font-size: 14px !important;
+    }
+}
+
+/* ========================================
+   TOAST NOTIFICATIONS MOBILE
+   ======================================== */
+@media (max-width: 480px) {
+    #toast-container {
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        max-width: none;
+    }
+
+    .toast {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   FULLSCREEN MOBILE
+   ======================================== */
+/* Caché par défaut sur Desktop */
+#btn-mobile-fullscreen {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    #btn-mobile-fullscreen {
+        display: flex !important;
+        padding: 10px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    #btn-mobile-fullscreen:active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .calendar-main.fullscreen-mode {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        background: var(--bg-dark);
+        padding: 10px;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .calendar-main.fullscreen-mode .calendar-container-modern {
+        flex: 1;
+        height: auto !important;
+    }
+
+    .calendar-main.fullscreen-mode .calendar-toolbar {
+        margin-bottom: 10px;
+    }
+
+    /* Icône changeante en mode plein écran (optionnel, géré par JS ou CSS) */
+    .calendar-main.fullscreen-mode #btn-mobile-fullscreen {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+}
+
+/* ========================================
+   SEARCH & FILTER MOBILE
+   ======================================== */
+.mobile-visible {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .mobile-visible {
+        /* Important pour surcharger display:none par défaut */
+        display: flex !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .toolbar-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Surcharge pour afficher les filtres quand activés */
+    .filter-chips {
+        display: none !important;
+        width: 100%;
+        overflow-x: auto;
+        padding: 4px 0;
+        margin-top: 8px;
+        order: 10;
+        gap: 8px;
+    }
+
+    .filter-chips.show {
+        display: flex !important;
+    }
+
+    .filter-chip {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Boutons Toolbar Mobile (Ronds) */
+    .toolbar-actions .btn-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .toolbar-actions .btn-icon.active,
+    .toolbar-actions .btn-icon:active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: scale(0.95);
+    }
+}
+
+/* ========================================
+   FIXES (Z-INDEX, LIST BUTTON)
+   ======================================== */
+
+/* Cacher bouton Liste sur Desktop */
+.fc-listMonth-button {
+    display: none !important;
+}
+
+@media (max-width: 900px) {
+
+    /* Réafficher bouton Liste sur Mobile */
+    .fc-listMonth-button {
+        display: inline-block !important;
+    }
+
+    /* Fix Z-Index Filtres (empêche de passer derrière l'agenda) */
+    .calendar-main {
+        overflow: visible !important;
+    }
+
+    .filter-chips {
+        z-index: 1000;
+        position: relative;
+    }
+
+    /* Panneaux de filtres au premier plan */
+    .filter-panel {
+        z-index: 2000 !important;
+        position: absolute;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        /* Centrage et dimensionnement mobile */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90%;
+        max-width: 350px;
+        top: 60px;
+        /* Force below toolbar */
+    }
+}
+
+/* ========================================
+   GLOBAL FIX OVERLAY MENU (Moved to root)
+   ======================================== */
+.agenda-overlay-menu {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10000 !important;
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }

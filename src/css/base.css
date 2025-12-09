@@ -16,8 +16,9 @@ body {
     line-height: 1.6;
     padding: 0;
     margin: 0;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
 }
 
@@ -30,14 +31,14 @@ body::before {
     bottom: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
         radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
 
-body > * {
+body>* {
     position: relative;
     z-index: 1;
 }
@@ -52,6 +53,7 @@ body > * {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

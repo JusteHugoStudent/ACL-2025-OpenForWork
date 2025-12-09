@@ -28,13 +28,15 @@ class CalendarManager {
     // Initialise FullCalendar avec la configuration complète
     // Configure la langue, les vues, les callbacks, etc.
     // Attend que le DOM soit prêt avant de retourner 
-     
+
     async init() {
 
         if (!this.calendarEl) {
             console.error('❌ CalendarManager: Élément #calendar introuvable dans le DOM');
             return;
         }
+
+        const isMobile = window.innerWidth <= 900; // 900px pour cohérence avec responsive.css
 
         this.calendar = new FullCalendar.Calendar(this.calendarEl, {
             locale: 'fr',
@@ -43,15 +45,16 @@ class CalendarManager {
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
             },
             buttonText: {
                 today: 'Aujourd\'hui',
                 month: 'Mois',
                 week: 'Semaine',
-                day: 'Jour'
+                day: 'Jour',
+                list: 'Liste'
             },
-            initialView: 'dayGridMonth',
+            initialView: isMobile ? 'listMonth' : 'dayGridMonth',
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
             editable: true,
             selectable: true,
@@ -60,12 +63,12 @@ class CalendarManager {
             slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             slotDuration: '00:30:00',
-            
+
             // Configuration pour les événements "journée entière"
             dayMaxEvents: true, // Permet d'afficher "+X more" si trop d'événements
             displayEventTime: true, // Affiche l'heure pour les événements avec heures
             displayEventEnd: false, // Ne pas afficher l'heure de fin dans la grille mensuelle
-            
+
             // Vue mois : affiche les événements allDay en haut de la cellule
             views: {
                 dayGridMonth: {
@@ -112,7 +115,7 @@ class CalendarManager {
 
 
         this.calendar.render();
-        
+
         // Attend que le DOM soit mis à jour après le render
         await new Promise(resolve => setTimeout(resolve, 150));
     }
@@ -127,7 +130,7 @@ class CalendarManager {
     // prend en paramettre eventData - Données de l'événement à ajouter
     // prend en paramettre options - Options pour désactiver le callback
     // retourne l'événement ajouté ou l'événement existant si doublon
-     
+
     addEvent(eventData, options = {}) {
         if (!this.calendar) {
             console.warn('⚠️ CalendarManager: tentative d\'ajouter un événement alors que le calendrier est null.');
@@ -136,15 +139,15 @@ class CalendarManager {
 
         // Vérifie les doublons pour les jours fériés
         const isHoliday = eventData.extendedProps?.source?.startsWith('holiday') || (eventData.title && eventData.title.toLowerCase().includes('férié'));
-        
+
         if (isHoliday) {
-            const existingHoliday = this.calendar.getEvents().find(ev => 
-                ev.title === eventData.title && 
+            const existingHoliday = this.calendar.getEvents().find(ev =>
+                ev.title === eventData.title &&
                 ev.startStr === eventData.start &&
-                (ev.extendedProps?.source?.startsWith('holiday') || 
-                ev.title.toLowerCase().includes('férié'))
+                (ev.extendedProps?.source?.startsWith('holiday') ||
+                    ev.title.toLowerCase().includes('férié'))
             );
-            
+
             if (existingHoliday) {
                 return existingHoliday;
             }
@@ -158,7 +161,7 @@ class CalendarManager {
     // Met à jour les propriétés d'un événement existant
     // prend en paramettre eventId - ID de l'événement à modifier
     // prend en paramettre updates - Nouvelles valeurs {title, start, end, backgroundColor, extendedProps}
-     
+
     updateEvent(eventId, updates) {
         const event = this.calendar?.getEventById(eventId);
         if (event) {
@@ -173,7 +176,7 @@ class CalendarManager {
 
     // Supprime un événement du calendrier
     // prend en paramettre eventId - ID de l'événement à supprimer
-     
+
     removeEvent(eventId) {
         const event = this.calendar?.getEventById(eventId);
         if (event) {
@@ -184,14 +187,14 @@ class CalendarManager {
 
     // Supprime tous les événements du calendrier
     // prend en paramettre preserveHolidays - Si true, conserve les jours fériés (par défaut true)
-    
+
     removeAllEvents(preserveHolidays = true) {
         if (!this.calendar) return;
 
         this.calendar.getEvents().forEach(ev => {
             if (preserveHolidays) {
                 const isHoliday =
-                    ev.extendedProps?.source?.startsWith('holiday') || 
+                    ev.extendedProps?.source?.startsWith('holiday') ||
                     (ev.title && ev.title.toLowerCase().includes('férié'));
 
                 if (!isHoliday) ev.remove();
@@ -223,7 +226,7 @@ class CalendarManager {
 
     // Détruit complètement l'instance FullCalendar
     // Utilisé lors de la déconnexion
-    
+
     destroy() {
         if (this.calendar) {
             this.calendar.destroy();

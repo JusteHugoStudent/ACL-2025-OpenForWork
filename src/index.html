@@ -160,15 +160,6 @@
                             <i class="uil uil-layers"></i>
                             Superposer
                         </button>
-                        <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
-                            <div class="agenda-overlay-header">
-                                <h6>Agendas à afficher</h6>
-                                <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
-                            </div>
-                            <div id="agenda-overlay-list" class="agenda-overlay-list">
-                                <!-- Les checkboxes seront ajoutées dynamiquement -->
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Boutons Import / Export agenda -->
@@ -196,6 +187,17 @@
                 </div>
             </aside>
 
+            <!-- Menu Overlay Agendas (Position absolue par rapport à main container ou page) -->
+            <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
+                <div class="agenda-overlay-header">
+                    <h6>Agendas à afficher</h6>
+                    <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
+                </div>
+                <div id="agenda-overlay-list" class="agenda-overlay-list">
+                    <!-- Les checkboxes seront ajoutées dynamiquement -->
+                </div>
+            </div>
+
             <!-- Zone centrale - Calendrier avec barre de recherche -->
             <main class="calendar-main">
                 <!-- Barre d'outils avec recherche et filtres rapides -->
@@ -204,7 +206,24 @@
                         <i class="uil uil-search"></i>
                         <input type="text" id="filter-keywords" placeholder="Rechercher un événement...">
                     </div>
-                    <div class="filter-chips">
+
+
+                    <!-- Boutons d'action -->
+                    <div class="toolbar-actions">
+                        <button id="btn-search" class="btn-search" title="Rechercher">
+                            <i class="uil uil-search"></i>
+                            <span class="desktop-only">Rechercher</span>
+                        </button>
+
+                        <button id="btn-mobile-toggle-filters" class="btn-icon mobile-visible" title="Filtres">
+                            <i class="uil uil-sliders-v"></i>
+                        </button>
+                        <button id="btn-mobile-add-event" class="btn-icon mobile-visible" title="Ajouter">
+                            <i class="uil uil-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="filter-chips" id="filter-chips-container">
                         <div class="filter-chip" data-filter="date">
                             <i class="uil uil-calendar-alt"></i>
                             Date
@@ -213,48 +232,47 @@
                             <i class="uil uil-smile"></i>
                             Emoji
                         </div>
-                        <button id="btn-search" class="btn-search">
-                            <i class="uil uil-search"></i>
-                            Rechercher
-                        </button>
 
-                        <!-- Panneaux de filtres dropdown -->
-                        <div id="date-filter-panel" class="filter-panel hidden">
-                            <div class="filter-panel-content">
-                                <h4><i class="uil uil-calendar-alt"></i> Filtrer par date</h4>
-                                <div class="date-inputs">
-                                    <div class="input-group">
-                                        <label for="filter-start">Date de début :</label>
-                                        <input type="date" id="filter-start">
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="filter-end">Date de fin :</label>
-                                        <input type="date" id="filter-end">
-                                    </div>
+
+
+                    </div>
+
+                    <!-- Panneaux de filtres dropdown (hors du conteneur chips pour éviter clipping) -->
+                    <div id="date-filter-panel" class="filter-panel hidden">
+                        <div class="filter-panel-content">
+                            <h4><i class="uil uil-calendar-alt"></i> Filtrer par date</h4>
+                            <div class="date-inputs">
+                                <div class="input-group">
+                                    <label for="filter-start">Date de début :</label>
+                                    <input type="date" id="filter-start">
                                 </div>
-                                <div class="filter-panel-actions">
-                                    <button id="btn-filter" class="btn-apply">
-                                        <i class="uil uil-check"></i> Appliquer
-                                    </button>
-                                    <button id="btn-clear-filter" class="btn-clear">
-                                        <i class="uil uil-times"></i> Effacer
-                                    </button>
+                                <div class="input-group">
+                                    <label for="filter-end">Date de fin :</label>
+                                    <input type="date" id="filter-end">
                                 </div>
                             </div>
+                            <div class="filter-panel-actions">
+                                <button id="btn-filter" class="btn-apply">
+                                    <i class="uil uil-check"></i> Appliquer
+                                </button>
+                                <button id="btn-clear-filter" class="btn-clear">
+                                    <i class="uil uil-times"></i> Effacer
+                                </button>
+                            </div>
                         </div>
+                    </div>
 
-                        <div id="emoji-filter-panel" class="filter-panel hidden">
-                            <div class="filter-panel-content">
-                                <h4><i class="uil uil-smile"></i> Filtrer par emoji</h4>
-                                <div id="filter-emoji-buttons" class="emoji-grid"></div>
-                                <div class="filter-panel-actions">
-                                    <button id="btn-emoji-filter" class="btn-apply">
-                                        <i class="uil uil-check"></i> Appliquer
-                                    </button>
-                                    <button id="btn-emoji-clear" class="btn-clear">
-                                        <i class="uil uil-times"></i> Effacer
-                                    </button>
-                                </div>
+                    <div id="emoji-filter-panel" class="filter-panel hidden">
+                        <div class="filter-panel-content">
+                            <h4><i class="uil uil-smile"></i> Filtrer par emoji</h4>
+                            <div id="filter-emoji-buttons" class="emoji-grid"></div>
+                            <div class="filter-panel-actions">
+                                <button id="btn-emoji-filter" class="btn-apply">
+                                    <i class="uil uil-check"></i> Appliquer
+                                </button>
+                                <button id="btn-emoji-clear" class="btn-clear">
+                                    <i class="uil uil-times"></i> Effacer
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -264,6 +282,8 @@
                 <div class="calendar-container-modern">
                     <div id="calendar"></div>
                 </div>
+
+
 
                 <!-- Résultats de recherche (modale) -->
                 <div id="search-results-modal" class="search-modal hidden">

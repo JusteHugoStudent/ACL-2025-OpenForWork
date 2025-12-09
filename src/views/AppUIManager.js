@@ -633,6 +633,32 @@ class AppUIManager {
         document.addEventListener('agendaOverlayChanged', () => {
             this.app.reloadAllEvents();
         });
+
+        // Gestion du bouton FAB (Ajout mobile)
+        const btnFab = document.getElementById('btn-mobile-add-event');
+        if (btnFab) {
+            btnFab.addEventListener('click', () => {
+                // Simule un clic sur la date d'aujourd'hui pour ouvrir la modale de création
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                if (this.app.calendarManager && this.app.calendarManager.onDateClickCallback) {
+                    this.app.calendarManager.onDateClickCallback(dateStr, today);
+                }
+            });
+        }
+
+        // Gestion du bouton Toggle Filtres (Mobile)
+        const btnToggleFilters = document.getElementById('btn-mobile-toggle-filters');
+        if (btnToggleFilters) {
+            btnToggleFilters.addEventListener('click', () => {
+                const filters = document.getElementById('filter-chips-container');
+                if (filters) {
+                    filters.classList.toggle('show');
+                    btnToggleFilters.classList.toggle('active');
+                }
+            });
+        }
     }
 
     // Configure les callbacks du calendrier FullCalendar
