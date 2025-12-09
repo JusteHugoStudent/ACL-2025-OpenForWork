@@ -21,6 +21,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -47,6 +48,7 @@
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -328,3 +330,137 @@
     transition: all 0.3s ease;
 }
 
+/* ========================================
+   IMPORT MODAL OPTIONS
+   ======================================== */
+.import-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.import-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0;
+}
+
+.import-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-light);
+}
+
+.import-option:has(input:checked) {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.import-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.import-option .option-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.import-option .option-content i {
+    font-size: 24px;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.import-option .option-content span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.import-option .option-content small {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+#btn-confirm-import,
+#btn-confirm-export {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+#btn-confirm-import:hover,
+#btn-confirm-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+}
+
+/* ========================================
+   EXPORT AGENDA LIST
+   ======================================== */
+.export-agenda-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.export-agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-agenda-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-light);
+}
+
+.export-agenda-item:has(input:checked) {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border-color: var(--primary);
+}
+
+.export-agenda-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.export-agenda-item .agenda-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.export-agenda-item label {
+    flex: 1;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin: 0;
+}

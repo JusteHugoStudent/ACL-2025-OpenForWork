@@ -11,13 +11,13 @@
 class AppUIManager {
     // Initialise le gestionnaire UI avec l'instance de l'app
     // prend en paramettre app - Instance de l'application principale
-    
+
     constructor(app) {
         this.app = app;
     }
 
     // Initialise tous les gestionnaires d'événements (boutons, callbacks)
-     
+
     initEvents() {
         this.initAuthEvents();
         this.initAgendaEvents();
@@ -29,7 +29,7 @@ class AppUIManager {
     }
 
     // Initialise les événements d'authentification
-     
+
     initAuthEvents() {
         this.app.loginView.onLoginClick((username, password) => {
             this.app.handleLogin(username, password);
@@ -42,7 +42,7 @@ class AppUIManager {
         this.app.headerView.onLogoutClick(() => {
             this.app.handleLogout();
         });
-        
+
         // Bouton pour vider le cache des notifications (debug)
         const btnClearCache = document.getElementById('btn-clear-notif-cache');
         if (btnClearCache) {
@@ -55,7 +55,7 @@ class AppUIManager {
     }
 
     // Initialise les événements de gestion des agendas
-     
+
     initAgendaEvents() {
         this.app.headerView.onAgendaChange = (agenda) => {
             this.app.agendaController.switchAgenda(agenda);
@@ -74,37 +74,283 @@ class AppUIManager {
             });
         }
 
-        // Callback pour l'export : déclenche l'export de l'agenda courant
+        // Callback pour l'export : ouvre la modale de sélection d'export
         this.app.headerView.onExportClick(() => {
-            this.app.agendaController.exportCurrentAgendaToFile().catch(err => {
-                console.error('Export failed:', err);
-                alert('Erreur lors de l\'export de l\'agenda.');
-            });
+            this.openExportModal();
         });
-        
-        // Callback pour l'import : reçoit un File et lance l'import (crée un nouvel agenda)
+
+        // Callback pour l'import : ouvre la modale de choix d'import
         this.app.headerView.onImportClick(async (file) => {
             if (!file) return;
 
-            try {
-                const created = await this.app.agendaController.importAgendaFromFile(file);
-                if (created) {
-                    // Recharge l'affichage / les événements
-                    await this.app.reloadAllEvents();
-                    alert(`Agenda importé : ${created.name || file.name.replace(/\.[^/.]+$/, '')}`);
-                } else {
-                    // importAgendaFromFile signale déjà les erreurs ; on peut informer l'utilisateur si rien n'a été créé
-                    console.warn('Import terminé sans création d\'agenda.');
-                }
-            } catch (err) {
-                console.error('Import failed:', err);
-                alert('Erreur lors de l\'import du fichier JSON.');
-            }
+            // Parse le fichier pour vérifier sa validité
+            const parsedData = await this.app.agendaController.parseImportFile(file);
+            if (!parsedData) return;
+
+            // Ouvre la modale de choix d'import
+            this.openImportModal(file, parsedData);
         });
     }
 
+    /**
+     * Ouvre la modale de choix d'import
+     */
+    openImportModal(file, parsedData) {
+        const modal = document.getElementById('import-agenda-modal');
+        const mergeSelector = document.getElementById('merge-agenda-selector');
+        const newAgendaOptions = document.getElementById('new-agenda-options');
+        const targetAgendaSelect = document.getElementById('import-target-agenda');
+        const radioNew = document.querySelector('input[name="import-mode"][value="new"]');
+        const radioMerge = document.querySelector('input[name="import-mode"][value="merge"]');
+        const btnConfirm = document.getElementById('btn-confirm-import');
+        const btnCancel = document.getElementById('btn-cancel-import');
+        const nameInput = document.getElementById('import-agenda-name');
+        const colorInput = document.getElementById('import-agenda-color');
+        const colorPreview = document.getElementById('import-color-preview');
+
+        if (!modal) return;
+
+        // Récupère le nom et la couleur depuis le fichier importé
+        const importedName = parsedData?.agenda?.name || parsedData?.name || file.name.replace(/\.[^/.]+$/, '');
+        const importedColor = parsedData?.agenda?.color || THEME_COLORS.DEFAULT_AGENDA;
+
+        // Réinitialise l'état
+        radioNew.checked = true;
+        mergeSelector.classList.add('hidden');
+        newAgendaOptions.classList.remove('hidden');
+
+        // Pré-remplit les champs avec les valeurs du fichier
+        nameInput.value = importedName.length > 15 ? importedName.slice(0, 15) : importedName;
+        colorInput.value = importedColor;
+        if (colorPreview) colorPreview.style.backgroundColor = importedColor;
+
+        // Met à jour la prévisualisation en temps réel
+        const handleColorChange = (e) => {
+            if (colorPreview) colorPreview.style.backgroundColor = e.target.value;
+        };
+        colorInput.addEventListener('input', handleColorChange);
+
+        // Remplit le sélecteur d'agendas (exclut Jours fériés)
+        const agendas = this.app.agendaController.getAllAgendas()
+            .filter(a => a.name !== HOLIDAYS_AGENDA_NAME);
+
+        targetAgendaSelect.innerHTML = agendas.map(a =>
+            `<option value="${a.id}">${a.name}</option>`
+        ).join('');
+
+        // Gère le changement de mode
+        const handleModeChange = () => {
+            if (radioMerge.checked) {
+                mergeSelector.classList.remove('hidden');
+                newAgendaOptions.classList.add('hidden');
+            } else {
+                mergeSelector.classList.add('hidden');
+                newAgendaOptions.classList.remove('hidden');
+            }
+        };
+
+        radioNew.addEventListener('change', handleModeChange);
+        radioMerge.addEventListener('change', handleModeChange);
+
+        // Affiche la modale
+        modal.classList.remove('hidden');
+
+        // Handler de confirmation
+        const handleConfirm = async () => {
+            const mode = document.querySelector('input[name="import-mode"]:checked').value;
+
+            if (mode === 'new') {
+                // Valide le nom
+                const customName = nameInput.value.trim();
+                if (!customName) {
+                    alert('Veuillez saisir un nom pour l\'agenda.');
+                    return;
+                }
+            }
+
+            closeModal();
+
+            try {
+                if (mode === 'new') {
+                    // Crée un nouvel agenda avec nom et couleur personnalisés
+                    const customName = nameInput.value.trim();
+                    const customColor = colorInput.value;
+
+                    const created = await this.app.agendaController.importAgendaFromJson(
+                        parsedData._rawJson,
+                        {
+                            createNew: true,
+                            sourceFilename: parsedData._filename,
+                            customName: customName,
+                            customColor: customColor
+                        }
+                    );
+                    if (created) {
+                        await this.app.reloadAllEvents();
+                        alert(`Nouvel agenda créé : ${created.name}`);
+                    }
+                } else {
+                    // Fusionne avec l'agenda sélectionné
+                    const targetId = targetAgendaSelect.value;
+                    const targetAgenda = this.app.agendaController.getAgendaById(targetId);
+
+                    const result = await this.app.agendaController.mergeEventsToAgenda(
+                        parsedData._rawJson,
+                        targetId
+                    );
+
+                    if (result.success) {
+                        await this.app.reloadAllEvents();
+                        const message = result.failedCount > 0
+                            ? `${result.addedCount} événement(s) ajouté(s) à "${targetAgenda.name}". ${result.failedCount} échec(s).`
+                            : `${result.addedCount} événement(s) ajouté(s) à "${targetAgenda.name}".`;
+                        alert(message);
+                    }
+                }
+            } catch (err) {
+                console.error('Import failed:', err);
+                alert('Erreur lors de l\'import.');
+            }
+        };
+
+        // Handler pour fermer
+        const handleClickOutside = (e) => {
+            if (e.target === modal) closeModal();
+        };
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            radioNew.removeEventListener('change', handleModeChange);
+            radioMerge.removeEventListener('change', handleModeChange);
+            colorInput.removeEventListener('input', handleColorChange);
+            btnConfirm.removeEventListener('click', handleConfirm);
+            btnCancel.removeEventListener('click', closeModal);
+            modal.removeEventListener('click', handleClickOutside);
+        };
+
+        btnConfirm.addEventListener('click', handleConfirm);
+        btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', handleClickOutside);
+    }
+
+    /**
+     * Ouvre la modale de sélection d'export
+     */
+    openExportModal() {
+        const modal = document.getElementById('export-agenda-modal');
+        const agendaList = document.getElementById('export-agenda-list');
+        const mergedOptions = document.getElementById('merged-export-options');
+        const radioIndividual = document.querySelector('input[name="export-mode"][value="individual"]');
+        const radioMerged = document.querySelector('input[name="export-mode"][value="merged"]');
+        const btnConfirm = document.getElementById('btn-confirm-export');
+        const btnCancel = document.getElementById('btn-cancel-export');
+        const mergedNameInput = document.getElementById('export-merged-name');
+        const mergedColorInput = document.getElementById('export-merged-color');
+        const colorPreview = document.getElementById('export-color-preview');
+
+        if (!modal) return;
+
+        // Récupère tous les agendas (exclut Jours fériés)
+        const agendas = this.app.agendaController.getAllAgendas()
+            .filter(a => a.name !== HOLIDAYS_AGENDA_NAME);
+
+        // Remplit la liste des agendas avec checkboxes
+        agendaList.innerHTML = agendas.map(a => `
+            <label class="export-agenda-item">
+                <input type="checkbox" value="${a.id}" ${a.id === this.app.agendaController.currentAgenda?.id ? 'checked' : ''}>
+                <span class="agenda-color" style="background-color: ${a.color || '#3498db'}"></span>
+                <span>${a.name}</span>
+            </label>
+        `).join('');
+
+        // Réinitialise l'état
+        radioIndividual.checked = true;
+        mergedOptions.classList.add('hidden');
+        mergedNameInput.value = 'Agenda combiné';
+        mergedColorInput.value = '#3498db';
+        if (colorPreview) colorPreview.style.backgroundColor = '#3498db';
+
+        // Gère le changement de mode
+        const handleModeChange = () => {
+            if (radioMerged.checked) {
+                mergedOptions.classList.remove('hidden');
+            } else {
+                mergedOptions.classList.add('hidden');
+            }
+        };
+
+        radioIndividual.addEventListener('change', handleModeChange);
+        radioMerged.addEventListener('change', handleModeChange);
+
+        // Prévisualisation couleur
+        const handleColorChange = (e) => {
+            if (colorPreview) colorPreview.style.backgroundColor = e.target.value;
+        };
+        mergedColorInput.addEventListener('input', handleColorChange);
+
+        // Affiche la modale
+        modal.classList.remove('hidden');
+
+        // Handler de confirmation
+        const handleConfirm = async () => {
+            const mode = document.querySelector('input[name="export-mode"]:checked').value;
+            const selectedCheckboxes = agendaList.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert('Veuillez sélectionner au moins un agenda.');
+                return;
+            }
+
+            closeModal();
+
+            try {
+                if (mode === 'individual') {
+                    // Export individuel : un fichier par agenda
+                    for (const agendaId of selectedIds) {
+                        await this.app.agendaController.exportAgendaById(agendaId);
+                    }
+                    alert(`${selectedIds.length} agenda(s) exporté(s) avec succès.`);
+                } else {
+                    // Export fusionné : tous les événements dans un fichier
+                    const mergedName = mergedNameInput.value.trim() || 'Agenda combiné';
+                    const mergedColor = mergedColorInput.value;
+
+                    await this.app.agendaController.exportMergedAgendas(
+                        selectedIds,
+                        mergedName,
+                        mergedColor
+                    );
+                    alert('Agenda fusionné exporté avec succès.');
+                }
+            } catch (err) {
+                console.error('Export failed:', err);
+                alert('Erreur lors de l\'export.');
+            }
+        };
+
+        // Handler pour fermer
+        const handleClickOutside = (e) => {
+            if (e.target === modal) closeModal();
+        };
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            radioIndividual.removeEventListener('change', handleModeChange);
+            radioMerged.removeEventListener('change', handleModeChange);
+            mergedColorInput.removeEventListener('input', handleColorChange);
+            btnConfirm.removeEventListener('click', handleConfirm);
+            btnCancel.removeEventListener('click', closeModal);
+            modal.removeEventListener('click', handleClickOutside);
+        };
+
+        btnConfirm.addEventListener('click', handleConfirm);
+        btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', handleClickOutside);
+    }
+
     // Initialise les événements du calendrier (modale)
-     
+
     initCalendarEvents() {
         this.app.modalView.onSaveClick(() => {
             this.app.handleSaveEvent();
@@ -123,7 +369,7 @@ class AppUIManager {
     }
 
     // Initialise le menu de superposition des agendas
-     
+
     initOverlayMenu() {
         const overlayBtn = document.getElementById('agenda-overlay-btn');
         const overlayMenu = document.getElementById('agenda-overlay-menu');
@@ -134,10 +380,10 @@ class AppUIManager {
             overlayBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const wasHidden = overlayMenu.classList.contains('hidden');
-                
+
                 overlayMenu.classList.toggle('hidden');
                 overlayBtn.classList.toggle('active');
-                
+
                 // Met à jour le menu quand on l'ouvre
                 if (wasHidden) {
                     this.app.agendaController.updateOverlayMenu();
@@ -164,36 +410,36 @@ class AppUIManager {
     }
 
     // Initialise les événements du filtre
-     
+
     initFilterEvents() {
         const btnFilter = document.getElementById('btn-filter');
         const btnClearFilter = document.getElementById('btn-clear-filter');
         const btnEmojiFilter = document.getElementById('btn-emoji-filter');
         const btnEmojiClear = document.getElementById('btn-emoji-clear');
         const btnSearch = document.getElementById('btn-search');
-        
+
         // Chips de filtres
         const filterChips = document.querySelectorAll('.filter-chip');
         const datePanel = document.getElementById('date-filter-panel');
         const emojiPanel = document.getElementById('emoji-filter-panel');
-        
+
         filterChips.forEach(chip => {
             chip.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const filterType = chip.dataset.filter;
-                
+
                 // Toggle du chip actif
                 const wasActive = chip.classList.contains('active');
-                
+
                 // Ferme tous les panneaux et désactive tous les chips
                 filterChips.forEach(c => c.classList.remove('active'));
                 datePanel?.classList.add('hidden');
                 emojiPanel?.classList.add('hidden');
-                
+
                 // Si le chip n'était pas actif, l'activer et ouvrir son panneau
                 if (!wasActive) {
                     chip.classList.add('active');
-                    
+
                     if (filterType === 'date' && datePanel) {
                         // Positionner le panneau sous le chip
                         const rect = chip.getBoundingClientRect();
@@ -210,14 +456,14 @@ class AppUIManager {
                 }
             });
         });
-        
+
         // Bouton Rechercher principal - Lance la recherche/filtrage
         if (btnSearch) {
             btnSearch.addEventListener('click', () => {
                 this.app.handleFilterEvents();
             });
         }
-        
+
         // Boutons Appliquer des panneaux - Ferment juste les panneaux
         if (btnFilter) {
             btnFilter.addEventListener('click', () => {
@@ -225,7 +471,7 @@ class AppUIManager {
                 document.querySelector('[data-filter="date"]')?.classList.remove('active');
             });
         }
-        
+
         if (btnClearFilter) {
             btnClearFilter.addEventListener('click', () => {
                 document.getElementById('filter-start').value = '';
@@ -234,14 +480,14 @@ class AppUIManager {
                 document.querySelector('[data-filter="date"]')?.classList.remove('active');
             });
         }
-        
+
         if (btnEmojiFilter) {
             btnEmojiFilter.addEventListener('click', () => {
                 emojiPanel?.classList.add('hidden');
                 document.querySelector('[data-filter="emoji"]')?.classList.remove('active');
             });
         }
-        
+
         if (btnEmojiClear) {
             btnEmojiClear.addEventListener('click', () => {
                 // Désélectionne tous les emojis
@@ -251,12 +497,12 @@ class AppUIManager {
                 document.querySelector('[data-filter="emoji"]')?.classList.remove('active');
             });
         }
-        
+
         // Ferme les panneaux si clic à l'extérieur
         document.addEventListener('click', (e) => {
             const isChip = e.target.closest('.filter-chip');
             const isPanel = e.target.closest('.filter-panel');
-            
+
             if (!isChip && !isPanel) {
                 filterChips.forEach(c => c.classList.remove('active'));
                 datePanel?.classList.add('hidden');
@@ -325,7 +571,7 @@ class AppUIManager {
                     .then(() => {
                         alert("C'est envoyé ! L'admin a reçu le mail.");
                         modalContact.classList.add('hidden');
-                        
+
                         // On vide les champs pour la prochaine fois
                         inputEmail.value = '';
                         inputSubject.value = '';
@@ -352,18 +598,18 @@ class AppUIManager {
             });
         }
     }
-    
+
     // Initialise la grille d'emojis
-     
+
     initEmojiGrid() {
         const container = document.getElementById('filter-emoji-buttons');
         if (!container) return;
-        
+
         // Ne recrée pas si déjà créé
         if (container.children.length > 0) return;
-        
+
         const emojis = ['📅', '🎉', '💼', '🎓', '🏥', '🍕', '🏋️', '✈️', '🎵', '📚', '🎮', '🎨'];
-        
+
         container.innerHTML = '';
         emojis.forEach(emoji => {
             const btn = document.createElement('button');
@@ -381,7 +627,7 @@ class AppUIManager {
     }
 
     // Initialise les événements globaux
-     
+
     initGlobalEvents() {
         // Écoute les changements d'overlay
         document.addEventListener('agendaOverlayChanged', () => {
@@ -390,7 +636,7 @@ class AppUIManager {
     }
 
     // Configure les callbacks du calendrier FullCalendar
-     
+
     setupCalendarCallbacks() {
         // Clic sur une date : ouvre la modale de création
         this.app.calendarManager.setOnDateClick((dateStr, dateObj) => {
@@ -401,56 +647,56 @@ class AppUIManager {
             }
 
             this.app.eventController.setEditingEvent(null);
-            
+
             // Remplit le sélecteur d'agendas
             this.app.modalView.populateAgendaSelector(
                 this.app.agendaController.getAllAgendas(),
                 currentAgenda.id
             );
-            
+
             this.app.modalView.openForAdd(dateStr, dateObj);
         });
 
         // Clic sur un événement : ouvre la modale d'édition
         this.app.calendarManager.setOnEventClick((event) => {
             const eventAgendaId = event.extendedProps.agendaId || this.app.agendaController.getCurrentAgenda()?.id;
-            
+
             // Bloque l'édition des événements de l'agenda "Jours fériés"
             const agenda = this.app.agendaController.agendas.find(a => a.id === eventAgendaId);
             if (agenda && agenda.name === HOLIDAYS_AGENDA_NAME) {
                 return; // Ne rien faire pour les jours fériés
             }
-            
+
             // Pour événement récurrent, utiliser l'ID original et les dates originales
-            const eventIdToEdit = event.extendedProps.isRecurring 
-                ? event.extendedProps.originalEventId 
+            const eventIdToEdit = event.extendedProps.isRecurring
+                ? event.extendedProps.originalEventId
                 : (event.id.includes('-') ? event.id.split('-')[1] : event.id);
 
-            const eventStart = event.extendedProps.isRecurring && event.extendedProps.originalStart 
-                ? new Date(event.extendedProps.originalStart) 
+            const eventStart = event.extendedProps.isRecurring && event.extendedProps.originalStart
+                ? new Date(event.extendedProps.originalStart)
                 : event.start;
-            
+
             const eventEnd = event.extendedProps.isRecurring && event.extendedProps.originalEnd
                 ? new Date(event.extendedProps.originalEnd)
                 : event.end;
-            
+
             // Prépare les données pour la modale
             const isAllDay = event.allDay || event.extendedProps.allDay || false;
-            
+
             let startValue, endValue;
-            
+
             if (isAllDay) {
                 // Pour les événements all-day, extraire la date LOCALE (pas UTC!)
                 // Car FullCalendar renvoie la date en heure locale (ex: Mon Dec 08 2025 00:00:00 GMT+0100)
                 const startDate = typeof eventStart === 'string' ? new Date(eventStart) : eventStart;
                 const endDate = eventEnd ? (typeof eventEnd === 'string' ? new Date(eventEnd) : eventEnd) : startDate;
-                
+
                 // Extraire année/mois/jour en heure LOCALE
                 const startYear = startDate.getFullYear();
                 const startMonth = String(startDate.getMonth() + 1).padStart(2, '0');
                 const startDay = String(startDate.getDate()).padStart(2, '0');
                 startValue = `${startYear}-${startMonth}-${startDay}`;
-                
+
                 const endYear = endDate.getFullYear();
                 const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
                 const endDay = String(endDate.getDate()).padStart(2, '0');
@@ -460,7 +706,7 @@ class AppUIManager {
                 startValue = formatDateTimeLocal(new Date(eventStart));
                 endValue = eventEnd ? formatDateTimeLocal(new Date(eventEnd)) : '';
             }
-            
+
             const eventData = {
                 title: event.extendedProps.originalTitle || event.title.replace(/^.+?\s/, ''),
                 start: startValue,
@@ -485,12 +731,12 @@ class AppUIManager {
                 this.app.reloadAllEvents();
                 return;
             }
-            
+
             // Extrait l'eventId réel (format FullCalendar: "agendaId-eventId")
-            const realEventId = event.id.includes('-') 
-                ? event.id.split('-')[1] 
+            const realEventId = event.id.includes('-')
+                ? event.id.split('-')[1]
                 : event.id;
-            
+
             await this.app.eventController.updateEvent({
                 id: realEventId,
                 title: event.extendedProps.originalTitle || event.title,

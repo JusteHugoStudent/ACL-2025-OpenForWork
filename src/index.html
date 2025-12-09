@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,14 @@
     <!-- Icones et Bootstrap -->
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
-    
+
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 
     <!-- Notre CSS modulaire -->
     <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body>
     <!-- Page de Connexion / Inscription -->
     <div id="page-login" class="section">
@@ -53,11 +55,13 @@
                                             <h4 class="mb-2 pb-2">Bienvenue !</h4>
                                             <p class="auth-description">Connectez-vous pour accéder à vos agendas</p>
                                             <div class="form-group">
-                                                <input type="text" id="username" class="form-style" placeholder="Nom d'utilisateur">
+                                                <input type="text" id="username" class="form-style"
+                                                    placeholder="Nom d'utilisateur">
                                                 <i class="input-icon uil uil-user"></i>
                                             </div>
                                             <div class="form-group mt-2">
-                                                <input type="password" id="password" class="form-style" placeholder="Mot de passe">
+                                                <input type="password" id="password" class="form-style"
+                                                    placeholder="Mot de passe">
                                                 <i class="input-icon uil uil-lock-alt"></i>
                                             </div>
                                             <div class="login-actions">
@@ -78,11 +82,13 @@
                                             <h4 class="mb-2 pb-2">Créer un compte</h4>
                                             <p class="auth-description">Rejoignez-nous pour organiser vos événements</p>
                                             <div class="form-group">
-                                                <input type="text" id="signup-username" class="form-style" placeholder="Nom d'utilisateur">
+                                                <input type="text" id="signup-username" class="form-style"
+                                                    placeholder="Nom d'utilisateur">
                                                 <i class="input-icon uil uil-user"></i>
                                             </div>
                                             <div class="form-group mt-2">
-                                                <input type="password" id="signup-password" class="form-style" placeholder="Mot de passe">
+                                                <input type="password" id="signup-password" class="form-style"
+                                                    placeholder="Mot de passe">
                                                 <i class="input-icon uil uil-lock-alt"></i>
                                             </div>
                                             <button id="btn-signup" class="btn mt-4">S'inscrire</button>
@@ -104,7 +110,7 @@
     <div id="page-agenda" class="hidden">
         <!-- Zone de notifications -->
         <div id="notification-area" class="notification-area"></div>
-        
+
         <!-- En-tête -->
         <div class="header">
             <div class="header-left">
@@ -164,7 +170,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Boutons Import / Export agenda -->
                     <div class="agenda-overlay-section">
                         <button id="btn-export" type="button" class="btn-overlay">
@@ -178,7 +184,8 @@
                             Importer agenda
                         </button>
                         <!-- input file caché pour l'import ; HeaderView lira cet élément si présent -->
-                        <input id="agendaImportInput" type="file" accept=".json,application/json" style="display:none" />
+                        <input id="agendaImportInput" type="file" accept=".json,application/json"
+                            style="display:none" />
                     </div>
                     <div class="agenda-overlay-section">
                         <button id="btn-contact-admin" type="button" class="btn-overlay">
@@ -210,7 +217,7 @@
                             <i class="uil uil-search"></i>
                             Rechercher
                         </button>
-                        
+
                         <!-- Panneaux de filtres dropdown -->
                         <div id="date-filter-panel" class="filter-panel hidden">
                             <div class="filter-panel-content">
@@ -368,7 +375,8 @@
 
     <div id="modal-contact" class="modal hidden">
         <div class="modal-content">
-            <h3>Contacter l'Admin</h3> <div class="modal-body">
+            <h3>Contacter l'Admin</h3>
+            <div class="modal-body">
                 <p style="color: var(--text-secondary); margin-bottom: 15px;">
                     Un souci ? Laisse ton mail et ton message, on te recontactera.
                 </p>
@@ -442,33 +450,154 @@
         </div>
     </div>
 
+    <!-- Modale Import d'agenda -->
+    <div id="import-agenda-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3><i class="uil uil-upload-alt"></i> Importer un agenda</h3>
+
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                    Comment souhaitez-vous importer cet agenda ?
+                </p>
+
+                <div class="import-options">
+                    <label class="import-option">
+                        <input type="radio" name="import-mode" value="new" checked>
+                        <div class="option-content">
+                            <i class="uil uil-plus-circle"></i>
+                            <span>Créer un nouvel agenda</span>
+                            <small>Les événements seront ajoutés dans un nouvel agenda</small>
+                        </div>
+                    </label>
+
+                    <label class="import-option">
+                        <input type="radio" name="import-mode" value="merge">
+                        <div class="option-content">
+                            <i class="uil uil-layer-group"></i>
+                            <span>Fusionner avec un agenda existant</span>
+                            <small>Les événements seront ajoutés à l'agenda sélectionné</small>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Options pour créer un nouvel agenda -->
+                <div id="new-agenda-options" style="margin-top: 15px;">
+                    <label for="import-agenda-name">Nom de l'agenda :</label>
+                    <input type="text" id="import-agenda-name" placeholder="Mon agenda" maxlength="15">
+
+                    <label for="import-agenda-color">Couleur :</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="import-agenda-color" value="#3498db">
+                        <div class="color-preview" id="import-color-preview" style="background-color: #3498db;"></div>
+                    </div>
+                </div>
+
+                <div id="merge-agenda-selector" class="hidden" style="margin-top: 15px;">
+                    <label for="import-target-agenda">Sélectionner l'agenda cible :</label>
+                    <select id="import-target-agenda" class="form-style">
+                        <!-- Options remplies dynamiquement -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-confirm-import">
+                    <i class="uil uil-check"></i>
+                    Importer
+                </button>
+                <button id="btn-cancel-import" style="background: var(--error);">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Export d'agenda -->
+    <div id="export-agenda-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3><i class="uil uil-download-alt"></i> Exporter des agendas</h3>
+
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                    Sélectionnez les agendas à exporter :
+                </p>
+
+                <div id="export-agenda-list" class="export-agenda-list">
+                    <!-- Checkboxes remplies dynamiquement -->
+                </div>
+
+                <div class="export-options" style="margin-top: 20px;">
+                    <label class="import-option">
+                        <input type="radio" name="export-mode" value="individual" checked>
+                        <div class="option-content">
+                            <i class="uil uil-files-landscapes"></i>
+                            <span>Export individuel</span>
+                            <small>Chaque agenda sera exporté dans un fichier séparé</small>
+                        </div>
+                    </label>
+
+                    <label class="import-option">
+                        <input type="radio" name="export-mode" value="merged">
+                        <div class="option-content">
+                            <i class="uil uil-compress-arrows"></i>
+                            <span>Fusionner en un seul fichier</span>
+                            <small>Tous les événements seront combinés dans un seul agenda</small>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Options pour l'export fusionné -->
+                <div id="merged-export-options" class="hidden" style="margin-top: 15px;">
+                    <label for="export-merged-name">Nom de l'agenda fusionné :</label>
+                    <input type="text" id="export-merged-name" placeholder="Agenda combiné" maxlength="15">
+
+                    <label for="export-merged-color">Couleur :</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="export-merged-color" value="#3498db">
+                        <div class="color-preview" id="export-color-preview" style="background-color: #3498db;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-confirm-export">
+                    <i class="uil uil-download-alt"></i>
+                    Exporter
+                </button>
+                <button id="btn-cancel-export" style="background: var(--error);">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <!-- 1. Bibliothèques externes -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
-       (function(){
-          // initialisation avec la clé publique (on la recupere sur le site EmailJS)
-          emailjs.init("bV7OebRLiRnrrhm8a");
-       })();
+        (function () {
+            // initialisation avec la clé publique (on la recupere sur le site EmailJS)
+            emailjs.init("bV7OebRLiRnrrhm8a");
+        })();
     </script>
 
     <!-- 2. Configuration (constantes) -->
     <script src="config/constants.js"></script>
-    
+
     <!-- 3. Utilitaires (fonctions helpers) -->
     <script src="utils/domUtils.js"></script>
     <script src="utils/dateUtils.js"></script>
     <script src="utils/storageUtils.js"></script>
     <script src="utils/validationUtils.js"></script>
     <script src="utils/recurrenceUtils.js"></script>
-    
+
     <!-- 4. Services (accès API) -->
     <script src="services/AuthService.js"></script>
     <script src="services/ApiServices.js"></script>
-    
+
     <!-- 5. Contrôleurs (logique métier) -->
     <script src="controllers/AgendaControllerFront.js"></script>
     <script src="controllers/EventControllerFront.js"></script>
@@ -485,4 +614,5 @@
     <!-- 7. App.js en dernier (orchestrateur) -->
     <script src="views/App.js"></script>
 </body>
+
 </html>
