@@ -155,28 +155,103 @@ Authorization: Bearer <token>
 **Body :**
 ```json
 {
-  "name": "string (requis)"
+  "name": "string (requis, max 50 caractères)",
+  "color": "string (optionnel, format hex #RGB ou #RRGGBB)"
 }
 ```
 
 **Fonctionnement :**
 1. Vérifie le token JWT
-2. Crée un nouvel agenda avec `events: []`
-3. Ajoute l'ID de l'agenda dans `user.agendas`
-4. Sauvegarde l'utilisateur et l'agenda
+2. Valide le nom (requis, max 50 caractères)
+3. Valide la couleur si fournie (format hex)
+4. Crée un nouvel agenda avec `events: []`
+5. Ajoute l'ID de l'agenda dans `user.agendas`
+6. Sauvegarde l'utilisateur et l'agenda
 
 **Réponse :**
 ```json
 {
   "id": "673xyz890abc123456789abc",
   "name": "Mon agenda perso",
+  "color": "#3498db",
   "events": []
 }
 ```
 
 **Codes d'erreur :**
-- `400` : Nom manquant
+- `400` : Nom manquant, trop long (> 50 caractères), ou couleur invalide
 - `404` : Utilisateur non trouvé
+- `401` : Token invalide
+- `500` : Erreur serveur
+
+---
+
+### PUT `/api/agendas/:id`
+**Description :** Met à jour un agenda existant (nom et/ou couleur).
+
+**Authentification :** Requise (JWT)
+
+**Headers :**
+```
+Authorization: Bearer <token>
+```
+
+**URL Params :**
+- `id` : ID de l'agenda à modifier
+
+**Body (tous les champs optionnels) :**
+```json
+{
+  "name": "string (max 50 caractères)",
+  "color": "string (format hex #RGB ou #RRGGBB)"
+}
+```
+
+**Réponse :**
+```json
+{
+  "id": "673xyz890abc123456789abc",
+  "name": "Agenda modifié",
+  "color": "#ff5733"
+}
+```
+
+**Codes d'erreur :**
+- `400` : Nom vide ou trop long, couleur invalide
+- `404` : Agenda non trouvé ou non autorisé
+- `401` : Token invalide
+- `500` : Erreur serveur
+
+---
+
+### DELETE `/api/agendas/:id`
+**Description :** Supprime un agenda et tous ses événements associés.
+
+**Authentification :** Requise (JWT)
+
+**Headers :**
+```
+Authorization: Bearer <token>
+```
+
+**URL Params :**
+- `id` : ID de l'agenda à supprimer
+
+**Fonctionnement :**
+1. Vérifie que l'utilisateur possède cet agenda
+2. Supprime tous les événements liés à cet agenda
+3. Retire l'agenda de la liste `user.agendas`
+4. Supprime l'agenda de la collection
+
+**Réponse :**
+```json
+{
+  "message": "agenda deleted successfully"
+}
+```
+
+**Codes d'erreur :**
+- `404` : Agenda non trouvé ou non autorisé
 - `401` : Token invalide
 - `500` : Erreur serveur
 
@@ -280,17 +355,19 @@ Authorization: Bearer <token>
 **Body :**
 ```json
 {
-  "title": "string (requis)",
+  "title": "string (requis, max 200 caractères)",
   "start": "ISO date (requis)",
   "end": "ISO date (optionnel, défaut: = start)",
-  "description": "string (optionnel)",
+  "description": "string (optionnel, max 1000 caractères)",
   "emoji": "string (optionnel, défaut: 📅)",
   "color": "string (optionnel, défaut: #ffd700)",
   "agendaId": "string (optionnel)",
+  "allDay": "boolean (optionnel, défaut: false)",
   "recurrence": {
     "type": "none|daily|weekly|monthly|yearly",
-    "interval": "number",
-    "endDate": "ISO date"
+    "interval": "number (défaut: 1)",
+    "endDate": "ISO date (optionnel)",
+    "daysOfWeek": "number[] (pour weekly, ex: [1,3,5] = Lun,Mer,Ven)"
   }
 }
 ```
@@ -443,6 +520,19 @@ Toutes les routes `/api/agendas` et `/api/events` passent par le middleware `aut
 - Validation des dates (fin >= début)
 - Vérification d'appartenance des agendas à l'utilisateur
 - Transactions MongoDB pour garantir la cohérence des données
+
+**Règles de validation :**
+
+| Champ | Règle |
+|-------|-------|
+| `username` | Requis, 3-30 caractères |
+| `password` | Requis, min 6 caractères |
+| `agenda.name` | Requis, max 50 caractères |
+| `agenda.color` | Optionnel, format hex (#RGB ou #RRGGBB) |
+| `event.title` | Requis, max 200 caractères |
+| `event.description` | Optionnel, max 1000 caractères |
+| `event.start` | Requis, date ISO valide |
+| `event.recurrence.type` | none, daily, weekly, monthly, yearly |
 
 ---
 

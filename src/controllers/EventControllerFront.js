@@ -195,6 +195,9 @@ class EventControllerFront {
         // Détecte si c'est un événement journée entière
         const isAllDay = ev.allDay || false;
 
+        // Les événements "Jours fériés" ne sont pas modifiables (pas de drag & drop)
+        const isHoliday = agendaName === HOLIDAYS_AGENDA_NAME;
+
         this.calendarManager.addEvent({
             id: compositeId,
             title: fullTitle,
@@ -203,6 +206,7 @@ class EventControllerFront {
             allDay: isAllDay,  // Propriété FullCalendar pour afficher en haut du jour
             backgroundColor: backgroundColor,
             borderColor: backgroundColor,
+            editable: !isHoliday,  // Désactive drag & drop pour les jours fériés
             extendedProps: {
                 agendaId: agendaId,
                 agendaName: agendaName,
@@ -214,10 +218,12 @@ class EventControllerFront {
                 originalEventId: eventId,
                 originalStart: ev.originalStart,
                 originalEnd: ev.originalEnd,
-                recurrence: ev.recurrence
+                recurrence: ev.recurrence,
+                isHoliday: isHoliday  // Flag pour identifier les jours fériés
             }
         });
     }
+
 
 
     // Charge les événements de plusieurs agendas
