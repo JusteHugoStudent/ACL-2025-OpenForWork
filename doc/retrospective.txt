@@ -34,3 +34,8 @@ La recurrence a ete implementés et les autres fonctionnalités du sprint tels q
 l'import/export des agendas ont ete fait, le systeme de filtrage a ete mis a jours, le front a ete 
 redesigné puis un modale pour le support a ete ajouter pour le prochain sprint.
 
+Sprint 4 : 
+Nous avons eu des soucis avec la base de données, ce problème était lié à une erreur de communication nous faisant supprimer les jours fériés sans moyen de les recréer. 
+Ce contre-temps a su être géré grâce à un travail d'équipe en urgence. 
+Il n'y a pas eu de soucis évoqués durant les réunions. 
+Le projet s'est terminé dans le sang et la sueur mais personne n'a été écartelé pour mauvaise conduite au sein du groupe. 
