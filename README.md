@@ -25,5 +25,5 @@ node serveur.js
 3. Ouvrir l'application dans le navigateur :
 
 ```
-http://localhost:4000
+http://localhost:3000
 ```
