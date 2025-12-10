@@ -1,5 +1,4 @@
 // Tests d'intégration pour l'API d'authentification
-// Utilise Supertest pour tester les endpoints HTTP
 
 const request = require('supertest');
 const express = require('express');
