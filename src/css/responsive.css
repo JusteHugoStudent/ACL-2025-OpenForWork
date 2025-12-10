@@ -498,19 +498,37 @@ select {
 }
 
 /* ========================================
-   GLOBAL FIX OVERLAY MENU (Moved to root)
+   OVERLAY MENU (Fixed positioning for both)
    ======================================== */
+
+/* Container pour référence */
+.agenda-overlay-section {
+    position: relative;
+}
+
+/* Desktop : Fixed positionné à gauche (simule dropdown) */
 .agenda-overlay-menu {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 10000 !important;
-    width: 300px;
-    max-height: 80vh;
+    position: fixed;
+    top: 250px;
+    /* En dessous du header sidebar */
+    left: 20px;
+    z-index: 10000;
+    width: 280px;
+    max-height: 60vh;
     overflow-y: auto;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile : Centré en modale */
+@media (max-width: 900px) {
+    .agenda-overlay-menu {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90%;
+        max-width: 320px;
+    }
 }

@@ -384,8 +384,19 @@ class AppUIManager {
                 overlayMenu.classList.toggle('hidden');
                 overlayBtn.classList.toggle('active');
 
-                // Met à jour le menu quand on l'ouvre
+                // Positionne et met à jour le menu quand on l'ouvre
                 if (wasHidden) {
+                    // Positionnement dynamique basé sur la position du bouton
+                    const rect = overlayBtn.getBoundingClientRect();
+                    const isMobile = window.innerWidth <= 900;
+
+                    if (!isMobile) {
+                        // Desktop : en dessous du bouton
+                        overlayMenu.style.top = (rect.bottom + 8) + 'px';
+                        overlayMenu.style.left = rect.left + 'px';
+                    }
+                    // Mobile : laisse le CSS gérer (centré)
+
                     this.app.agendaController.updateOverlayMenu();
                 }
             });

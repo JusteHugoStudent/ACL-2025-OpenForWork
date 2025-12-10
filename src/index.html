@@ -187,17 +187,6 @@
                 </div>
             </aside>
 
-            <!-- Menu Overlay Agendas (Position absolue par rapport à main container ou page) -->
-            <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
-                <div class="agenda-overlay-header">
-                    <h6>Agendas à afficher</h6>
-                    <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
-                </div>
-                <div id="agenda-overlay-list" class="agenda-overlay-list">
-                    <!-- Les checkboxes seront ajoutées dynamiquement -->
-                </div>
-            </div>
-
             <!-- Zone centrale - Calendrier avec barre de recherche -->
             <main class="calendar-main">
                 <!-- Barre d'outils avec recherche et filtres rapides -->
@@ -635,6 +624,17 @@
 
     <!-- 7. App.js en dernier (orchestrateur) -->
     <script src="views/App.js"></script>
+
+    <!-- Menu Overlay Agendas (au niveau body pour position:fixed correcte) -->
+    <div id="agenda-overlay-menu" class="agenda-overlay-menu hidden">
+        <div class="agenda-overlay-header">
+            <h6>Agendas à afficher</h6>
+            <button id="clear-all-overlay" class="btn-small">Tout décocher</button>
+        </div>
+        <div id="agenda-overlay-list" class="agenda-overlay-list">
+            <!-- Les checkboxes seront ajoutées dynamiquement -->
+        </div>
+    </div>
 </body>
 
 </html>

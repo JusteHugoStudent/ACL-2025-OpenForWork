@@ -107,25 +107,19 @@ class ModalView {
     }
 
     // Initialise les gestionnaires d'événements pour la récurrence
-    initRecurrenceHandlers() {
-        this.inputRecurrence.addEventListener('change', () => {
-            const type = this.inputRecurrence.value;
-            
-            if (type === 'none') {
-                this.recurrenceOptions.classList.add('hidden');
-                this.weeklyDays.classList.add('hidden');
-            } else {
-                this.recurrenceOptions.classList.remove('hidden');
-                
-                // Afficher les jours de la semaine uniquement pour récurrence hebdomadaire
-                if (type === 'weekly') {
-                    this.weeklyDays.classList.remove('hidden');
-                } else {
-                    this.weeklyDays.classList.add('hidden');
-                }
-            }
-        });
-    }
+initRecurrenceHandlers() {
+    this.inputRecurrence.addEventListener('change', () => {
+        const type = this.inputRecurrence.value;
+        
+        if (type === 'none') {
+            this.recurrenceOptions.classList.add('hidden');
+        } else {
+            this.recurrenceOptions.classList.remove('hidden');
+        }
+        // Note: weeklyDays reste toujours caché car le jour est déterminé automatiquement
+        this.weeklyDays.classList.add('hidden');
+    });
+}
 
     // Ouvre la modale en mode AJOUT d'un nouvel événement
     // Réinitialise tous les champs et cache le bouton Supprimer 
@@ -246,10 +240,9 @@ class ModalView {
                 this.recurrenceOptions.classList.remove('hidden');
             }
             
-            if (eventData.recurrence.type === 'weekly' && eventData.recurrence.daysOfWeek) {
-                this.weeklyDays.classList.remove('hidden');
-                this.setWeeklyDays(eventData.recurrence.daysOfWeek);
-            }
+            // weeklyDays est maintenant toujours caché, donc pas besoin de le gérer ici
+            this.weeklyDays.classList.add('hidden');
+            this.clearWeeklyDays(); // S'assurer qu'ils sont décochés
         } else {
             this.inputRecurrence.value = 'none';
             this.recurrenceOptions.classList.add('hidden');
@@ -327,10 +320,12 @@ class ModalView {
                 endDate: this.inputRecurrenceEnd.value || null
             };
             
-            // Pour récurrence hebdomadaire, récupérer les jours sélectionnés
-            if (recurrenceType === 'weekly') {
-                data.recurrence.daysOfWeek = this.getSelectedWeeklyDays();
-            }
+            // Pour récurrence hebdomadaire, calculer automatiquement le jour depuis la date de début
+        if (recurrenceType === 'weekly') {
+            const startDate = new Date(startValue);
+            const dayOfWeek = startDate.getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
+            data.recurrence.daysOfWeek = [dayOfWeek];
+        }
         } else {
             data.recurrence = { type: 'none' };
         }

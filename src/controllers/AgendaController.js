@@ -115,6 +115,9 @@ class AgendaController {
             this.selectedAgendas.push(holidaysAgenda.id);
         }
 
+        // Met à jour le sélecteur pour refléter l'agenda courant
+        this.headerView.updateAgendaSelector(this.agendas, this.currentAgenda);
+
         this.updateOverlayMenu();
     }
 
