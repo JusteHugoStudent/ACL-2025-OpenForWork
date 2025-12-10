@@ -15,3 +15,60 @@ Pb de developpment lors de la reccurance.
 
 Sprint 3 :
 Aucun problèmes a signalé ce Sprint. 
+
+Sprint 1 : 
+* Quand un évenement à une heure de fin antérieur à celle de début, cela fait un cas spécial à voir.
+* Un rendez-vous sur plusieurs jours est implémenté dans notre agenda pas de problèmes.
+* Le fonctionnement de la base de donnée doit être de prendre seulement les évenements de la personne qui l'utilise et limité le chargement à la période de temps choisi.
+* Oubli de se mettre d'accord sur l'implémenation de import/export (date, format, agendas mixés)
+* Idem pour la recherche (résultat en liste ou affichage sur l'agenda)
+* Il nous faut changer la façon d'écrire le backlog et les reviews
+* Ajouter des couleurs à chaque agenda pour lisibilité d'agenda mixes
+* Ajouter des tags/emojis pour différenciers les types d'événements et non des couleurs
+* Il nous manque le 5ème membre de l'equipe
+* NB : jours fériés = nouvel agenda
+
+Sprint 2 : 
+Pb de developpment lors de la reccurance. 
+
+Sprint 3 :
+Aucun problèmes a signalé ce Sprint. 
+
+Sprint 4 : 
+* Correction des différents points énoncé par les clients (c.f "points client sprint 4)
+
+
+
+Points clients sprint 4 : 
+Reset bdd 
+Changer port du site en 3000 
+Terminer la fonctionnalité admin 
+Faire les tests unitaires 
+Faire de la documentation 
+Supp le tawk ou l'utiliser avec api gratuite
+ 
+----------
+Faut supprimer les instances pour la récurrence 
+Ajouter les évènements durant une journée entière
+Problèmes avec des events quand on drop les events 
+Mettre par défaut les dates quand on est en vue semaine et en vue journalière 
+ 
+----------
+Aucune recherche, le bouton ne marche plus (freeze) --> Recherche : il faut une valeur par défaut
+Lors de recherche vide ça freeze la page + import 
+Mettre par défaut des choix de recherches par semaines, mois, années, etc. 
+Dans une recherche : il faut que toutes les récurrences apparaissent 
+ 
+----------
+Importer un nouvel agenda ou importer un nouvel agenda dans votre agenda 
+Exporter tous les agenda 
+Problème de nommage des agendas exportés 
+ 
+----------
+Revoir code couleurs du symbole de notification (orange veut dire qu'on a déjà une notification, c'est trompeur) 
+Bandeau choix de couleur : faut l'afficher 
+Les boutons Échap ne fonctionnent pas, devraient permettre de quitter (pour l’ajout d’événements) 
+Bcp de finitions à corriger
+ 
+----------
+Refaire la review et retrospective 
