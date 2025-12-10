@@ -1,13 +1,6 @@
-# Documentation API - OpenForWork
+# Routes API - OpenForWork
 
-## Table des matières
-- [Authentification](#authentification)
-- [Agendas](#agendas)
-- [Événements](#événements)
-
----
-
-## 🔐 Authentification
+## Authentification
 
 ### GET `/api/health`
 **Description :** Vérifie que le serveur API est opérationnel.
@@ -91,7 +84,7 @@
 
 ---
 
-## 📅 Agendas
+## Agendas
 
 **Note :** Toutes les routes nécessitent l'authentification via header `Authorization: Bearer <token>`
 
@@ -189,7 +182,7 @@ Authorization: Bearer <token>
 ### PUT `/api/agendas/:id`
 **Description :** Met à jour un agenda existant (nom et/ou couleur).
 
-**Authentification :** Requise (JWT)
+**Authentification :** Requis (JWT)
 
 **Headers :**
 ```
@@ -257,7 +250,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🗓️ Événements
+## Événements
 
 **Note :** Toutes les routes nécessitent l'authentification via header `Authorization: Bearer <token>`
 
@@ -506,7 +499,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🔒 Sécurité
+## Sécurité
 
 ### Middleware d'authentification
 Toutes les routes `/api/agendas` et `/api/events` passent par le middleware `authMiddleware` qui :
@@ -536,16 +529,11 @@ Toutes les routes `/api/agendas` et `/api/events` passent par le middleware `aut
 
 ---
 
-## 📊 Base de données MongoDB
+## Base de données MongoDB
 
 ### Collections
 - **users** : Utilisateurs avec références aux agendas
 - **agendas** : Agendas avec références aux événements
 - **events** : Événements autonomes
-
-### Relations
-```
-User (1) ──> (N) Agenda (1) ──> (N) Event
-```
 
 Tous les documents utilisent des ObjectId MongoDB pour les références.
