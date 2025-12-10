@@ -1,15 +1,5 @@
-# Documentation Technique - OpenForWork Calendar
 
-## Table des matières
-- [1. Présentation du projet](#1-présentation-du-projet)
-- [2. Architecture générale](#2-architecture-générale)
-- [3. Backend](#3-backend)
-- [4. Frontend](#4-frontend)
-- [5. Fonctionnalités clés](#5-fonctionnalités-clés)
-- [6. Tests](#6-tests)
-- [7. Déploiement](#7-déploiement)
-
----
+# Documentation Technique/routes API - OpenForWork Calendar
 
 ## 1. Présentation du projet
 
@@ -27,42 +17,7 @@
 
 ## 2. Architecture générale
 
-### 2.1 Schéma d'architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLIENT                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ Controllers  │  │    Views     │  │    Utils     │       │
-│  │ (Logique)    │──│ (Interface)  │──│ (Outils)     │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│           │                                                 │
-│           ▼                                                 │
-│  ┌──────────────────────────────────────┐                   │
-│  │         API Client (fetch)           │                   │
-│  └──────────────────────────────────────┘                   │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │ HTTP/REST
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        SERVEUR                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │  Middleware  │──│   Routes     │──│   Models     │       │
-│  │ (Auth, etc.) │  │ (API REST)   │  │ (MongoDB)    │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│                                              │               │
-└──────────────────────────────────────────────│───────────────┘
-                                               │
-                                               ▼
-                                    ┌──────────────────┐
-                                    │     MongoDB      │
-                                    │   (Base de       │
-                                    │    données)      │
-                                    └──────────────────┘
-```
-
-### 2.2 Technologies utilisées
+### 2.1 Technologies utilisées
 
 | Composant | Technologie | Justification |
 |-----------|-------------|---------------|
@@ -70,10 +25,11 @@
 | **Base de données** | MongoDB + Mongoose | NoSQL flexible pour données imbriquées (agendas → événements) |
 | **Authentification** | JWT (JSON Web Token) | Stateless, sécurisé, standard industrie |
 | **Frontend** | Vanilla JavaScript | Pas de framework lourd, charge rapide |
-| **Calendrier** | FullCalendar 6 | Librairie mature avec drag & drop |
+| **Calendrier** | FullCalendar | Librairie mature avec drag & drop |
 | **Tests** | Jest + Supertest | Standard pour tests Node.js |
+| **Contact Admin | EmailJS | service de mail simple Javascript, si vous voulez les logs demandé aux élèves |
 
-### 2.3 Structure des dossiers
+### 2.2 Structure des dossiers
 
 ```
 ACL-2025-OpenForWork/
@@ -219,36 +175,7 @@ Le middleware `sanitize.js` échappe les caractères HTML dangereux (`<`, `>`, `
 
 ## 4. Frontend
 
-### 4.1 Architecture MVC
-
-Le frontend suit un pattern **MVC (Model-View-Controller)** adapté :
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      AgendaController                        │
-│  (Contrôleur principal - gère l'état et la logique)         │
-├─────────────────────────────────────────────────────────────┤
-│  - agendas[]           État actuel des agendas              │
-│  - currentAgenda       Agenda sélectionné                    │
-│  - calendar            Instance FullCalendar                 │
-│  - loadAgendas()       Chargement depuis API                │
-│  - createEvent()       Création événement                   │
-│  - updateEvent()       Modification événement               │
-│  - deleteEvent()       Suppression événement                │
-└─────────────────────────────────────────────────────────────┘
-            │
-            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         VIEWS                                │
-├─────────────────┬─────────────────┬─────────────────────────┤
-│   HeaderView    │   SidebarView   │      ModalView          │
-│   - Navigation  │   - Mini-cal    │   - Création événement  │
-│   - Sélecteur   │   - Filtres     │   - Édition événement   │
-│     agenda      │   - Actions     │   - Formulaires         │
-└─────────────────┴─────────────────┴─────────────────────────┘
-```
-
-### 4.2 Composants principaux
+### 4.1 Composants principaux
 
 #### AgendaController (`controllers/AgendaController.js`)
 - **Rôle** : Contrôleur central, gère l'état de l'application
@@ -264,7 +191,7 @@ Le frontend suit un pattern **MVC (Model-View-Controller)** adapté :
   - Affichage du formulaire d'événement
   - Validation côté client
   - Gestion de la récurrence (UI)
-  - Sélection d'emoji
+  - Sélection d'emoji (catégorie événement)
 
 #### HeaderView (`views/HeaderView.js`)
 - **Rôle** : Barre de navigation supérieure
@@ -280,6 +207,7 @@ Le frontend suit un pattern **MVC (Model-View-Controller)** adapté :
   - Responsive design (mobile/desktop)
   - Menu overlay des agendas
   - Notifications utilisateur
+  - Initialisation du Modale contact admin
 
 ### 4.3 Intégration FullCalendar
 
@@ -426,33 +354,18 @@ MONGODB_URI=mongodb://localhost:27017/openforwork
 # Secret pour les tokens JWT
 JWT_SECRET=votre-secret-tres-long-et-securise
 
-# Port du serveur (optionnel, défaut: 4000)
-PORT=4000
+# Port du serveur (optionnel, défaut: 3000)
+PORT=3000
 ```
 
 ---
 
 ## Annexes
 
-### A. Diagramme de séquence - Création d'événement
-
-```
-Utilisateur    Frontend         API            MongoDB
-    │              │              │               │
-    │──[Clic]──────►              │               │
-    │              │──[POST]──────►               │
-    │              │              │──[Insert]─────►
-    │              │              │◄─[OK]──────────
-    │              │◄─[201 JSON]──│               │
-    │◄─[Affiche]───│              │               │
-```
-
-### B. Commandes utiles
+### A. Commandes utiles
 
 | Commande | Description |
 |----------|-------------|
 | `npm start` | Démarrer le serveur |
 | `npm test` | Lancer les tests |
 | `npm run dev` | Mode développement |
-
----
